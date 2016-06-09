@@ -6,15 +6,13 @@ from python.SetCuts import SetCuts
 from python.InitializePlotter import InitializePlotter
 from python.SimplePlot import *
 
-#Channel=raw_input("Please choose a channel (el or mu): \n")
 tag0='sf_vs_met'
-outdir='test'
-indir="./AnalysisRegion_zjets"
+tag = tag0+'_'+'test'
+outdir='sfvsMet/'
+indir="../AnalysisRegion"
 lumi=2.169126704526
 
 if not os.path.exists(outdir): os.system('mkdir '+outdir)
-
-tag = tag0+'_'+'test'
 
 met_pt=np.arange(30,150,5).tolist()
 
@@ -28,13 +26,11 @@ setcuts=SetCuts()
 # cuts_eu=setcuts.alphaCuts(isll=False, Zmass='inclusive')
 # ROOT.gROOT.ProcessLine('.x tdrstyle.C')
 
-### ----- Execute (plotting):
-h_sfVSmet_ac=ROOT.TH1F("h_sfVSmet_ac","MC sf vs met; E_{T}^{miss} [GeV]; N_{A}^{mc}/N_{C}^{mc}",24, 30, 150)
-h_sfVSmet_bd_mc=ROOT.TH1F("h_sfVSmet_bd_mc","MC sf vs met; E_{T}^{miss} [GeV]; N_{B}^{mc}/N_{D}^{mc}",24, 30, 150)
-h_sfVSmet_bd_dt=ROOT.TH1F("h_sfVSmet_bd_mc","data sf vs met; E_{T}^{miss} [GeV]; N_{B}^{data}/N_{D}^{data}",24, 30, 150)
+channel = raw_input("[info] 'sf_vs_met.py' -> Please choose el/mu channel (el or mu, default mu): \n")
+if channel=='':
+    channel='mu'
+cuts_met0=setcuts.abcdCuts(channel, 'SR', met_cut='0')
 
-cuts_met0=setcuts.abcdCuts('mu', 'SR', met_cut='0')
-#fout = ROOT.TFile(tag+'.root','recreate')
 histo={}
 for key in cuts_met0:
     # MET (data):
@@ -50,10 +46,15 @@ for key in cuts_met0:
                 'h_met_nonZ':h_met_nonZ,
                 'h_met':h_met}
 
-#fout.Close()
 
+### ----- Execute (plotting):
+h_sfVSmet_ac=ROOT.TH1F("h_sfVSmet_ac","MC sf vs met; E_{T}^{miss} [GeV]; N_{A}^{mc}/N_{C}^{mc}",24, 30, 150)
+h_sfVSmet_bd_mc=ROOT.TH1F("h_sfVSmet_bd_mc","MC sf vs met; E_{T}^{miss} [GeV]; N_{B}^{mc}/N_{D}^{mc}",24, 30, 150)
+h_sfVSmet_bd_dt=ROOT.TH1F("h_sfVSmet_bd_mc","data sf vs met; E_{T}^{miss} [GeV]; N_{B}^{data}/N_{D}^{data}",24, 30, 150)
+
+ROOT.TH1.AddDirectory(ROOT.kFALSE)
+ROOT.gROOT.ProcessLine('.x tdrstyle.C')
 for metcut in met_pt:
-    ROOT.gROOT.ProcessLine('.x tdrstyle.C')
     cuts_abcd = setcuts.abcdCuts('mu', 'SR', met_cut=str(metcut))
 
     yields={}
@@ -105,31 +106,43 @@ for metcut in met_pt:
         
     h_sfVSmet_ac.Fill(metcut, sf['sf_ac_mc'])
     h_sfVSmet_ac.SetBinError(iob,err_ac)
+    print metcut, sf['sf_ac_mc'], err_ac
     
     h_sfVSmet_bd_mc.Fill(metcut, sf['sf_bd_mc'])
     h_sfVSmet_bd_mc.SetBinError(iob,err_bd)
     
     h_sfVSmet_bd_dt.Fill(metcut, sf['sf_bd_dt'])
     h_sfVSmet_bd_dt.SetBinError(iob,err_bd_dt)
+
     
 ### ----- Finalizing:
+fout = ROOT.TFile(outdir+tag+"_"+channel+'.root','recreate')
+fout.cd()
+h_sfVSmet_ac.Write()
+h_sfVSmet_ac.Print("all")
+h_sfVSmet_bd_mc.Write()
+h_sfVSmet_bd_dt.Write()
+
 c1=ROOT.TCanvas(1)
 h_sfVSmet_ac.SetMarkerStyle(20)
 h_sfVSmet_ac.SetMarkerSize(1.0)
 h_sfVSmet_ac.Draw("p")
-c1.SaveAs("h_sfVSmet_ac.eps")
+c1.SaveAs(outdir+"h_sfVSmet_ac_"+channel+".eps")
 c1.Clear()
 
 h_sfVSmet_bd_mc.SetMarkerStyle(20)
 h_sfVSmet_bd_mc.SetMarkerSize(1.0)
 h_sfVSmet_bd_mc.Draw("p")
-c1.SaveAs("h_sfVSmet_bd_mc.eps")
+c1.SaveAs(outdir+"h_sfVSmet_bd_mc_"+channel+".eps")
 c1.Clear()
 
 h_sfVSmet_bd_dt.SetMarkerStyle(20)
 h_sfVSmet_bd_dt.SetMarkerSize(1.0)
 h_sfVSmet_bd_dt.Draw("p")
-c1.SaveAs("h_sfVSmet_bd_dt.eps")
+c1.SaveAs(outdir+"h_sfVSmet_bd_dt_"+channel+".eps")
+
+fout.Print()
+fout.Close()
 
 exit(0)
 
