@@ -40,20 +40,20 @@ class SetCuts ():
         else: raise RuntimeError, "ERROR! I do not understand the Zmass value you put in alphaCuts(self, isll, Zmass) from SetCuts.py"
 
         if not isll:
-            cuts_tmp = ROOT.TString(cuts_tmp)
+            #cuts_tmp.ReplaceAll("&&llnunu_deltaPhi>2.5&&llnunu_l1_deltaR<0.6","")
             cuts_tmp.ReplaceAll("llnunu","elmununu")
-            cuts=cuts_tmp.Data()
-        else:  cuts=cuts_tmp
+            
+        cuts=cuts_tmp
         
         print cuts
         return cuts
 
-    def GetAlphaCuts(self, zpt_cut='', met_cut=''):
+    def GetAlphaCuts(self):
         
-        cuts = {'llin' : self.alphaCuts(isll=True, Zmass='in', zpt_cut=zpt_cut, met_cut=met_cut),
-                'llout': self.alphaCuts(isll=True, Zmass='out', zpt_cut=zpt_cut, met_cut=met_cut),
-                'euin' : self.alphaCuts(isll=False, Zmass='in', zpt_cut=zpt_cut, met_cut=met_cut),
-                'euout': self.alphaCuts(isll=False, Zmass='out', zpt_cut=zpt_cut, met_cut=met_cut)}
+        cuts = {'llin' : self.alphaCuts(isll=True, Zmass='in'),
+                'llout': self.alphaCuts(isll=True, Zmass='out'),
+                'euin' : self.alphaCuts(isll=False, Zmass='in'),
+                'euout': self.alphaCuts(isll=False, Zmass='out')}
         #print cuts
         return cuts
     
