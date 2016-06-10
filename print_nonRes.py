@@ -21,7 +21,7 @@ else: lsChannel.append(Channel)
 tag0='nonResStudy'
 outdir='test'
 indir="./AnalysisRegion_nonRes"
-lumi=2.169126704526
+lumi=2.318278305
 doprint=False
 
 if not os.path.exists(outdir): os.system('mkdir '+outdir)

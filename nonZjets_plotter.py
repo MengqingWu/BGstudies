@@ -10,7 +10,7 @@ from python.InitializePlotter import InitializePlotter
 tag0='nonResBkg'
 outdir='test'
 indir="./AnalysisRegion_nonRes"
-lumi=2.169126704526
+lumi=2.318278305
 
 if not os.path.exists(outdir): os.system('mkdir '+outdir)
 

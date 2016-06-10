@@ -12,7 +12,7 @@ Channel=raw_input("Please choose a channel (el or mu): \n")
 tag0='ZJstudy'
 outdir='Kin/'
 indir="./AnalysisRegion_zjets"
-lumi=2.169126704526
+lumi=2.318278305
 LogY=False
 
 if not os.path.exists(outdir): os.system('mkdir '+outdir)
