@@ -15,7 +15,7 @@ pair=[('SR','CRb'), ('CRc','CRd'), ('SR','CRc'), ('CRb','CRd')]
 Tag=abcd.Channel+abcd.whichregion
 Var=('llnunu_l2_pt','llnunu_mta')
 isData=True
-lumi=2.169126704526
+lumi=2.318278305
 parameter={'llnunu_l2_pt': ('E_{T}^{miss}',25,0,500), 'llnunu_mta': ('M_{T}',17, 100.0,780)}
 
 print abcd.cuts

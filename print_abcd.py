@@ -23,7 +23,7 @@ mycuts=SetCuts()
 tag0='ZJstudy'
 outdir='test'
 indir="../AnalysisRegion"
-lumi=2.169126704526
+lumi=2.318278305
 doprint=True
 
 if not os.path.exists(outdir): os.system('mkdir '+outdir)

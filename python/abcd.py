@@ -10,7 +10,7 @@ from python.SetCuts import SetCuts
 
 class abcdAnalyzer:
     def __init__(self, indir="../AnalysisRegion", outdir='plots',
-                 lumi = 2.169126704526,  sepSig=True,
+                 lumi = 2.318278305,  sepSig=True,
                  LogY=True,   doRatio=True,
                  addSig=True, addData=True):
 

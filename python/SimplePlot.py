@@ -14,6 +14,48 @@ def GetError(A, B, a=0., b=0.):
     error=math.sqrt((a/B)**2+(b*A/B**2)**2)
     return error
 
+def GetCumulative_dev(inputHist,forward=True, suffix=''):
+    """ Derived from the root TH1::GetCumulative() function
+    taking into consider of underflow and overflow bins;
+    adding errorbar tranfer.
+    """
+    #nbinsx, nbinsy, nbinsz = inputHist.GetNbinsX(), inputHist.GetNbinsY(), inputHist.GetNbinsZ()
+    nbinsx=inputHist.GetNbinsX()
+    
+    hintegrated = copy.deepcopy(inputHist)
+    hintegrated.SetName(inputHist.GetName() + suffix)
+    hintegrated.Reset()
+    
+    if forward: # Forward computation
+        Sum = 0.
+        igerr2 = 0.
+        #for binz in range(0, nbinsz+1):
+        #for biny in range(0, nbinsy+1):
+        for binx in range(0, nbinsx+1):
+            #bin = hintegrated.GetBin(binx, biny, binz)
+            Bin = hintegrated.GetBin(binx)
+            Sum += inputHist.GetBinContent(Bin)
+            igerr2 += inputHist.GetBinError(Bin)*inputHist.GetBinError(Bin)
+            hintegrated.SetBinContent(Bin, Sum)
+            hintegrated.SetBinError(Bin, TMath.Sqrt(igerr2))
+            
+    else: # Backward computation
+        Sum = 0.
+        igerr2 = 0.
+        #for binz in reversed(range(0, nbinsz+1)):
+        #for biny in reversed(range(0, nbinsy+1)):
+        for binx in reversed(range(0, nbinsx+1)):
+            #bin = hintegrated.GetBin(binx, biny, binz)
+            Bin = hintegrated.GetBin(binx)
+            Sum += inputHist.GetBinContent(Bin)
+            igerr2 += inputHist.GetBinError(Bin)*inputHist.GetBinError(Bin)
+            hintegrated.SetBinContent(Bin, Sum)
+            hintegrated.SetBinError(Bin, TMath.Sqrt(igerr2))
+            print binx, Bin, Sum, TMath.Sqrt(igerr2)
+            
+    return hintegrated
+    
+
 def GetRatio_TH1(h1, h2, h2_isStack=False):
     ''' h1/h2 '''
     hratio = h1.Clone("hRatio")

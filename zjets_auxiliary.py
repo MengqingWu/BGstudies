@@ -9,7 +9,7 @@ from python.SimplePlot import *
 
 outdir='./plots/aux'
 indir="../AnalysisRegion"
-#lumi=2.169126704526
+#lumi=2.318278305
 if not os.path.exists(outdir): os.system('mkdir '+outdir)
 
 var_dic = {1:{'var':'abs(llnunu_deltaPhi-TMath::Pi()/2)', 'nick':'udPhi',
