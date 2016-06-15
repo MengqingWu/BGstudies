@@ -2,7 +2,7 @@ import ROOT
 import sys
 from array import array
 import pickle
-from python.PlotterBase import PlotterBase
+from PlotterBase import PlotterBase
 class MergedPlotter(PlotterBase):
 
     def __init__(self,plotters):

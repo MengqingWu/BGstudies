@@ -1,14 +1,14 @@
 #!/usr/bin/env python
+import ROOT, os, sys
 
-import ROOT
-import os
-from python.TreePlotter import TreePlotter
-from python.MergedPlotter import MergedPlotter
-#from python.myStackPlotter import StackPlotter
-from python.SimplePlot import *
+sys.path.append('/Users/mengqing/work/local_xzz2l2nu/python')
+from TreePlotter import TreePlotter
+from MergedPlotter import MergedPlotter
+#from myStackPlotter import StackPlotter
+from SimplePlot import *
 
 outdir='./plots/aux'
-indir="../AnalysisRegion"
+indir="../../AnalysisRegion"
 #lumi=2.318278305
 if not os.path.exists(outdir): os.system('mkdir '+outdir)
 
@@ -18,14 +18,6 @@ var_dic = {1:{'var':'abs(llnunu_deltaPhi-TMath::Pi()/2)', 'nick':'udPhi',
            2:{'var':'(llnunu_l2_pt*(llnunu_deltaPhi-TMath::Pi()/2)/abs(llnunu_deltaPhi-TMath::Pi()/2)/llnunu_l1_pt)', 'nick':'ptRatio_signed',
               'title':'(+/-)E_{T}^{miss}/p_{T}^{Z}',
               'par':(50, -5, 5)}}
-
-
-# var_dic = {1:{'var':'sin(llnunu_deltaPhi)', 'nick':'SinDphi',
-#               'title': 'sin(#Delta#Phi_{Z,MET})',
-#               'par':(10, 0, 1)},
-#            2:{'var':'(met_pt*cos(llnunu_deltaPhi)+llnunu_l1_pt)/llnunu_l1_pt', 'nick':'xzzPtDiff',
-#               'title':'(E_{T}^{miss}*cos(#Delta#Phi)+p_{T}^{Z})/p_{T}^{Z}',
-#               'par':(40, -2, 2)}}
 
 fout=outdir+'/CorrFactor_'+var_dic[1]['nick']+'_'+var_dic[2]['nick']+'.txt'
 outtxt = open(fout, 'a')
@@ -72,7 +64,7 @@ else: lsChannel.append(Channel)
 res=dict()
 for Channel in lsChannel:
     print "[info] ", Channel, '*'*20
-    ROOT.gROOT.ProcessLine('.x tdrstyle.C')
+    ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
 
     if Channel=='inclusive':
         factor_cuts='(nllnunu>0&&abs(llnunu_l1_mass-91.1876)<20.0'+ZpTCut+MetCut+')'
@@ -82,7 +74,7 @@ for Channel in lsChannel:
         
     print '[info] cuts used here: ', factor_cuts
 
-    h2_var1_var2 = ZJets.drawTH2(var_dic[1]['var']+':'+var_dic[2]['var'],factor_cuts,str(1), #lumi*1000 for data
+    h2_var1_var2 = ZJets.drawTH2(var_dic[1]['var']+':'+var_dic[2]['var'],factor_cuts,str(1), #lumi*1000 
                                  var_dic[2]['par'][0], var_dic[2]['par'][1], var_dic[2]['par'][2],
                                  var_dic[1]['par'][0], var_dic[1]['par'][1], var_dic[1]['par'][2],
                                  titlex = var_dic[2]['title'], unitsx = "",

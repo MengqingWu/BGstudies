@@ -2,7 +2,7 @@ import ROOT
 import sys
 from array import array
 import pickle
-from python.PlotterBase import PlotterBase
+from PlotterBase import PlotterBase
 from array import array
 
 class TreePlotter(PlotterBase):

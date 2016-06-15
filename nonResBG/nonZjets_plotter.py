@@ -29,7 +29,7 @@ print "I am cuts_ll:"
 cuts_ll=setcuts.alphaCuts(Zmass='inclusive')
 print "I am cuts_eu:"
 cuts_eu=setcuts.alphaCuts(isll=False, Zmass='inclusive')
-ROOT.gROOT.ProcessLine('.x tdrstyle.C')
+ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
 
 ### ----- Execute (plotting):
 

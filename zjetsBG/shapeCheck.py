@@ -3,8 +3,9 @@ from ROOT import *
 import math, os, sys, copy
 from  itertools import product
 
-from python.SimplePlot import *
-from python.abcd import *
+sys.path.append('/Users/mengqing/work/local_xzz2l2nu/python')
+from SimplePlot import *
+from abcd import *
 
 #abcd=abcdAnalyzer(indir='./AnalysisRegion_zjets')
 abcd=abcdAnalyzer(indir='../AnalysisRegion',addSig=False)

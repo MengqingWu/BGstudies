@@ -3,9 +3,9 @@
 import ROOT
 import os,copy
 
-from python.InitializePlotter import InitializePlotter
-from python.SimplePlot import *
-from python.SetCuts import SetCuts
+from InitializePlotter import InitializePlotter
+from SimplePlot import *
+from SetCuts import SetCuts
 
 
 class abcdAnalyzer:

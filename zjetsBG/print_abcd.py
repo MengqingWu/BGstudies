@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 
-import ROOT
-import os
+import ROOT, os, sys
 from math import *
 from itertools import combinations, product
-from python.TreePlotter import TreePlotter
-from python.MergedPlotter import MergedPlotter
-from python.StackPlotter import StackPlotter
-from python.SimplePlot import *
-from python.SetCuts import SetCuts
+
+sys.path.append('/Users/mengqing/work/local_xzz2l2nu/bkgStudies/python')
+from TreePlotter import TreePlotter
+from MergedPlotter import MergedPlotter
+from StackPlotter import StackPlotter
+from SimplePlot import *
+from SetCuts import SetCuts
 
 
 printfile = open('num_out.txt', 'a')
@@ -22,7 +23,7 @@ mycuts=SetCuts()
 
 tag0='ZJstudy'
 outdir='test'
-indir="../AnalysisRegion"
+indir="../../AnalysisRegion"
 lumi=2.318278305
 doprint=True
 
@@ -93,7 +94,7 @@ for Channel, whichregion in list(product(*comb)):
     cuts_loose=mycuts.abcdCuts(Channel, whichregion, met_cut='40')
     print cuts
     
-    ROOT.gROOT.ProcessLine('.x tdrstyle.C')
+    ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
     ROOT.gStyle.SetPadBottomMargin(0.2)
     ROOT.gStyle.SetPadLeftMargin(0.15)
     

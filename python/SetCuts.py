@@ -19,9 +19,19 @@ class SetCuts ():
                       "abs(llnunu_deltaPhi-TMath::Pi()/2)>1.5",
                       "(llnunu_l2_pt*(llnunu_deltaPhi-TMath::Pi()/2)/abs(llnunu_deltaPhi-TMath::Pi()/2)/llnunu_l1_pt)>0.4")
 
-    def GetSRCut(self):
-        cut_str = "({0}&&{1}&&{2}&&{3}&&{4}&&{5})"
+    def GetSRCut(self, N_minus_1=''):
+        """ N_minus_1 (from 1 to 5) is to choose which cut to loose to get the N-1 plots  """
+        ll=['{'+str(i)+'}' for i in[0,1,2,3,4,5]]
+        
+        N_minus_1='{'+N_minus_1+'}'
+        if N_minus_1 in ll:
+            print "[Info] 'GetSRCut' says you are asking for a 'N-1' SR: "
+            ll.remove(N_minus_1)
+        else: print "[Info] 'GetSRCut' says you are asking for a full SR: " 
+        
+        cut_str = "("+ "&&".join(ll) +")"
         srCuts = cut_str.format(*self.cutflow)
+        print '  ', srCuts
         return srCuts
     
     # Cuts used for alpha-method to estimate non-resonant bkgs
