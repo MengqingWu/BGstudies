@@ -2,9 +2,9 @@
 
 import ROOT
 import os,copy
-from python.TreePlotter import TreePlotter
-from python.MergedPlotter import MergedPlotter
-from python.myStackPlotter import StackPlotter
+from TreePlotter import TreePlotter
+from MergedPlotter import MergedPlotter
+from myStackPlotter import StackPlotter
 
 class InitializePlotter:
     def __init__(self, indir="../AnalysisRegion",

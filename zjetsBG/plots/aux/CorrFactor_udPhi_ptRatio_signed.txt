@@ -1,0 +1,4 @@
+ GetCorrelationFactor( abs(llnunu_deltaPhi-TMath::Pi()/2) : (llnunu_l2_pt*(llnunu_deltaPhi-TMath::Pi()/2)/abs(llnunu_deltaPhi-TMath::Pi()/2)/llnunu_l1_pt) ) 
+   ZpT,    MET,            inclusive,                   mu,             electron
+   100,      0,  -0.00486 +- 0.00193,  -0.00530 +- 0.00209,  -0.00247 +- 0.00502
+     0,      0,   0.04257 +- 0.00056,   0.04304 +- 0.00056,  -0.00247 +- 0.00502

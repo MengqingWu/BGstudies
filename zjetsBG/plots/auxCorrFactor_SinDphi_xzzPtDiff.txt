@@ -1,0 +1,3 @@
+ GetCorrelationFactor( sin(llnunu_deltaPhi) : (met_pt*cos(llnunu_deltaPhi)+llnunu_l1_pt)/llnunu_l1_pt ) 
+   ZpT,    MET,            inclusive,                   mu,             electron
+   100,      0,   0.04938 +- 0.00824,   0.04155 +- 0.00925,   0.08694 +- 0.01816

@@ -1,0 +1,64 @@
+'CRb': '((abs(llnunu_l1_mass-91.1876)<20.0&&llnunu_l1_pt>100.0&&met_pt>50)&&abs(llnunu_l1_l1_pdgId)==13&&sin(llnunu_deltaPhi)<0.25&&(met_pt*cos(llnunu_deltaPhi)+llnunu_l1_pt)/llnunu_l1_pt>1.0)', 'SR': '((abs(llnunu_l1_mass-91.1876)<20.0&&llnunu_l1_pt>100.0&&met_pt>50)&&abs(llnunu_l1_l1_pdgId)==13&&sin(llnunu_deltaPhi)<0.25&&(met_pt*cos(llnunu_deltaPhi)+llnunu_l1_pt)/llnunu_l1_pt<1.0)', 'CRd': '((abs(llnunu_l1_mass-91.1876)<20.0&&llnunu_l1_pt>100.0&&met_pt>50)&&abs(llnunu_l1_l1_pdgId)==13&&sin(llnunu_deltaPhi)>0.25&&(met_pt*cos(llnunu_deltaPhi)+llnunu_l1_pt)/llnunu_l1_pt>1.0)', 'CRc': '((abs(llnunu_l1_mass-91.1876)<20.0&&llnunu_l1_pt>100.0&&met_pt>50)&&abs(llnunu_l1_l1_pdgId)==13&&sin(llnunu_deltaPhi)>0.25&&(met_pt*cos(llnunu_deltaPhi)+llnunu_l1_pt)/llnunu_l1_pt<1.0)'
+
+****************************************
+             elchannel, SR              
+****************************************
+             Scale Factors              
+----------------------------------------
+ A/C (MC)   |  0.64 +-  0.06
+ B/D (MC)   |  0.46 +-  0.05
+ B/D (data) |  0.56 +-  0.09 +-  0.19
+****************************************
+  separate sys. uncert. of B/D (data) 
+----------------------------------------
+sys_var_corr| 0.16 
+sys_nonZ_sub| 0.10
+****************************************
+           Z+jets estimation            
+----------------------------------------
+          MC| 75.36 +-  5.40
+closure test| 54.11 +-  5.94
+ data-driven| 85.74 +- 14.62 +- 16.26
+****************************************
+----------------------------------------
+                 A | C                  
+      Zjets  75.36 | 117.51 Zjets       
+      non-Z  12.85 |  20.17 non-Z       
+       data 127.00 | 174.00 data        
+----------------------------------------
+                 B | D                  
+      Zjets  57.34 | 124.51 Zjets       
+      non-Z   6.31 |  19.38 non-Z       
+       data  78.00 | 148.00 data        
+----------------------------------------
+****************************************
+             muchannel, SR              
+****************************************
+             Scale Factors              
+----------------------------------------
+ A/C (MC)   |  0.48 +-  0.02
+ B/D (MC)   |  0.41 +-  0.02
+ B/D (data) |  0.42 +-  0.03 +-  0.07
+****************************************
+  separate sys. uncert. of B/D (data) 
+----------------------------------------
+sys_var_corr| 0.07 
+sys_nonZ_sub| 0.01
+****************************************
+           Z+jets estimation            
+----------------------------------------
+          MC| 234.39 +-  9.35
+closure test| 202.94 +- 10.78
+ data-driven| 239.28 +- 20.95 +- 17.50
+****************************************
+----------------------------------------
+                 A | C                  
+      Zjets 234.39 | 491.55 Zjets       
+      non-Z  77.07 | 211.72 non-Z       
+       data 401.00 | 776.00 data        
+----------------------------------------
+                 B | D                  
+      Zjets 212.15 | 513.86 Zjets       
+      non-Z  29.53 | 137.09 non-Z       
+       data 303.00 | 782.00 data        
+----------------------------------------
