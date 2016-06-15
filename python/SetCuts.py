@@ -42,11 +42,11 @@ class SetCuts ():
                  
         astr = "({0}&&{4}&&{5})"
         cuts_tmp = astr.format(*self.cutflow)
-        cuts_tmp+='&&'+zpt+met
+        cuts_tmp+='&&'+zpt+'&&'+met
 
         if Zmass=='inclusive': pass
         elif Zmass=='out': cuts_tmp+="&&abs(llnunu_l1_mass-91.1876)<=55.0&&abs(llnunu_l1_mass-91.1876)>=25.0"
-        elif Zmass=='in': cuts_tmp+="abs(llnunu_l1_mass-91.1876)<20.0"
+        elif Zmass=='in': cuts_tmp+="&&abs(llnunu_l1_mass-91.1876)<20.0"
         else: raise RuntimeError, "ERROR! I do not understand the Zmass value you put in alphaCuts(self, isll, Zmass) from SetCuts.py"
 
         if not isll:

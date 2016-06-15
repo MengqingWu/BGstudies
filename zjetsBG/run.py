@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-import sys
-sys.path.append('/Users/mengqing/work/local_xzz2l2nu/python')
-from abcd import *
+from python.abcd import *
 
 #t=abcdAnalyzer(indir="../../AnalysisRegion_zjets")
 

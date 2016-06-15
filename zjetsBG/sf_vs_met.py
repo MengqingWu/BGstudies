@@ -2,11 +2,10 @@
 import ROOT,os,sys
 from math import *
 import numpy as np
-
-sys.path.append('/Users/mengqing/work/local_xzz2l2nu/python')
-from SetCuts import SetCuts
-from InitializePlotter import InitializePlotter
-from SimplePlot import *
+#sys.path.append('/Users/mengqing/work/local_xzz2l2nu/python')
+from python.SetCuts import SetCuts
+from python.InitializePlotter import InitializePlotter
+from python.SimplePlot import *
 
 tag0='sf_vs_met'
 tag = tag0+'_'+'test'

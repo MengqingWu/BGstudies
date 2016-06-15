@@ -3,9 +3,9 @@ import ROOT, os, sys
 from math import *
 from collections import OrderedDict
 
-sys.path.append('/Users/mengqing/work/local_xzz2l2nu/python')
-from SetCuts import SetCuts
-from InitializePlotter import InitializePlotter
+#sys.path.append('/Users/mengqing/work/local_xzz2l2nu/bkgStudies/python')
+from python.SetCuts import SetCuts
+from python.InitializePlotter import InitializePlotter
 
 Channel=raw_input("Please choose a channel (el, mu or both, default both): \n")
 if Channel=='el': channelCut='(abs(llnunu_l1_l1_pdgId)==11)'
@@ -16,7 +16,7 @@ else: channelCut=''; print "[Info] invalid Channel input, default 'both' used."
 tag0='SRstudy'+'_'+Channel
 #outdir='SRstudy/'
 outdir='test'
-indir="../AnalysisRegion_zjets"
+indir="../../AnalysisRegion_zjets"
 lumi=2.318278305
 
 if not os.path.exists(outdir): os.system('mkdir '+outdir)
@@ -50,13 +50,15 @@ ROOT.gStyle.SetPadLeftMargin(0.15)
 #ROOT.TH1.AddDirectory(ROOT.kFALSE) #in this way you could close the TFile after you registe the histograms
 yields = OrderedDict()
 err = OrderedDict()
-histo = OrderedDict()
 nan = 0
 
+cutCanvas = ROOT.TCanvas('c1', 'c1', 600,630)
+cutCanvas.Print(outTag+'_cutList.ps[')
+
 for cut in srcuts_dev:
+    
     # deltaPhi(Zmumu,MET)
     Stack.drawStack('llnunu_deltaPhi',srcuts_dev[cut],str(lumi*1000),18,0,3.6,titlex='#Delta#Phi^{Z_{#mu,#mu},MET}',units='',output=tag+'llnunu_deltaPhi'+'_'+cut,outDir=outdir)
-    
     # MET:
     Stack.drawStack('llnunu_l2_pt',srcuts_dev[cut],str(lumi*1000),25,0,500,titlex='E_{T}^{miss}',units='[GeV]',output=tag+'met_pt'+'_'+cut,outDir=outdir)
     #err[cut]=ROOT.Double(0.0)
@@ -65,45 +67,36 @@ for cut in srcuts_dev:
     Stack.drawStack('dPhi_jetMet_min',srcuts_dev[cut],str(lumi*1000),18,0,3.6,titlex='#Delta#Phi^{jet,MET}_{min}',units='',output=tag+'dPhi_jetMet_min'+'_'+cut,outDir=outdir)
     #hdPhiJetMet.GetYaxis().SetTitle("Events")
 
-    #histo[cut]=(srcuts_dev[cut],h_met,hdPhiJetMet)
+    cutCanvas.Clear()
+    cutPT=ROOT.TPaveText(.05,.1,.95,.8,"brNDC")
+    cutPT.SetTextSize(0.03)
+    cutPT.SetTextAlign(12)
+    cutPT.SetTextFont(42)
+    cutTex=['- '+item for item in histo[key][0].split('&&')]
+    cutTex.insert(0, key+':')
+    y=0.95
+    for tex in cutTex:
+        if ROOT.TString(tex).Contains("(llnunu_l2_pt*(llnunu_deltaPhi-TMath::Pi()/2)"):
+            tex='#splitline{(llnunu_l2_pt*(llnunu_deltaPhi-TMath::Pi()/2)}{/abs(llnunu_deltaPhi-TMath::Pi()/2)/llnunu_l1_pt)>0.4}'
+        cutPT.AddText(0.02, y , tex)
+        y-=0.065
+    cutPT.Draw()
+    cutCanvas.Print(outTag+'.ps')
+    cutCanvas.Clear()
+
     
 print ' -- Yields:    ', yields
 print ' -- Stat. Err.:', err
 
-exit(0)
+
 ### ----- Finalizing:
+# merge all output plots into one pdf file
+os.system('gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile='+outdir+'/'+tag+'all.pdf '+outdir+'/'+tag+'*.eps')
+print 'All plots merged in single pdf file '+tag+'.pdf .'
+# merge root file
+os.system('rm '+outdir+'/'+tag+'all.root ')
+os.system('hadd -f '+outdir+'/'+tag+'all.root '+outdir+'/'+tag+'*.root')
 
-# ROOT.TGaxis.SetMaxDigits(3)
-# fout = ROOT.TFile(outTag+'.root','recreate')
-# canvas = ROOT.TCanvas('c1', 'c1', 600,630)
-# canvas.Print(outTag+'.ps[')
-
-# for key in histo:
-#     canvas.Clear()
-#     pt=ROOT.TPaveText(.05,.1,.95,.8,"brNDC")
-#     pt.SetTextSize(0.03)
-#     pt.SetTextAlign(12)
-#     pt.SetTextFont(42)
-#     cutTex=['- '+item for item in histo[key][0].split('&&')]
-#     cutTex.insert(0, key+':')
-#     y=0.95
-#     for tex in cutTex:
-#         if ROOT.TString(tex).Contains("(llnunu_l2_pt*(llnunu_deltaPhi-TMath::Pi()/2)"):
-#             tex='#splitline{(llnunu_l2_pt*(llnunu_deltaPhi-TMath::Pi()/2)}{/abs(llnunu_deltaPhi-TMath::Pi()/2)/llnunu_l1_pt)>0.4}'
-#         pt.AddText(0.02, y , tex)
-#         y-=0.065
-#     pt.Draw()
-#     canvas.Print(outTag+'.ps')
-#     canvas.Clear()
-#     for ih in range(1, len(histo[key])):
-#         canvas.Clear()
-#         if ROOT.TString(histo[key][ih].GetName()).Contains("h2"):
-#             histo[key][ih].Draw("COLZ")
-#             canvas.SetLogz()
-#         else:  histo[key][ih].Draw()
-#         canvas.Print(outTag+'.ps')
-#         histo[key][ih].Write()
-#         canvas.Clear()
 
 # canvas.Print(outTag+'.ps]')
 # os.system('ps2pdf '+outTag+'.ps '+outTag+'.pdf')    

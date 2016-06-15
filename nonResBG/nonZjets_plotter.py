@@ -9,7 +9,7 @@ from python.InitializePlotter import InitializePlotter
 #Channel=raw_input("Please choose a channel (el or mu): \n")
 tag0='nonResBkg'
 outdir='test'
-indir="./AnalysisRegion_nonRes"
+indir="../../AnalysisRegion_nonRes"
 lumi=2.318278305
 
 if not os.path.exists(outdir): os.system('mkdir '+outdir)
@@ -22,8 +22,8 @@ tag = tag0+'_'+'test'
 #  M_in (70,110)
 
 ### ----- Initialize (samples):
-plotter_ll=InitializePlotter(addSig=False, addData=True,doRatio=False)
-plotter_eu=InitializePlotter(addSig=False, addData=True,doRatio=False, doElMu=True)
+plotter_ll=InitializePlotter(indir, addSig=False, addData=True,doRatio=False)
+plotter_eu=InitializePlotter(indir, addSig=False, addData=True,doRatio=False, doElMu=True)
 setcuts=SetCuts()
 print "I am cuts_ll:"
 cuts_ll=setcuts.alphaCuts(Zmass='inclusive')
@@ -41,11 +41,11 @@ plotter_eu.Stack.drawStack('elmununu_l1_mass', cuts_eu, str(lumi*1000), 10, 0.0,
                         output=tag+'_melmu',outDir=outdir, separateSignal=True,
                         drawtex="", channel="")
 
-h_Memu_nonRes=plotter_eu.NonResBG.drawTH1('elmununu_l1_mass',cuts_eu,str(lumi*1000),10,0.0, 200.0,titlex='M_{Z}^{e#mu}',units='GeV',drawStyle="HIST")
-h_Memu_res=plotter_eu.ResBG.drawTH1('elmununu_l1_mass',cuts_eu,str(lumi*1000),10,0.0, 200.0,titlex='M_{Z}^{e#mu}',units='GeV',drawStyle="HIST")
+h_Memu_nonRes=plotter_eu.NonResBG.drawTH1('elmununu_l1_mass_nonRes', 'elmununu_l1_mass',cuts_eu,str(lumi*1000),10,0.0, 200.0,titlex='M_{Z}^{e#mu}',units='GeV',drawStyle="HIST")
+h_Memu_res=plotter_eu.ResBG.drawTH1('elmununu_l1_mass_res', 'elmununu_l1_mass',cuts_eu,str(lumi*1000),10,0.0, 200.0,titlex='M_{Z}^{e#mu}',units='GeV',drawStyle="HIST")
 
-h_Mll_nonRes=plotter_ll.NonResBG.drawTH1('llnunu_l1_mass',cuts_ll,str(lumi*1000),10,0.0, 200.0,titlex='M_{Z}^{ll}',units='GeV',drawStyle="HIST")
-h_Mll_res=plotter_ll.ResBG.drawTH1('llnunu_l1_mass',cuts_ll,str(lumi*1000),10,0.0, 200.0,titlex='M_{Z}^{ll}',units='GeV',drawStyle="HIST")
+h_Mll_nonRes=plotter_ll.NonResBG.drawTH1('llnunu_l1_mass_nonRes','llnunu_l1_mass',cuts_ll,str(lumi*1000),10,0.0, 200.0,titlex='M_{Z}^{ll}',units='GeV',drawStyle="HIST")
+h_Mll_res=plotter_ll.ResBG.drawTH1('llnunu_l1_mass_res','llnunu_l1_mass',cuts_ll,str(lumi*1000),10,0.0, 200.0,titlex='M_{Z}^{ll}',units='GeV',drawStyle="HIST")
 
 met_pt=[50, 80, 100, 125, 200]
 

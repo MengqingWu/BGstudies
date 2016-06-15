@@ -3,14 +3,12 @@
 import ROOT, os, sys
 from math import *
 from itertools import combinations, product
-
-sys.path.append('/Users/mengqing/work/local_xzz2l2nu/bkgStudies/python')
-from TreePlotter import TreePlotter
-from MergedPlotter import MergedPlotter
-from StackPlotter import StackPlotter
-from SimplePlot import *
-from SetCuts import SetCuts
-
+#sys.path.append('/Users/mengqing/work/local_xzz2l2nu/bkgStudies/python')
+from python.TreePlotter import TreePlotter
+from python.MergedPlotter import MergedPlotter
+from python.StackPlotter import StackPlotter
+from python.SimplePlot import *
+from python.SetCuts import SetCuts
 
 printfile = open('num_out.txt', 'a')
 
