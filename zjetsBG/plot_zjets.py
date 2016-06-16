@@ -2,10 +2,9 @@
 import ROOT, os, sys
 from math import *
 from collections import OrderedDict
-
-sys.path.append('/Users/mengqing/work/local_xzz2l2nu/bkgStudies/python')
-from SetCuts import SetCuts
-from InitializePlotter import InitializePlotter
+#sys.path.append('/Users/mengqing/work/local_xzz2l2nu/bkgStudies/python')
+from python.SetCuts import SetCuts
+from python.InitializePlotter import InitializePlotter
 
 Channel=raw_input("Please choose a channel (el or mu): \n")
 Region=raw_input("Please choose a benchmarck Region (SR or VR): \n")

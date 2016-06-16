@@ -20,7 +20,7 @@ else: lsChannel.append(Channel)
 
 tag0='nonResStudy'
 outdir='test'
-indir="./AnalysisRegion_nonRes"
+indir="../../AnalysisRegion_nonRes"
 lumi=2.318278305
 doprint=False
 

@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 import ROOT, os, sys
-
-sys.path.append('/Users/mengqing/work/local_xzz2l2nu/python')
-from TreePlotter import TreePlotter
-from MergedPlotter import MergedPlotter
-#from myStackPlotter import StackPlotter
-from SimplePlot import *
+#sys.path.append('/Users/mengqing/work/local_xzz2l2nu/python')
+from python.TreePlotter import TreePlotter
+from python.MergedPlotter import MergedPlotter
+from python.SimplePlot import *
 
 outdir='./plots/aux'
 indir="../../AnalysisRegion"
