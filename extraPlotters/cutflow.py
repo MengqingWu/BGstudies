@@ -3,8 +3,7 @@ import os, sys, math
 from ROOT import *
 from python.InitializePlotter import InitializePlotter
 
-indir='.'
-#indir='../zjetsSkim'
+indir='../zjetsSkim'
 #infile = TFile("BulkGravToZZToZlepZinv_narrow_1000.root", "read")
 #tree = infile.Get("tree")
 fchain=TChain("tree")
