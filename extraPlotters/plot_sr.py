@@ -61,12 +61,12 @@ for cut in srcuts_dev:
     Stack.drawStack('llnunu_deltaPhi',srcuts_dev[cut],str(lumi*1000),18,0,3.6,titlex='#Delta#Phi^{Z_{#mu,#mu},MET}',units='',output=tag+'llnunu_deltaPhi'+'_'+cut,outDir=outdir)
     # MET:
     Stack.drawStack('llnunu_l2_pt',srcuts_dev[cut],str(lumi*1000),25,0,500,titlex='E_{T}^{miss}',units='[GeV]',output=tag+'met_pt'+'_'+cut,outDir=outdir)
-    #err[cut]=ROOT.Double(0.0)
-    #yields[cut]=h_met.IntegralAndError(0,1+h_met.GetNbinsX(),err[cut])
+    # MT:
+    Stack.drawStack('llnunu_mta',srcuts_dev[cut],str(lumi*1000),25,0,500,titlex='E_{T}^{miss}',units='[GeV]',output=tag+'llnunu_mta'+'_'+cut,outDir=outdir)
     # deltaPhi(jet,MET)
     Stack.drawStack('dPhi_jetMet_min',srcuts_dev[cut],str(lumi*1000),18,0,3.6,titlex='#Delta#Phi^{jet,MET}_{min}',units='',output=tag+'dPhi_jetMet_min'+'_'+cut,outDir=outdir)
-    #hdPhiJetMet.GetYaxis().SetTitle("Events")
-
+    
+    
     cutCanvas.Clear()
     cutPT=ROOT.TPaveText(.05,.1,.95,.8,"brNDC")
     cutPT.SetTextSize(0.03)
@@ -85,10 +85,11 @@ for cut in srcuts_dev:
     cutCanvas.Clear()
 
 cutCanvas.Print(outTag+'_cutList.eps]')
-    
-print ' -- Yields:    ', yields
-print ' -- Stat. Err.:', err
 
+#err[cut]=ROOT.Double(0.0)
+#yields[cut]=h_met.IntegralAndError(0,1+h_met.GetNbinsX(),err[cut])
+#print ' -- Yields:    ', yields
+#print ' -- Stat. Err.:', err
 
 ### ----- Finalizing:
 # merge all output plots into one pdf file
@@ -98,9 +99,5 @@ print 'All plots merged in single pdf file '+tag+'.pdf .'
 os.system('rm '+outdir+'/'+tag+'all.root ')
 os.system('hadd -f '+outdir+'/'+tag+'all.root '+outdir+'/'+tag+'*.root')
 
-
-# canvas.Print(outTag+'.ps]')
-# os.system('ps2pdf '+outTag+'.ps '+outTag+'.pdf')    
-# fout.Close()
 
 

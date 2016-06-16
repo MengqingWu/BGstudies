@@ -40,9 +40,9 @@ for ientry in range(0, fchain.GetEntriesFast()):
                             nZpt+=1
                             if fchain.llnunu_l2_pt[0]>100.0:
                                 nmet+=1
-                                if abs(fchain.llnunu_deltaPhi[0] - TMath.Pi()/2)>1.5:
+                                if abs(abs(fchain.llnunu_deltaPhi[0]) - TMath.Pi()/2)>1.5:
                                     nvar1+=1
-                                    if (fchain.llnunu_l2_pt[0]*(fchain.llnunu_deltaPhi[0]-TMath.Pi()/2)/abs(fchain.llnunu_deltaPhi[0]-TMath.Pi()/2)/fchain.llnunu_l1_pt[0])>0.4:
+                                    if (fchain.llnunu_l2_pt[0]*(abs(fchain.llnunu_deltaPhi[0])-TMath.Pi()/2)/abs(abs(fchain.llnunu_deltaPhi[0])-TMath.Pi()/2)/fchain.llnunu_l1_pt[0])>0.4:
                                         nvar2+=1
                                     
 print 'we have ', fchain.GetEntriesFast(), 'entries.'
@@ -53,5 +53,5 @@ print 'lead lepton:  ', nsiglep
 print 'Z window:     ', nZwindow
 print 'Z pt>100:     ', nZpt
 print 'met>100:      ', nmet
-print 'sin(dphi)>1.5:', nvar1
-print 'pt balance:   ', nvar2
+print '|dphi|>1.5:   ', nvar1
+print 'pTbalance>0.4:', nvar2
