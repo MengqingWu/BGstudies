@@ -7,7 +7,7 @@ indir='.'
 #infile = TFile("BulkGravToZZToZlepZinv_narrow_1000.root", "read")
 #tree = infile.Get("tree")
 fchain=TChain("tree")
-samples=InitializePlotter()
+samples=InitializePlotter(indir=indir)
 print samples.zjetsSamples
 
 for sample in samples.zjetsSamples:
