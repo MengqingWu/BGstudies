@@ -10,7 +10,7 @@ Channel=raw_input("Please choose a channel (el or mu): \n")
 Region=raw_input("Please choose a benchmarck Region (SR or VR): \n")
 tag0='ZJstudy'+'_'+Channel+'_'+Region
 outdir='Kin/'
-indir="../../AnalysisRegion_zjets"
+indir="../zjetsSkim/"
 lumi=2.318278305
 
 if not os.path.exists(outdir): os.system('mkdir '+outdir)
@@ -22,10 +22,10 @@ outTag=outdir+'/'+tag
 # ------- sin(Dphi(Z,MET)) = 1.5
 #  B | D
 # +/- 1(met/pt) = 0.4
-var_dic = {1:{'var':'abs(llnunu_deltaPhi-TMath::Pi()/2)', 'nick':'udPhi',
-              'title':'#Delta#Phi_{Z,MET} - #pi/2',
+var_dic = {1:{'var':'abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)', 'nick':'udPhi',
+              'title':'||#Delta#Phi_{Z,MET}| - #pi/2|',
               'par':(16, 0, 1.6)},
-           2:{'var':'(llnunu_l2_pt*(llnunu_deltaPhi-TMath::Pi()/2)/abs(llnunu_deltaPhi-TMath::Pi()/2)/llnunu_l1_pt)', 'nick':'ptRatio_signed',
+           2:{'var':'(llnunu_l2_pt*(abs(llnunu_deltaPhi)-TMath::Pi()/2)/abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)/llnunu_l1_pt)', 'nick':'ptRatio_signed',
               'title':'(+/-)E_{T}^{miss}/p_{T}^{Z}',
               'par':(50, -5, 5)}}
 
@@ -57,7 +57,7 @@ nan = 0
 
 for pcut in preCuts:
     # deltaPhi(Zmumu,MET)
-    hdPhiZmmMet=ZJets.drawTH1('llnunu_deltaPhi'+'_'+pcut,'llnunu_deltaPhi',preCuts[pcut],str(lumi*1000),18,0,3.6,titlex='#Delta#Phi^{Z_{#mu,#mu},MET}',units='',drawStyle="HIST")
+    hdPhiZmmMet=ZJets.drawTH1('llnunu_deltaPhi'+'_'+pcut,'abs(llnunu_deltaPhi)',preCuts[pcut],str(lumi*1000),18,0,3.6,titlex='#Delta#Phi^{Z_{#mu,#mu},MET}',units='',drawStyle="HIST")
     hdPhiZmmMet.GetYaxis().SetTitle("Events")
     h2_var1_var2 = ZJets.drawTH2('h2'+var_dic[1]['nick']+'_'+var_dic[2]['nick']+'_'+pcut,
                                  var_dic[1]['var']+':'+var_dic[2]['var'],
@@ -101,8 +101,8 @@ for key in histo:
     cutTex.insert(0, key+':')
     y=0.95
     for tex in cutTex:
-        if ROOT.TString(tex).Contains("(llnunu_l2_pt*(llnunu_deltaPhi-TMath::Pi()/2)"):
-            tex='#splitline{(llnunu_l2_pt*(llnunu_deltaPhi-TMath::Pi()/2)}{/abs(llnunu_deltaPhi-TMath::Pi()/2)/llnunu_l1_pt)>0.4}'
+        if ROOT.TString(tex).Contains("(llnunu_l2_pt*(abs(llnunu_deltaPhi)-TMath::Pi()/2)"):
+            tex='#splitline{(llnunu_l2_pt*(abs(llnunu_deltaPhi)-TMath::Pi()/2)}{/abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)/llnunu_l1_pt)>0.4}'
         pt.AddText(0.02, y , tex)
         y-=0.065
     pt.Draw()

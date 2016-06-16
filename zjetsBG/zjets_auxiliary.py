@@ -10,10 +10,10 @@ indir="../../AnalysisRegion"
 #lumi=2.318278305
 if not os.path.exists(outdir): os.system('mkdir '+outdir)
 
-var_dic = {1:{'var':'abs(llnunu_deltaPhi-TMath::Pi()/2)', 'nick':'udPhi',
-              'title':'#Delta#Phi_{Z,MET} - #pi/2',
+var_dic = {1:{'var':'abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)', 'nick':'udPhi',
+              'title':'||#Delta#Phi_{Z,MET}| - #pi/2|',
               'par':(16, 0, 1.6)},
-           2:{'var':'(llnunu_l2_pt*(llnunu_deltaPhi-TMath::Pi()/2)/abs(llnunu_deltaPhi-TMath::Pi()/2)/llnunu_l1_pt)', 'nick':'ptRatio_signed',
+           2:{'var':'(llnunu_l2_pt*(abs(llnunu_deltaPhi)-TMath::Pi()/2)/abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)/llnunu_l1_pt)', 'nick':'ptRatio_signed',
               'title':'(+/-)E_{T}^{miss}/p_{T}^{Z}',
               'par':(50, -5, 5)}}
 
