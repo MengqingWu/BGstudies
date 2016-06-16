@@ -147,7 +147,7 @@ class InitializePlotter:
 
         
         # --> Prepare the signal plotters:
-        sigPlotters=[]
+        self.sigPlotters=[]
         self.sigSamples = [
             'BulkGravToZZToZlepZinv_narrow_800', 
             'BulkGravToZZToZlepZinv_narrow_1000', 
@@ -166,14 +166,14 @@ class InitializePlotter:
         }
         if addSig:
             for sample in self.sigSamples:
-                sigPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
-                sigPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
-                sigPlotters[-1].addCorrectionFactor(str(sigXsec[sample]),'tree')
-                sigPlotters[-1].addCorrectionFactor('genWeight','tree')
-                sigPlotters[-1].addCorrectionFactor('puWeight','tree')
-                sigPlotters[-1].addCorrectionFactor('triggersf','tree')
-                sigPlotters[-1].addCorrectionFactor(lepsf,'tree')
-                sigPlotters[-1].setFillProperties(0,ROOT.kWhite)
+                self.sigPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
+                self.sigPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
+                self.sigPlotters[-1].addCorrectionFactor(str(sigXsec[sample]),'tree')
+                self.sigPlotters[-1].addCorrectionFactor('genWeight','tree')
+                self.sigPlotters[-1].addCorrectionFactor('puWeight','tree')
+                self.sigPlotters[-1].addCorrectionFactor('triggersf','tree')
+                self.sigPlotters[-1].addCorrectionFactor(lepsf,'tree')
+                self.sigPlotters[-1].setFillProperties(0,ROOT.kWhite)
         else:
             print "[Info] I do not add Signal samples to plot "
                 
@@ -208,8 +208,8 @@ class InitializePlotter:
         
         if addSig:
             for i in range(len(self.sigSamples)):
-                sigPlotters[i].setLineProperties(2,ROOT.kRed+i,2)
-                self.Stack.addPlotter(sigPlotters[i],self.sigSamples[i],self.sigSampleNames[i],'signal')  
+                self.sigPlotters[i].setLineProperties(2,ROOT.kRed+i,2)
+                self.Stack.addPlotter(self.sigPlotters[i],self.sigSamples[i],self.sigSampleNames[i],'signal')  
 
         self.Stack.setLog(LogY)
         self.Stack.doRatio(doRatio)
