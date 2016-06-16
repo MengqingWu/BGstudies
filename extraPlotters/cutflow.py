@@ -4,24 +4,31 @@ from ROOT import *
 from python.InitializePlotter import InitializePlotter
 
 indir='../zjetsSkim'
-#infile = TFile("BulkGravToZZToZlepZinv_narrow_1000.root", "read")
-#tree = infile.Get("tree")
-fchain=TChain("tree")
 samples=InitializePlotter(indir=indir)
-print samples.zjetsSamples
+outdir='./'
+fout=TFile(outdir+"cutflow.root","recreate")
+test=False
 
-for sample in samples.zjetsSamples:
-    status = fchain.Add(indir+'/'+sample+'.root/tree', 0)
+if test:
+    infile = TFile("BulkGravToZZToZlepZinv_narrow_1000.root", "read")
+    fchain = infile.Get("tree")
+else:
+    fchain=TChain("tree")
+    for sample in samples.zjetsSamples:
+        status = fchain.Add(indir+'/'+sample+'.root/tree', 0)
+        if status<=0: raise RuntimeError, "[cutflow.py] ERROR! Invalid tree added to fchain, please check!"
 
-if status<=0: raise RuntimeError, "[cutflow.py] ERROR! Invalid tree added to fchain, please check!"
-
+#---- Prepare cutflow plots and initialize
 cutflow = TH1F("h_cutflow", "cutflow; cut# ; / event ",10 , 0.,10. )
-h1=TH1F("h1","h1", 10, -2, 2)
+cutflow_w = TH1F("h_cutflow_w", "weighted cutflow; cut# ; / yields ",10 , 0.,10. )
+
 nll=nflags = nsublep = nsiglep = nZwindow = nZpt = nmet = nvar1 = nvar2 =0
 
+#--- Loop:
 for ientry in range(0, fchain.GetEntriesFast()):
     fchain.GetEntry(ientry)
     if ientry%1000==0: print "Entry ",ientry
+    
     if fchain.nllnunu>0:
         nll+=1
         # make sure the met flags are on:
@@ -33,17 +40,23 @@ for ientry in range(0, fchain.GetEntriesFast()):
                 # leading lepton cuts:
                 if (abs(fchain.llnunu_l1_l1_pdgId[0])==13 and (fchain.llnunu_l1_l1_highPtID[0]==1 or fchain.llnunu_l1_l2_highPtID[0]==1) and ((fchain.llnunu_l1_l1_pt[0]>50 and abs(fchain.llnunu_l1_l1_eta[0])<2.1) or (fchain.llnunu_l1_l2_pt[0]>50 and abs(fchain.llnunu_l1_l2_eta[0])<2.1))) or (abs(fchain.llnunu_l1_l1_pdgId[0])==11 and ((fchain.llnunu_l1_l1_pt[0]>115 and abs(fchain.llnunu_l1_l1_eta[0])<2.5) or (fchain.llnunu_l1_l2_pt[0]>115 and abs(fchain.llnunu_l1_l2_eta[0])<2.5))):
                     nsiglep+=1
+                    cutflow.Fill(0.)
                     # Z mass window:
                     if abs(fchain.llnunu_l1_mass[0] - 91.1876)<20.0:
                         nZwindow+=1
+                        cutflow.Fill(1.)
                         if fchain.llnunu_l1_pt[0]>100.0:
                             nZpt+=1
+                            cutflow.Fill(2.)
                             if fchain.llnunu_l2_pt[0]>100.0:
                                 nmet+=1
+                                cutflow.Fill(3.)
                                 if abs(abs(fchain.llnunu_deltaPhi[0]) - TMath.Pi()/2)>1.5:
                                     nvar1+=1
+                                    cutflow.Fill(4.)
                                     if (fchain.llnunu_l2_pt[0]*(abs(fchain.llnunu_deltaPhi[0])-TMath.Pi()/2)/abs(abs(fchain.llnunu_deltaPhi[0])-TMath.Pi()/2)/fchain.llnunu_l1_pt[0])>0.4:
                                         nvar2+=1
+                                        cutflow.Fill(5.)
                                     
 print 'we have ', fchain.GetEntriesFast(), 'entries.'
 print 'llnunu pair:  ', nll
@@ -55,3 +68,9 @@ print 'Z pt>100:     ', nZpt
 print 'met>100:      ', nmet
 print '|dphi|>1.5:   ', nvar1
 print 'pTbalance>0.4:', nvar2
+
+
+#---- Finalize:
+fout.cd()
+cutflow.Write()
+fout.Close()
