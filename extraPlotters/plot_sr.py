@@ -53,7 +53,7 @@ err = OrderedDict()
 nan = 0
 
 cutCanvas = ROOT.TCanvas('c1', 'c1', 600,630)
-cutCanvas.Print(outTag+'_cutList.ps[')
+cutCanvas.Print(outTag+'_cutList.eps[')
 
 for cut in srcuts_dev:
     
@@ -72,8 +72,8 @@ for cut in srcuts_dev:
     cutPT.SetTextSize(0.03)
     cutPT.SetTextAlign(12)
     cutPT.SetTextFont(42)
-    cutTex=['- '+item for item in histo[key][0].split('&&')]
-    cutTex.insert(0, key+':')
+    cutTex=['- '+item for item in srcuts_dev[cut].split('&&')]
+    cutTex.insert(0, cut+':')
     y=0.95
     for tex in cutTex:
         if ROOT.TString(tex).Contains("(llnunu_l2_pt*(llnunu_deltaPhi-TMath::Pi()/2)"):
@@ -81,9 +81,10 @@ for cut in srcuts_dev:
         cutPT.AddText(0.02, y , tex)
         y-=0.065
     cutPT.Draw()
-    cutCanvas.Print(outTag+'.ps')
+    cutCanvas.Print(outTag+'_cutList.eps')
     cutCanvas.Clear()
 
+cutCanvas.Print(outTag+'_cutList.eps]')
     
 print ' -- Yields:    ', yields
 print ' -- Stat. Err.:', err
