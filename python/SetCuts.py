@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+f#!/usr/bin/env python
 
 import ROOT
 import os
@@ -16,8 +16,8 @@ class SetCuts ():
                       "abs(llnunu_l1_mass-91.1876)<20.0",
                       "llnunu_l1_pt>100.0",
                       "llnunu_l2_pt>"+self.met_pt,
-                      "abs(llnunu_deltaPhi-TMath::Pi()/2)>1.5",
-                      "(llnunu_l2_pt*(llnunu_deltaPhi-TMath::Pi()/2)/abs(llnunu_deltaPhi-TMath::Pi()/2)/llnunu_l1_pt)>0.4")
+                      "abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)>1.5",
+                      "(llnunu_l2_pt*(abs(llnunu_deltaPhi)-TMath::Pi()/2)/abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)/llnunu_l1_pt)>0.4")
 
     def GetSRCut(self, N_minus_1=''):
         """ N_minus_1 (from 1 to 5) is to choose which cut to loose to get the N-1 plots  """
@@ -85,8 +85,8 @@ class SetCuts ():
         else:
             cut_var1='1.5'
             cut_var2='0.4' 
-            var1='abs(llnunu_deltaPhi-TMath::Pi()/2)'
-            var2='(llnunu_l2_pt*(llnunu_deltaPhi-TMath::Pi()/2)/abs(llnunu_deltaPhi-TMath::Pi()/2)/llnunu_l1_pt)'
+            var1='abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)'
+            var2='(llnunu_l2_pt*(abs(llnunu_deltaPhi)-TMath::Pi()/2)/abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)/llnunu_l1_pt)'
             
             cuts_a='('+preSelection+'&&abs(llnunu_l1_l1_pdgId)=='+pdgID[channel]+'&&'+var1+'>'+cut_var1+'&&'+var2+'>'+cut_var2+')'
             cuts_b='('+preSelection+'&&abs(llnunu_l1_l1_pdgId)=='+pdgID[channel]+'&&'+var1+'>'+cut_var1+'&&'+var2+'<'+cut_var2+')'
