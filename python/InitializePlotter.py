@@ -10,7 +10,7 @@ class InitializePlotter:
     def __init__(self, indir="../AnalysisRegion",
                  LogY=True,   doRatio=True,
                  addSig=True, addData=True,
-                 doElMu=False):
+                 doElMu=False, sigK=1000):
         
         if doElMu: lepsf='elmununu_l1_l1_lepsf*elmununu_l1_l2_lepsf'
         else: lepsf='llnunu_l1_l1_lepsf*llnunu_l1_l2_lepsf'
@@ -19,9 +19,9 @@ class InitializePlotter:
         zjetsPlotters=[]
         #zjetsSamples = ['DYJetsToLL_M50_HT100to200','DYJetsToLL_M50_HT200to400','DYJetsToLL_M50_HT400to600','DYJetsToLL_M50_HT600toInf']
         #zjetsSamples = ['DYJetsToLL_M50','DYJetsToLL_M50_Ext']
-        zjetsSamples = ['DYJetsToLL_M50_BIG'] # M50_BIG = M50 + M50_Ext
+        self.zjetsSamples = ['DYJetsToLL_M50_BIG'] # M50_BIG = M50 + M50_Ext
 
-        for sample in zjetsSamples:
+        for sample in self.zjetsSamples:
             zjetsPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
             zjetsPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
             #zjetsPlotters[-1].addCorrectionFactor('xsec','tree')
@@ -36,9 +36,9 @@ class InitializePlotter:
 
 
         wwPlotters=[]
-        wwSamples = ['WWTo2L2Nu','WWToLNuQQ','WZTo1L1Nu2Q']
+        self.wwSamples = ['WWTo2L2Nu','WWToLNuQQ','WZTo1L1Nu2Q']
         
-        for sample in wwSamples:
+        for sample in self.wwSamples:
             wwPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
             wwPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
             wwPlotters[-1].addCorrectionFactor('xsec','tree')
@@ -52,11 +52,11 @@ class InitializePlotter:
             
             
         vvPlotters=[]
-        vvSamples = ['WZTo2L2Q','WZTo3LNu',
-                     'ZZTo2L2Nu',
-                     'ZZTo2L2Q','ZZTo4L']
+        self.vvSamples = ['WZTo2L2Q','WZTo3LNu',
+                          'ZZTo2L2Nu',
+                          'ZZTo2L2Q','ZZTo4L']
             
-        for sample in vvSamples:
+        for sample in self.vvSamples:
             vvPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
             vvPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
             vvPlotters[-1].addCorrectionFactor('xsec','tree')
@@ -69,9 +69,9 @@ class InitializePlotter:
         self.VV.setFillProperties(1001,ROOT.kMagenta)
             
         wjetsPlotters=[]
-        wjetsSamples = ['WJetsToLNu']
+        self.wjetsSamples = ['WJetsToLNu']
             
-        for sample in wjetsSamples:
+        for sample in self.wjetsSamples:
             wjetsPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
             wjetsPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
             wjetsPlotters[-1].addCorrectionFactor('xsec','tree')
@@ -84,9 +84,9 @@ class InitializePlotter:
         self.WJets.setFillProperties(1001,ROOT.kBlue-6)
 
         ttPlotters=[]
-        ttSamples = ['TTTo2L2Nu']#,'TTZToLLNuNu','TTWJetsToLNu']
+        self.ttSamples = ['TTTo2L2Nu']#,'TTZToLLNuNu','TTWJetsToLNu']
 
-        for sample in ttSamples:
+        for sample in self.ttSamples:
             ttPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
             ttPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
             ttPlotters[-1].addCorrectionFactor('xsec','tree')
@@ -100,9 +100,9 @@ class InitializePlotter:
 
         # --> define different background sets:
         nonZBGPlotters = []
-        nonZBGSamples = wwSamples + vvSamples + wjetsSamples + ttSamples
+        self.nonZBGSamples = self.wwSamples + self.vvSamples + self.wjetsSamples + self.ttSamples
         
-        for sample in nonZBGSamples:
+        for sample in self.nonZBGSamples:
             nonZBGPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
             nonZBGPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
             nonZBGPlotters[-1].addCorrectionFactor('xsec','tree')
@@ -115,9 +115,9 @@ class InitializePlotter:
         self.NonZBG.setFillProperties(1001,ROOT.kPink+6)
 
         nonResBGPlotters = []
-        nonResBGSamples = wwSamples + wjetsSamples + ttSamples
+        self.nonResBGSamples = self.wwSamples + self.wjetsSamples + self.ttSamples
         
-        for sample in nonResBGSamples:
+        for sample in self.nonResBGSamples:
             nonResBGPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
             nonResBGPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
             nonResBGPlotters[-1].addCorrectionFactor('xsec','tree')
@@ -131,9 +131,9 @@ class InitializePlotter:
 
         
         resBGPlotters = []
-        resBGSamples = zjetsSamples + vvSamples
+        self.resBGSamples = self.zjetsSamples + self.vvSamples
 
-        for sample in resBGSamples:
+        for sample in self.resBGSamples:
             resBGPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
             resBGPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
             resBGPlotters[-1].addCorrectionFactor('xsec','tree')
@@ -148,24 +148,24 @@ class InitializePlotter:
         
         # --> Prepare the signal plotters:
         sigPlotters=[]
-        sigSamples = [
+        self.sigSamples = [
             'BulkGravToZZToZlepZinv_narrow_800', 
             'BulkGravToZZToZlepZinv_narrow_1000', 
             'BulkGravToZZToZlepZinv_narrow_1200', 
         ]
-        k=1000
-        sigSampleNames = [
-            str(k)+' x BulkG-800',
-            str(k)+' x BulkG-1000',
-            str(k)+' x BulkG-1200',
+        sigk=sigK if sigK else 1000
+        self.sigSampleNames = [
+            str(sigk)+' x BulkG-800',
+            str(sigk)+' x BulkG-1000',
+            str(sigk)+' x BulkG-1200',
         ]
         sigXsec = {
-            'BulkGravToZZToZlepZinv_narrow_800'  : 4.42472e-04*k,
-            'BulkGravToZZToZlepZinv_narrow_1000' : 1.33926e-04*k,
-            'BulkGravToZZToZlepZinv_narrow_1200' : 4.76544e-05*k,
+            'BulkGravToZZToZlepZinv_narrow_800'  : 4.42472e-04*sigk,
+            'BulkGravToZZToZlepZinv_narrow_1000' : 1.33926e-04*sigk,
+            'BulkGravToZZToZlepZinv_narrow_1200' : 4.76544e-05*sigk,
         }
         if addSig:
-            for sample in sigSamples:
+            for sample in self.sigSamples:
                 sigPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
                 sigPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
                 sigPlotters[-1].addCorrectionFactor(str(sigXsec[sample]),'tree')
@@ -180,15 +180,15 @@ class InitializePlotter:
         # --> Prepare data plotters:    
         dataPlotters=[]
         if doElMu:
-            dataSamples = ['MuonEG_Run2015C_25ns_16Dec',
+            self.dataSamples = ['MuonEG_Run2015C_25ns_16Dec',
                            'MuonEG_Run2015D_16Dec']
         else: 
-            dataSamples = ['SingleElectron_Run2015C_25ns_16Dec',
+            self.dataSamples = ['SingleElectron_Run2015C_25ns_16Dec',
                            'SingleElectron_Run2015D_16Dec',
                            'SingleMuon_Run2015C_25ns_16Dec',
                            'SingleMuon_Run2015D_16Dec']
         if addData:
-            for sample in dataSamples:
+            for sample in self.dataSamples:
                 dataPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
             
             self.Data = MergedPlotter(dataPlotters)
@@ -207,9 +207,9 @@ class InitializePlotter:
         self.Stack.addPlotter(self.ZJets, "ZJets","Z+Jets", "background")
         
         if addSig:
-            for i in range(len(sigSamples)):
+            for i in range(len(self.sigSamples)):
                 sigPlotters[i].setLineProperties(2,ROOT.kRed+i,2)
-                self.Stack.addPlotter(sigPlotters[i],sigSamples[i],sigSampleNames[i],'signal')  
+                self.Stack.addPlotter(sigPlotters[i],self.sigSamples[i],self.sigSampleNames[i],'signal')  
 
         self.Stack.setLog(LogY)
         self.Stack.doRatio(doRatio)
