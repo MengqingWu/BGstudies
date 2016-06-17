@@ -6,8 +6,7 @@ from  itertools import product
 from python.SimplePlot import *
 from python.abcd import *
 
-#abcd=abcdAnalyzer(indir='./AnalysisRegion_zjets')
-abcd=abcdAnalyzer(indir='../AnalysisRegion',addSig=False)
+abcd=abcdAnalyzer(indir='../zjetsSkim',addSig=False)
 outDir='plots/shape'
 if not os.path.exists(outDir): os.system('mkdir '+outDir)
 pair=[('SR','CRb'), ('CRc','CRd'), ('SR','CRc'), ('CRb','CRd')]

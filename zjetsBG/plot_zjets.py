@@ -8,44 +8,53 @@ from python.InitializePlotter import InitializePlotter
 
 Channel=raw_input("Please choose a channel (el or mu): \n")
 Region=raw_input("Please choose a benchmarck Region (SR or VR): \n")
-#tag0='ZJstudy'+'_'+Channel+'_'+Region
-tag0='ZJstudy'+'_'+Channel+'_'+Region+'_Bulk1000'
-outdir='Kin/'
 indir="../zjetsSkim/"
-lumi=2.318278305
-
+outdir='./plots/Kin/'
 if not os.path.exists(outdir): os.system('mkdir '+outdir)
 
-tag = tag0+'_'+'test'
+lumi=2.318278305
+tag0='ZJstudy'+'_'+Channel+'_'+Region
+#tag0='ZJstudy'+'_'+Channel+'_'+Region+'_Bulk1000'
+zpt_cut, met_cut ='100', '0'
+tag = tag0+'_'+'zpt'+zpt_cut+'met'+met_cut
 outTag=outdir+'/'+tag
 
 #  A | C
 # ------- sin(Dphi(Z,MET)) = 1.5
 #  B | D
 # +/- 1(met/pt) = 0.4
-var_dic = {1:{'var':'abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)', 'nick':'udPhi',
+var_dic = {1:{'var':'abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)',
+              'nick':'udPhi',
               'title':'||#Delta#Phi_{Z,MET}| - #pi/2|',
               'par':(16, 0, 1.6)},
-           2:{'var':'(llnunu_l2_pt*(abs(llnunu_deltaPhi)-TMath::Pi()/2)/abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)/llnunu_l1_pt)', 'nick':'ptRatio_signed',
+           2:{'var':'(llnunu_l2_pt*(abs(llnunu_deltaPhi)-TMath::Pi()/2)/abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)/llnunu_l1_pt)',
+              'nick':'ptRatio_signed',
               'title':'(+/-)E_{T}^{miss}/p_{T}^{Z}',
               'par':(50, -5, 5)}}
 
 ### ----- Initialize (cuts and samples):
 plotter = InitializePlotter(indir,addSig=True, addData=True)
-#ZJets = plotter.ZJets
-ZJets=plotter.sigPlotters[1]
+ZJets = plotter.ZJets
+#ZJets=plotter.sigPlotters[1]
 
 mycuts = SetCuts()
 #tex_dic = mycuts.Tex_dic
 cuts = mycuts.abcdCuts(Channel, Region)
-preSelect = mycuts.abcdCuts(Channel, Region, isPreSelect=True, zpt_cut='0', met_cut='0')
+preSelect = mycuts.abcdCuts(Channel, Region, isPreSelect=True, zpt_cut=zpt_cut, met_cut=met_cut)
 preCuts = OrderedDict({'preSelect':  preSelect,
                        'preSelect_dphiJMet2': preSelect+'&&(dPhi_jetMet_min>0.2)',
                        'preSelect_dphiJMet2a': preSelect+'&&(dPhi_jetMet_min_a>0.2)',
                        'preSelect_dphiJMet2b': preSelect+'&&(dPhi_jetMet_min_b>0.2)',
                        'preSelect_dphiJMet4': preSelect+'&&(dPhi_jetMet_min>0.4)',
                        'preSelect_dphiJMet4a': preSelect+'&&(dPhi_jetMet_min_a>0.4)',
-                       'preSelect_dphiJMet4b': preSelect+'&&(dPhi_jetMet_min_b>0.4)'})
+                       'preSelect_dphiJMet4b': preSelect+'&&(dPhi_jetMet_min_b>0.4)',
+                       'preSelect_dphiJMet2a_plus7': preSelect+'&&(dPhi_jetMet_min_a>0.2)&&(llnunu_l1_pt/llnunu_mta<0.7)',
+                       'preSelect_dphiJMet2a_plus8': preSelect+'&&(dPhi_jetMet_min_a>0.2)&&(llnunu_l1_pt/llnunu_mta<0.8)',
+                       'preSelect_dphiJMet4a_plus7': preSelect+'&&(dPhi_jetMet_min_a>0.4)&&(llnunu_l1_pt/llnunu_mta<0.7)',
+                       'preSelect_dphiJMet4a_plus8': preSelect+'&&(dPhi_jetMet_min_a>0.4)&&(llnunu_l1_pt/llnunu_mta<0.8)',
+                       'preSelect_dphiJMet4b_plus7': preSelect+'&&(dPhi_jetMet_min_b>0.4)&&(llnunu_l1_pt/llnunu_mta<0.7)',
+                       'preSelect_dphiJMet4b_plus8': preSelect+'&&(dPhi_jetMet_min_b>0.4)&&(llnunu_l1_pt/llnunu_mta<0.8)',
+                       })
 for key in cuts:
     print key, cuts[key]
         
@@ -86,10 +95,10 @@ for cut in cuts:
     yields[cut]=h_met.IntegralAndError(0,1+h_met.GetNbinsX(),err[cut])
     # MT:
     h_mt=ZJets.drawTH1('llnunu_mta'+'_'+cut,'llnunu_mta',cuts[cut],str(lumi*1000),60,0,1200,titlex='M_{T}^{ZZ}',units='[GeV]',drawStyle="HIST")
-    h_mt.GetYaxis().SetTitle("/"+str(lumi)+"fb^{-1}")
+    h_mt.GetYaxis().SetTitle("/"+'{:.2f}'.format(lumi)+"fb^{-1}")
     # deltaPhi(jet,MET)
-    hdPhiJetMet=ZJets.drawTH1('dPhi_jetMet_min'+'_'+cut,'dPhi_jetMet_min',cuts[cut],str(lumi*1000),18,0,3.6,titlex='#Delta#Phi^{jet,MET}_{min}',units='',drawStyle="HIST")
-    hdPhiJetMet.GetYaxis().SetTitle("/"+str(lumi)+"fb^{-1}")
+    hdPhiJetMet=ZJets.drawTH1('dPhi_jetMet_min_a'+'_'+cut,'dPhi_jetMet_min_a',cuts[cut],str(lumi*1000),18,0,3.6,titlex='#Delta#Phi^{looseJet,MET}_{min}',units='',drawStyle="HIST")
+    hdPhiJetMet.GetYaxis().SetTitle("/"+'{:.2f}'.format(lumi)+"fb^{-1}")
 
     histo[cut]=(cuts[cut], h_met, h_mt, hdPhiJetMet)
     
