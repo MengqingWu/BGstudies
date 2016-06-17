@@ -70,11 +70,15 @@ class SetCuts ():
     def abcdCuts(self,channel, whichRegion="", isPreSelect=False, zpt_cut='', met_cut=''):
         zpt=zpt_cut if zpt_cut!='' else '100.0'
         met=met_cut if met_cut!='' else self.met_pt
+
+        preSelection='llnunu_l1_pt/llnunu_mta<0.7&&dPhi_jetMet_min_a>0.4&&nllnunu>0&&abs(llnunu_l1_mass-91.1876)<20.0&&llnunu_l1_pt>'
+        preSelection='nllnunu>0&&abs(llnunu_l1_mass-91.1876)<20.0&&llnunu_l1_pt>'
+
         if whichRegion=="": whichRegion=raw_input("[info]' abcdCuts' -> Please choose a benchmarck Region (SR or VR): \n")
         if whichRegion=='SR':
-            preSelection='(nllnunu>0&&abs(llnunu_l1_mass-91.1876)<20.0&&llnunu_l1_pt>'+zpt+'&&llnunu_l2_pt>'+met+')'
+            preSelection='('+preSelection+zpt+'&&llnunu_l2_pt>'+met+')'
         elif whichRegion=='VR':
-            preSelection='(nllnunu>0&&abs(llnunu_l1_mass-91.1876)<20.0&&llnunu_l1_pt>'+zpt+'&&llnunu_l2_pt<'+met+')'
+            preSelection='('+preSelection+zpt+'&&llnunu_l2_pt<'+met+')'
         else:
             print "I do not understand your benchmark Region, should be either 'SR' for MET>"+met+"GeV or 'VR' for MET<"+met+"GeV\n"
             sys.exit(0)
@@ -84,7 +88,7 @@ class SetCuts ():
             cuts='('+preSelection+'&&abs(llnunu_l1_l1_pdgId)=='+pdgID[channel]+')'
         else:
             cut_var1='1.5'
-            cut_var2='0.4' 
+            cut_var2='0.2' 
             var1='abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)'
             var2='(llnunu_l2_pt*(abs(llnunu_deltaPhi)-TMath::Pi()/2)/abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)/llnunu_l1_pt)'
             

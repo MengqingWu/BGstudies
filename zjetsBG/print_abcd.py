@@ -4,11 +4,9 @@ import ROOT, os, sys
 from math import *
 from itertools import combinations, product
 #sys.path.append('/Users/mengqing/work/local_xzz2l2nu/bkgStudies/python')
-from python.TreePlotter import TreePlotter
-from python.MergedPlotter import MergedPlotter
-from python.StackPlotter import StackPlotter
 from python.SimplePlot import *
 from python.SetCuts import SetCuts
+from python.InitializePlotter import InitializePlotter
 
 printfile = open('num_out.txt', 'a')
 
@@ -21,7 +19,7 @@ mycuts=SetCuts()
 
 tag0='ZJstudy'
 outdir='test'
-indir="../../AnalysisRegion"
+indir="../zjetsSkim/"
 lumi=2.318278305
 doprint=True
 
@@ -30,9 +28,10 @@ if not os.path.exists(outdir): os.system('mkdir '+outdir)
 tag = tag0+'_'+'test'
 outTag=outdir+'/'+tag
 
-#  A | C
-# ------- dPhi(Z,MET) = 2.5
-#  B | D
+#  B | A
+# ------- |dphi-pi/2|
+#  D | C
+#  +- met/pt
 tex_dic=mycuts.Tex_dic
 whichregion=raw_input("Please choose a benchmarck Region (SR or VR): \n")
 lswhichregion=[]
@@ -40,47 +39,10 @@ if whichregion=="": lswhichregion=['SR', 'VR']
 else: lswhichregion.append(whichregion)
 
 ### ----- Initialize (samples):
-
-zjetsPlotters=[]
-zjetsSamples = ['DYJetsToLL_M50_BIG'] # M50_BIG = M50 + M50_Ext, 150M evts
-for sample in zjetsSamples:
-    zjetsPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
-    zjetsPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
-    #zjetsPlotters[-1].addCorrectionFactor('xsec','tree')
-    zjetsPlotters[-1].addCorrectionFactor('(1921.8*3)','xsec')
-    zjetsPlotters[-1].addCorrectionFactor('genWeight','tree')
-    zjetsPlotters[-1].addCorrectionFactor('puWeight','tree')
-    zjetsPlotters[-1].addCorrectionFactor('triggersf','tree')
-    zjetsPlotters[-1].addCorrectionFactor('llnunu_l1_l1_lepsf*llnunu_l1_l2_lepsf','tree')
-            
-ZJets = MergedPlotter(zjetsPlotters)
-ZJets.setFillProperties(1001,ROOT.kGreen+2)
-
-dataPlotters=[]
-dataSamples = ['SingleElectron_Run2015C_25ns_16Dec',
-               'SingleElectron_Run2015D_16Dec',
-               'SingleMuon_Run2015C_25ns_16Dec',
-               'SingleMuon_Run2015D_16Dec']
-for sample in dataSamples:
-    dataPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
-Data = MergedPlotter(dataPlotters)
-
-otherBGPlotters=[]
-otherBGSamples=['WZTo2L2Q','WZTo3LNu',
-                 'ZZTo2L2Nu','ZZTo2L2Q','ZZTo4L',
-                 'TTTo2L2Nu',
-                 'WWTo2L2Nu','WWToLNuQQ','WZTo1L1Nu2Q']
-for sample in otherBGSamples:
-    otherBGPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
-    otherBGPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
-    otherBGPlotters[-1].addCorrectionFactor('xsec','tree')
-    otherBGPlotters[-1].addCorrectionFactor('genWeight','tree')
-    otherBGPlotters[-1].addCorrectionFactor('puWeight','tree')
-    otherBGPlotters[-1].addCorrectionFactor('triggersf','tree')
-    otherBGPlotters[-1].addCorrectionFactor('llnunu_l1_l1_lepsf*llnunu_l1_l2_lepsf','tree')
-    
-otherBG = MergedPlotter(otherBGPlotters)
-otherBG.setFillProperties(1001,ROOT.kMagenta)
+plotter = InitializePlotter(indir=indir, addData=True)
+ZJets = plotter.ZJets
+Data = plotter.Data
+otherBG = plotter.NonZBG
 
 ### ----- Execute (plotting):
 comb=[lsChannel, lswhichregion]
