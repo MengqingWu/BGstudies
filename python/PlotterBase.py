@@ -34,6 +34,6 @@ class PlotterBase(object):
     def drawTH3(self,var,cuts,lumi,binsx,minx,maxx,binsy,miny,maxy,binsz,minz,maxz,titlex = "",unitsx = "",titley="",unitsy="", drawStyle = "COLZ"):
         return None
 
-    def drawTH1(self,var,cuts,lumi,bins,min,max,titlex = "",units = "",drawStyle = "HIST"):
+    def drawTH1(self,var,cuts,lumi,bins,min,max,titlex = "",titley="", units = "",drawStyle = "HIST"):
         return None
 

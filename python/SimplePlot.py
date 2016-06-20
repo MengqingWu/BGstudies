@@ -51,7 +51,7 @@ def GetCumulative_dev(inputHist,forward=True, suffix=''):
             igerr2 += inputHist.GetBinError(Bin)*inputHist.GetBinError(Bin)
             hintegrated.SetBinContent(Bin, Sum)
             hintegrated.SetBinError(Bin, TMath.Sqrt(igerr2))
-            print binx, Bin, Sum, TMath.Sqrt(igerr2)
+            #print binx, Bin, Sum, TMath.Sqrt(igerr2)
             
     return hintegrated
     

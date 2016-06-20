@@ -9,8 +9,8 @@ from python.SimplePlot import *
 
 tag0='sf_vs_met'
 tag = tag0+'_'+'test'
-outdir='sfvsMet/'
-indir="../../AnalysisRegion"
+outdir='plots/sfvsMet/'
+indir="../zjetsSkim"
 lumi=2.3182783052
 
 if not os.path.exists(outdir): os.system('mkdir '+outdir)
@@ -31,16 +31,18 @@ channel = raw_input("[info] 'sf_vs_met.py' -> Please choose el/mu channel (el or
 if channel=='':
     channel='mu'
 cuts_met0=setcuts.abcdCuts(channel, 'SR', met_cut='0')
+for i in cuts_met0:
+    print i,' : ', cuts_met0[i]
 
 fout = ROOT.TFile(outdir+tag+"_"+channel+'.root','recreate')
 histo={}
 for key in cuts_met0:
     # MET (data):
-    h_met_dt=plotter_ll.Data.drawTH1('h_met_dt'+key,'llnunu_l2_pt',cuts_met0[key],"1",24,30,150,titlex='E_T^{miss}',units='GeV',drawStyle="HIST")
+    h_met_dt=plotter_ll.Data.drawTH1('h_met_dt'+key,'llnunu_l2_pt',cuts_met0[key],"1",24,30,150,titlex='E_T^{miss}', titley='h_met_dt'+key ,units='GeV',drawStyle="HIST")
     # MET (non-zjets):
-    h_met_nonZ=plotter_ll.NonZBG.drawTH1('h_met_nonZ'+key,'llnunu_l2_pt',cuts_met0[key],str(lumi*1000),24,30,150,titlex='E_T^{miss}',units='GeV',drawStyle="HIST")
+    h_met_nonZ=plotter_ll.NonZBG.drawTH1('h_met_nonZ'+key,'llnunu_l2_pt',cuts_met0[key],str(lumi*1000),24,30,150,titlex='E_T^{miss}', titley='h_met_nonZ'+key, units='GeV',drawStyle="HIST")
     # MET (zjets):
-    h_met=plotter_ll.ZJets.drawTH1('h_met'+key,'llnunu_l2_pt',cuts_met0[key],str(lumi*1000),24,30,150,titlex='E_T^{miss}',units='GeV',drawStyle="HIST")
+    h_met=plotter_ll.ZJets.drawTH1('h_met'+key,'llnunu_l2_pt',cuts_met0[key],str(lumi*1000),24,30,150,titlex='E_T^{miss}', titley='h_met'+key, units='GeV',drawStyle="HIST")
     
     h_met_dt.Add(h_met_nonZ,-1)
     
@@ -71,7 +73,8 @@ h_sfVSmet_bd_dt.Divide(histo['CRd']['h_met_dt'])
 
 ROOT.TH1.AddDirectory(ROOT.kFALSE)
 ROOT.gROOT.ProcessLine('.x tdrstyle.C')
-
+ROOT.gStyle.SetPadBottomMargin(0.2)
+ROOT.gStyle.SetPadLeftMargin(0.15)
     
 ### ----- Finalizing:
 #fout = ROOT.TFile(outdir+tag+"_"+channel+'.root','recreate')
@@ -85,20 +88,21 @@ c1=ROOT.TCanvas(1)
 h_sfVSmet_ac.SetMarkerStyle(20)
 h_sfVSmet_ac.SetMarkerSize(1.0)
 h_sfVSmet_ac.Draw("p")
-c1.SaveAs(outdir+"h_sfVSmet_ac_"+channel+".eps")
+c1.Print(outdir+"/h_sfVSmet_"+channel+".pdf(")
 c1.Clear()
 
 h_sfVSmet_bd_mc.SetMarkerStyle(20)
 h_sfVSmet_bd_mc.SetMarkerSize(1.0)
 h_sfVSmet_bd_mc.Draw("p")
-c1.SaveAs(outdir+"h_sfVSmet_bd_mc_"+channel+".eps")
+h_sfVSmet_bd_mc.GetYaxis().SetRangeUser(-1.0,1.0)
+c1.Print(outdir+"/h_sfVSmet_"+channel+".pdf")
 c1.Clear()
 
 h_sfVSmet_bd_dt.SetMarkerStyle(20)
 h_sfVSmet_bd_dt.SetMarkerSize(1.0)
 h_sfVSmet_bd_dt.Draw("p")
-c1.SaveAs(outdir+"h_sfVSmet_bd_dt_"+channel+".eps")
-
+h_sfVSmet_bd_dt.GetYaxis().SetRangeUser(-1.0,1.0)
+c1.Print(outdir+"/h_sfVSmet_"+channel+".pdf)")
 fout.Print()
 fout.Close()
 

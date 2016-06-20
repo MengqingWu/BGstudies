@@ -15,7 +15,7 @@ class MergedPlotter(PlotterBase):
             plotter.applySmoothing()
 
 
-    def drawTH1(self,name,var,cuts,lumi,bins,min,max,titlex = "",units = "",drawStyle = "HIST"):
+    def drawTH1(self,name,var,cuts,lumi,bins,min,max,titlex = "", titley="", units = "",drawStyle = "HIST"):
         h=None
         for plotter in self.plotters:
             if h is None:
@@ -28,6 +28,7 @@ class MergedPlotter(PlotterBase):
         h.SetFillColor(self.fillcolor)
         h.SetMarkerStyle(self.markerstyle)
         h.GetXaxis().SetTitle(titlex)
+        if titley:      h.GetYaxis().SetTitle(titley)
         if units != '': h.GetXaxis().SetTitle(titlex+ " ("+units+")")
         return h
 

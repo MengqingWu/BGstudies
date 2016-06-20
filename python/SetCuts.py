@@ -17,7 +17,7 @@ class SetCuts ():
                       "llnunu_l1_pt>100.0",
                       "llnunu_l2_pt>"+self.met_pt,
                       "abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)>1.5",
-                      "(llnunu_l2_pt*(abs(llnunu_deltaPhi)-TMath::Pi()/2)/abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)/llnunu_l1_pt)>0.4")
+                      "(llnunu_l2_pt*(abs(llnunu_deltaPhi)-TMath::Pi()/2)/abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)/llnunu_l1_pt)>0.2")
 
     def GetSRCut(self, N_minus_1=''):
         """ N_minus_1 (from 1 to 5) is to choose which cut to loose to get the N-1 plots  """
@@ -71,7 +71,7 @@ class SetCuts ():
         zpt=zpt_cut if zpt_cut!='' else '100.0'
         met=met_cut if met_cut!='' else self.met_pt
 
-        preSelection='llnunu_l1_pt/llnunu_mta<0.7&&dPhi_jetMet_min_a>0.4&&nllnunu>0&&abs(llnunu_l1_mass-91.1876)<20.0&&llnunu_l1_pt>'
+        fakeMetCut='llnunu_l1_pt/llnunu_mta<0.7&&dPhi_jetMet_min_a>0.4'
         preSelection='nllnunu>0&&abs(llnunu_l1_mass-91.1876)<20.0&&llnunu_l1_pt>'
 
         if whichRegion=="": whichRegion=raw_input("[info]' abcdCuts' -> Please choose a benchmarck Region (SR or VR): \n")
@@ -87,8 +87,9 @@ class SetCuts ():
         if isPreSelect:
             cuts='('+preSelection+'&&abs(llnunu_l1_l1_pdgId)=='+pdgID[channel]+')'
         else:
-            cut_var1='1.5'
-            cut_var2='0.2' 
+            preSelection+='&&'+fakeMetCut
+            cut_var1='1.4'
+            cut_var2='0.' 
             var1='abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)'
             var2='(llnunu_l2_pt*(abs(llnunu_deltaPhi)-TMath::Pi()/2)/abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)/llnunu_l1_pt)'
             
