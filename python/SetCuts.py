@@ -12,12 +12,13 @@ class SetCuts ():
         self.met_pt_in=raw_input("[info] 'SetCuts' -> please give the MET cut: (enter to use default MET>100GeV)\n")
         self.met_pt='100' if self.met_pt_in=='' else self.met_pt_in
         # define a cutflow for signal region
-        self.cutflow=("(nllnunu>0)",
-                      "abs(llnunu_l1_mass-91.1876)<20.0",
-                      "llnunu_l1_pt>100.0",
-                      "llnunu_l2_pt>"+self.met_pt,
-                      "abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)>1.5",
-                      "(llnunu_l2_pt*(abs(llnunu_deltaPhi)-TMath::Pi()/2)/abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)/llnunu_l1_pt)>0.2")
+        self.cutflow=("(nllnunu>0)", #0
+                      "abs(llnunu_l1_mass-91.1876)<20.0", #1
+                      "llnunu_l1_pt>100.0", #2
+                      "llnunu_l2_pt>"+self.met_pt, #3
+                      "abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)>1.5", #4
+                      "(llnunu_l2_pt*(abs(llnunu_deltaPhi)-TMath::Pi()/2)/abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)/llnunu_l1_pt)>0.2", #5
+                      "nlep<3")  #6
 
     def GetSRCut(self, N_minus_1=''):
         """ N_minus_1 (from 1 to 5) is to choose which cut to loose to get the N-1 plots  """
@@ -40,6 +41,7 @@ class SetCuts ():
         zpt+=zpt_cut if zpt_cut!='' else '100.0'
         met+=met_cut if met_cut!='' else self.met_pt
                  
+        #astr = "({0}&&{4}&&{5}&&{6})"
         astr = "({0}&&{4}&&{5})"
         cuts_tmp = astr.format(*self.cutflow)
         cuts_tmp+='&&'+zpt+'&&'+met
@@ -55,15 +57,16 @@ class SetCuts ():
             cuts=cuts_tmp.Data()
         else:  cuts=cuts_tmp
         
-        print cuts
+        #print cuts
         return cuts
 
     def GetAlphaCuts(self, zpt_cut='', met_cut=''):
-        
-        cuts = {'llin' : self.alphaCuts(isll=True, Zmass='in', zpt_cut=zpt_cut, met_cut=met_cut),
-                'llout': self.alphaCuts(isll=True, Zmass='out', zpt_cut=zpt_cut, met_cut=met_cut),
-                'euin' : self.alphaCuts(isll=False, Zmass='in', zpt_cut=zpt_cut, met_cut=met_cut),
-                'euout': self.alphaCuts(isll=False, Zmass='out', zpt_cut=zpt_cut, met_cut=met_cut)}
+        """cuts[<reg>][<zmass>]  """
+        cuts = {'ll' : { 'in': self.alphaCuts(isll=True, Zmass='in', zpt_cut=zpt_cut, met_cut=met_cut),
+                         'out': self.alphaCuts(isll=True, Zmass='out', zpt_cut=zpt_cut, met_cut=met_cut)},
+                'emu':{ 'in' : self.alphaCuts(isll=False, Zmass='in', zpt_cut=zpt_cut, met_cut=met_cut),
+                        'out': self.alphaCuts(isll=False, Zmass='out', zpt_cut=zpt_cut, met_cut=met_cut)}
+            }
         #print cuts
         return cuts
     

@@ -3,7 +3,7 @@
 import ROOT, os, sys
 from math import *
 from itertools import combinations, product
-#sys.path.append('/Users/mengqing/work/local_xzz2l2nu/bkgStudies/python')
+
 from python.SimplePlot import *
 from python.SetCuts import SetCuts
 from python.InitializePlotter import InitializePlotter
