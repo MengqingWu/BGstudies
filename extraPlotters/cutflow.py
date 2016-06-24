@@ -7,10 +7,11 @@ indir='../zjetsSkim'
 samples=InitializePlotter(indir=indir)
 outdir='./'
 fout=TFile(outdir+"cutflow.root","recreate")
+outtxt = open('cutflow_out.txt', 'a')
 test = True
 fchain=TChain("tree")
 
-if test:  sampledir=["ZZTo4L"] #BulkGravToZZToZlepZinv_narrow_1000
+if test:  sampledir=["BulkGravToZZToZlepZinv_narrow_1000"] # ZZTo4L
 else:  sampledir=samples.zjetsSamples     
 
 for sample in samples.zjetsSamples:
@@ -41,7 +42,7 @@ for ientry in range(0, fchain.GetEntriesFast()):
             # make sure subleading lepton cuts applied:
             if  (abs(fchain.llnunu_l1_l1_pdgId[0])==13 and fchain.llnunu_l1_l1_pt[0]>20 and abs(fchain.llnunu_l1_l1_eta[0])<2.4 and fchain.llnunu_l1_l2_pt[0]>20 and abs(fchain.llnunu_l1_l2_eta[0])<2.4) or (abs(fchain.llnunu_l1_l1_pdgId[0])==11 and fchain.llnunu_l1_l1_pt[0]>35 and abs(fchain.llnunu_l1_l1_eta[0])<2.5 and fchain.llnunu_l1_l2_pt[0]>35 and abs(fchain.llnunu_l1_l2_eta[0])<2.5):
                 nsublep+=1
-                
+
                 # leading lepton cuts:
                 if (abs(fchain.llnunu_l1_l1_pdgId[0])==13 and (fchain.llnunu_l1_l1_highPtID[0]==1 or fchain.llnunu_l1_l2_highPtID[0]==1) and ((fchain.llnunu_l1_l1_pt[0]>50 and abs(fchain.llnunu_l1_l1_eta[0])<2.1) or (fchain.llnunu_l1_l2_pt[0]>50 and abs(fchain.llnunu_l1_l2_eta[0])<2.1))) or (abs(fchain.llnunu_l1_l1_pdgId[0])==11 and ((fchain.llnunu_l1_l1_pt[0]>115 and abs(fchain.llnunu_l1_l1_eta[0])<2.5) or (fchain.llnunu_l1_l2_pt[0]>115 and abs(fchain.llnunu_l1_l2_eta[0])<2.5))):
                     nsiglep+=1
@@ -60,7 +61,7 @@ for ientry in range(0, fchain.GetEntriesFast()):
                                 nmet+=1
                                 cutflow.Fill(3.)
 
-                                if fchain.dPhi_jetMet_min_a>0.4:
+                                if (fchain.njet_corr>0&&fchain.dPhi_jetMet_min_a>0.4)||(fchain.njet_corr==0):
                                     ndjetfakeMet+=1
                                     cutflow.Fill(4.)
 
@@ -84,19 +85,19 @@ for ientry in range(0, fchain.GetEntriesFast()):
                                                             else: print '[info] evt==', fchain.evt 
                                                 if not toVeto: nlepVeto+=1; cutflow.Fill(8.)
                                     
-print 'we have ', fchain.GetEntriesFast(), 'entries.'
-print 'llnunu pair:   ', nll
-print 'MET Flags:     ', nflags 
-print 'sub lepton:    ', nsublep
-print 'lead lepton:   ', nsiglep #1
-print 'Z window:      ', nZwindow #2
-print 'Z pt>100:      ', nZpt #3
-print 'met>100:       ', nmet #4
-print 'dphi(j,met)>.4:', ndjetfakeMet #5
-print 'Zpt/mT<0.7:    ', nlepfakeMet #6
-print '|dphi-pi/2|>1.5:', nvar1 #7
-print 'pTbalance>0.2: ', nvar2 #8
-print '3rd lepton veto:',nlepVeto #9
+outtxt.Write('we have ', fchain.GetEntriesFast(), 'entries.')
+outtxt.Write('llnunu pair:   ', nll)
+outtxt.Write('MET Flags:     ', nflags )
+outtxt.Write('sub lepton:    ', nsublep)
+outtxt.Write('lead lepton:   ', nsiglep) #1
+outtxt.Write('Z window:      ', nZwindow) #2
+outtxt.Write('Z pt>100:      ', nZpt) #3
+outtxt.Write('met>100:       ', nmet) #4
+outtxt.Write('dphi(j,met)>.4:', ndjetfakeMet) #5
+outtxt.Write('Zpt/mT<0.7:    ', nlepfakeMet) #6
+outtxt.Write('|dphi-pi/2|>1.5:', nvar1) #7
+outtxt.Write('pTbalance>0.2: ', nvar2) #8
+outtxt.Write('3rd lepton veto:',nlepVeto) #9
 
 #---- Finalize:
 fout.cd()
