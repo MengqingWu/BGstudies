@@ -12,8 +12,12 @@ class InitializePlotter:
                  addSig=True, addData=True,
                  doElMu=False, sigK=1000):
         
-        if doElMu: lepsf='elmununu_l1_l1_lepsf*elmununu_l1_l2_lepsf'
-        else: lepsf='llnunu_l1_l1_lepsf*llnunu_l1_l2_lepsf'
+        if doElMu:
+            lepsf='elmununu_l1_l1_lepsf*elmununu_l1_l2_lepsf'
+            triggersf='triggersf_elmu'
+        else:
+            lepsf='llnunu_l1_l1_lepsf*llnunu_l1_l2_lepsf'
+            triggersf='triggersf'
         
         #######----------- Prepare samples to plot:
         zjetsPlotters=[]
@@ -28,7 +32,7 @@ class InitializePlotter:
             zjetsPlotters[-1].addCorrectionFactor('(1921.8*3)','xsec')
             zjetsPlotters[-1].addCorrectionFactor('genWeight','tree')
             zjetsPlotters[-1].addCorrectionFactor('puWeight','tree')
-            zjetsPlotters[-1].addCorrectionFactor('triggersf','tree')
+            zjetsPlotters[-1].addCorrectionFactor(triggersf,'tree')
             zjetsPlotters[-1].addCorrectionFactor(lepsf,'tree')
 
         self.ZJets = MergedPlotter(zjetsPlotters)
@@ -44,7 +48,7 @@ class InitializePlotter:
             wwPlotters[-1].addCorrectionFactor('xsec','tree')
             wwPlotters[-1].addCorrectionFactor('genWeight','tree')
             wwPlotters[-1].addCorrectionFactor('puWeight','tree')
-            wwPlotters[-1].addCorrectionFactor('triggersf','tree')
+            wwPlotters[-1].addCorrectionFactor(triggersf,'tree')
             wwPlotters[-1].addCorrectionFactor(lepsf,'tree')
             
         self.WW = MergedPlotter(wwPlotters)
@@ -62,7 +66,7 @@ class InitializePlotter:
             vvPlotters[-1].addCorrectionFactor('xsec','tree')
             vvPlotters[-1].addCorrectionFactor('genWeight','tree')
             vvPlotters[-1].addCorrectionFactor('puWeight','tree')
-            vvPlotters[-1].addCorrectionFactor('triggersf','tree')
+            vvPlotters[-1].addCorrectionFactor(triggersf,'tree')
             vvPlotters[-1].addCorrectionFactor(lepsf,'tree')
         
         self.VV = MergedPlotter(vvPlotters)
@@ -77,7 +81,7 @@ class InitializePlotter:
             wjetsPlotters[-1].addCorrectionFactor('xsec','tree')
             wjetsPlotters[-1].addCorrectionFactor('genWeight','tree')
             wjetsPlotters[-1].addCorrectionFactor('puWeight','tree')
-            wjetsPlotters[-1].addCorrectionFactor('triggersf','tree')
+            wjetsPlotters[-1].addCorrectionFactor(triggersf,'tree')
             wjetsPlotters[-1].addCorrectionFactor(lepsf,'tree')
 
         self.WJets = MergedPlotter(wjetsPlotters)
@@ -92,7 +96,7 @@ class InitializePlotter:
             ttPlotters[-1].addCorrectionFactor('xsec','tree')
             ttPlotters[-1].addCorrectionFactor('genWeight','tree')
             ttPlotters[-1].addCorrectionFactor('puWeight','tree')
-            ttPlotters[-1].addCorrectionFactor('triggersf','tree')
+            ttPlotters[-1].addCorrectionFactor(triggersf,'tree')
             ttPlotters[-1].addCorrectionFactor(lepsf,'tree')
             
         self.TT = MergedPlotter(ttPlotters)
@@ -108,7 +112,7 @@ class InitializePlotter:
             nonZBGPlotters[-1].addCorrectionFactor('xsec','tree')
             nonZBGPlotters[-1].addCorrectionFactor('genWeight','tree')
             nonZBGPlotters[-1].addCorrectionFactor('puWeight','tree')
-            nonZBGPlotters[-1].addCorrectionFactor('triggersf','tree')
+            nonZBGPlotters[-1].addCorrectionFactor(triggersf,'tree')
             nonZBGPlotters[-1].addCorrectionFactor(lepsf,'tree')
 
         self.NonZBG = MergedPlotter(nonZBGPlotters)
@@ -123,7 +127,7 @@ class InitializePlotter:
             nonResBGPlotters[-1].addCorrectionFactor('xsec','tree')
             nonResBGPlotters[-1].addCorrectionFactor('genWeight','tree')
             nonResBGPlotters[-1].addCorrectionFactor('puWeight','tree')
-            nonResBGPlotters[-1].addCorrectionFactor('triggersf','tree')
+            nonResBGPlotters[-1].addCorrectionFactor(triggersf,'tree')
             nonResBGPlotters[-1].addCorrectionFactor(lepsf,'tree')
 
         self.NonResBG = MergedPlotter(nonResBGPlotters)
@@ -139,7 +143,7 @@ class InitializePlotter:
             resBGPlotters[-1].addCorrectionFactor('xsec','tree')
             resBGPlotters[-1].addCorrectionFactor('genWeight','tree')
             resBGPlotters[-1].addCorrectionFactor('puWeight','tree')
-            resBGPlotters[-1].addCorrectionFactor('triggersf','tree')
+            resBGPlotters[-1].addCorrectionFactor(triggersf,'tree')
             resBGPlotters[-1].addCorrectionFactor(lepsf,'tree')
 
         self.ResBG = MergedPlotter(resBGPlotters)
@@ -171,7 +175,7 @@ class InitializePlotter:
                 self.sigPlotters[-1].addCorrectionFactor(str(sigXsec[sample]),'tree')
                 self.sigPlotters[-1].addCorrectionFactor('genWeight','tree')
                 self.sigPlotters[-1].addCorrectionFactor('puWeight','tree')
-                self.sigPlotters[-1].addCorrectionFactor('triggersf','tree')
+                self.sigPlotters[-1].addCorrectionFactor(triggersf,'tree')
                 self.sigPlotters[-1].addCorrectionFactor(lepsf,'tree')
                 self.sigPlotters[-1].setFillProperties(0,ROOT.kWhite)
         else:

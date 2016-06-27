@@ -41,8 +41,8 @@ class SetCuts ():
         zpt+=zpt_cut if zpt_cut!='' else '100.0'
         met+=met_cut if met_cut!='' else self.met_pt
                  
-        #astr = "({0}&&{4}&&{5}&&{6})"
-        astr = "({0}&&{4}&&{5})"
+        astr = "({0}&&{4}&&{5}&&{6})"
+        #astr = "({0}&&{4}&&{5})"
         cuts_tmp = astr.format(*self.cutflow)
         cuts_tmp+='&&'+zpt+'&&'+met
 
