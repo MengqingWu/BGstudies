@@ -13,9 +13,10 @@ outtxt = open('num_out.txt', 'a')
 #Channel=raw_input("Please choose a channel (el or mu): \n")
 tag0='nonResBkg'
 outdir='test'
-indir="../../AnalysisRegion_nonRes"
+indir="./nonResSkim"
 lumi=2.318278305
-zpt_cut, met_cut= '100', '100'
+logy=True
+zpt_cut, met_cut= '0', '0'
 if not os.path.exists(outdir): os.system('mkdir '+outdir)
 
 tag = tag0+'_'+'test'
@@ -27,8 +28,8 @@ outTag=outdir+'/'+tag
 #  M_in (70,110)
 
 ### ----- Initialize (samples):
-plotter_ll=InitializePlotter(indir, addSig=False, addData=True,doRatio=False)
-plotter_eu=InitializePlotter(indir, addSig=False, addData=True,doRatio=False, doElMu=True)
+plotter_ll=InitializePlotter(indir, addSig=False, addData=True,doRatio=False, LogY=logy)
+plotter_eu=InitializePlotter(indir, addSig=False, addData=True,doRatio=False, doElMu=True, LogY=logy)
 setcuts=SetCuts()
 cuts_inclusive={'ll':  setcuts.alphaCuts(Zmass='inclusive', zpt_cut=zpt_cut, met_cut=met_cut),
                 'emu': setcuts.alphaCuts(isll=False, Zmass='inclusive', zpt_cut=zpt_cut, met_cut=met_cut)}
@@ -42,6 +43,7 @@ ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
 
 ### ----- Execute (plotting):
 
+# Inclusive stack plot:
 plotter_ll.Stack.drawStack('llnunu_l1_mass', cuts_inclusive['ll'], str(lumi*1000), 10, 0.0, 200.0, titlex = "M_{Z}^{ll}", units = "GeV",
                        output=tag+'_mll',outDir=outdir, separateSignal=True,
                        drawtex="", channel="")
@@ -49,6 +51,7 @@ plotter_eu.Stack.drawStack('elmununu_l1_mass', cuts_inclusive['emu'], str(lumi*1
                         output=tag+'_melmu',outDir=outdir, separateSignal=True,
                         drawtex="", channel="")
 
+# Make numbers:
 histo=OrderedDict() # will have histo[<reg><zmass>]=[cuts, h1, h2...]
 yields=OrderedDict() # will have yields[<reg><zmass>][<memeber>]=yield
 err=OrderedDict() # will have yields[<reg><zmass>][<memeber>]=err
