@@ -103,49 +103,19 @@ class InitializePlotter:
         self.TT.setFillProperties(1001,ROOT.kAzure-9)
 
         # --> define different background sets:
-        nonZBGPlotters = []
+        nonZBGPlotters = wwPlotters + vvPlotters + wjetsPlotters + ttPlotters[]
         self.nonZBGSamples = self.wwSamples + self.vvSamples + self.wjetsSamples + self.ttSamples
-        
-        for sample in self.nonZBGSamples:
-            nonZBGPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
-            nonZBGPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
-            nonZBGPlotters[-1].addCorrectionFactor('xsec','tree')
-            nonZBGPlotters[-1].addCorrectionFactor('genWeight','tree')
-            nonZBGPlotters[-1].addCorrectionFactor('puWeight','tree')
-            nonZBGPlotters[-1].addCorrectionFactor(triggersf,'tree')
-            nonZBGPlotters[-1].addCorrectionFactor(lepsf,'tree')
-
         self.NonZBG = MergedPlotter(nonZBGPlotters)
         self.NonZBG.setFillProperties(1001,ROOT.kPink+6)
 
-        nonResBGPlotters = []
+        nonResBGPlotters =  wwPlotters + wjetsPlotters + ttPlotters
         self.nonResBGSamples = self.wwSamples + self.wjetsSamples + self.ttSamples
-        
-        for sample in self.nonResBGSamples:
-            nonResBGPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
-            nonResBGPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
-            nonResBGPlotters[-1].addCorrectionFactor('xsec','tree')
-            nonResBGPlotters[-1].addCorrectionFactor('genWeight','tree')
-            nonResBGPlotters[-1].addCorrectionFactor('puWeight','tree')
-            nonResBGPlotters[-1].addCorrectionFactor(triggersf,'tree')
-            nonResBGPlotters[-1].addCorrectionFactor(lepsf,'tree')
-
         self.NonResBG = MergedPlotter(nonResBGPlotters)
         self.NonResBG.setFillProperties(1001,ROOT.kYellow)
 
         
-        resBGPlotters = []
+        resBGPlotters = zjetsPlotters + vvPlotters
         self.resBGSamples = self.zjetsSamples + self.vvSamples
-
-        for sample in self.resBGSamples:
-            resBGPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
-            resBGPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
-            resBGPlotters[-1].addCorrectionFactor('xsec','tree')
-            resBGPlotters[-1].addCorrectionFactor('genWeight','tree')
-            resBGPlotters[-1].addCorrectionFactor('puWeight','tree')
-            resBGPlotters[-1].addCorrectionFactor(triggersf,'tree')
-            resBGPlotters[-1].addCorrectionFactor(lepsf,'tree')
-
         self.ResBG = MergedPlotter(resBGPlotters)
         self.ResBG.setFillProperties(1001,ROOT.kRed)
 

@@ -14,7 +14,14 @@ def GetError(A, B, a=0., b=0.):
     error=math.sqrt((a/B)**2+(b*A/B**2)**2)
     return error
 
-def GetCumulative_dev(inputHist,forward=True, suffix=''):
+def myIntegralAndError(h1, x1, x2, error):
+    '''h1 is TH1, x1 x2 refers to the bin content, error is ROOT.Double(0.0),
+    NB: bin is filled as [x1,x2), please choose correctly the x2'''
+    binx1 = h1.GetXaxis().FindBin(x1)
+    binx2 = h1.GetXaxis().FindBin(x2)
+    return h1.IntegralAndError(binx1, binx2, error)
+                
+def GetCumulativeAndError(inputHist,forward=True, suffix=''):
     """ Derived from the root TH1::GetCumulative() function
     taking into consider of underflow and overflow bins;
     adding errorbar tranfer.

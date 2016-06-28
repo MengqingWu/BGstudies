@@ -49,12 +49,12 @@ yields=OrderedDict() # will have yields[<reg><zmass>][<memeber>]=yield
 err=OrderedDict() # will have yields[<reg><zmass>][<memeber>]=err
 nbins, xmin, xmax=40, 0.0, 200.0
 
-def myIntegralAndError(h1, x1, x2, error):
-    '''h1 is TH1, x1 x2 refers to the bin content, error is ROOT.Double(0.0),
-    NB: bin is filled as [x1,x2), please choose correctly the x2'''
-    binx1 = h1.GetXaxis().FindBin(x1)
-    binx2 = h1.GetXaxis().FindBin(x2)
-    return h1.IntegralAndError(binx1, binx2, error)
+# def myIntegralAndError(h1, x1, x2, error):
+#     '''h1 is TH1, x1 x2 refers to the bin content, error is ROOT.Double(0.0),
+#     NB: bin is filled as [x1,x2), please choose correctly the x2'''
+#     binx1 = h1.GetXaxis().FindBin(x1)
+#     binx2 = h1.GetXaxis().FindBin(x2)
+#     return h1.IntegralAndError(binx1, binx2, error)
 
 ### ----- Execute (plotting):
 
