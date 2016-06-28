@@ -51,10 +51,10 @@ for key in cuts_met0:
     h_met_nonZ.Write()
     h_met.Write()
 
-    histo[key]={'h_met_dt':GetCumulative_dev(h_met_dt,forward=False,suffix='cumulative'),
+    histo[key]={'h_met_dt':GetCumulativeAndError(h_met_dt,forward=False,suffix='cumulative'),
                 #'h_met_dt':h_met_dt.GetCumulative(ROOT.kFALSE),
                 #'h_met_nonZ':h_met_nonZ.GetCumulative(),
-                'h_met':GetCumulative_dev(h_met,forward=False,suffix='cumulative')}
+                'h_met':GetCumulativeAndError(h_met,forward=False,suffix='cumulative')}
     for ihist in histo[key]: 
         histo[key][ihist].Write()
     

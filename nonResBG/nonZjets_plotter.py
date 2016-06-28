@@ -1,19 +1,22 @@
 #!/usr/bin/env python
 
 import ROOT
-import os
+import os,copy
 from math import *
 from collections import OrderedDict
 from python.SetCuts import SetCuts
 from python.InitializePlotter import InitializePlotter
 from python.HistPrinter import mergePrinter
+from python.SimplePlot import *
 
 outtxt = open('num_out.txt', 'a')
+doshapeCorr=True #False
+whichdt='dt_sub_corr' if doshapeCorr else 'dt_sub'
 
 #Channel=raw_input("Please choose a channel (el or mu): \n")
 tag0='nonResBkg'
 outdir='test'
-indir="./nonResSkim"
+indir="./nonResSkim_v2"
 lumi=2.318278305
 logy=True
 zpt_cut, met_cut= '0', '0'
@@ -28,60 +31,91 @@ outTag=outdir+'/'+tag
 #  M_in (70,110)
 
 ### ----- Initialize (samples):
-plotter_ll=InitializePlotter(indir, addSig=False, addData=True,doRatio=False, LogY=logy)
-plotter_eu=InitializePlotter(indir, addSig=False, addData=True,doRatio=False, doElMu=True, LogY=logy)
+plotter_ll=InitializePlotter(indir, addSig=False, addData=True,doRatio=True, LogY=logy)
+plotter_eu=InitializePlotter(indir, addSig=False, addData=True,doRatio=True, doElMu=True, LogY=logy)
 setcuts=SetCuts()
-cuts_inclusive={'ll':  setcuts.alphaCuts(Zmass='inclusive', zpt_cut=zpt_cut, met_cut=met_cut),
-                'emu': setcuts.alphaCuts(isll=False, Zmass='inclusive', zpt_cut=zpt_cut, met_cut=met_cut)}
+cuts=setcuts.GetAlphaCuts(zpt_cut=zpt_cut, met_cut=met_cut)
 
 outtxt.write( '\n'+ '*'*20+'\n')
-for cut_inclu in cuts_inclusive:
-    outtxt.write(cut_inclu+" : "+cuts_inclusive[cut_inclu]+'\n'+'-'*20+'\n')
-cuts=setcuts.GetAlphaCuts(zpt_cut=zpt_cut, met_cut=met_cut)
+for reg in cuts:
+    outtxt.write(reg+" inclusive : "+cuts[reg]['inclusive']+'\n'+'-'*20+'\n')
 
 ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
 
 ### ----- Execute (plotting):
 
 # Inclusive stack plot:
-plotter_ll.Stack.drawStack('llnunu_l1_mass', cuts_inclusive['ll'], str(lumi*1000), 10, 0.0, 200.0, titlex = "M_{Z}^{ll}", units = "GeV",
-                       output=tag+'_mll',outDir=outdir, separateSignal=True,
-                       drawtex="", channel="")
-plotter_eu.Stack.drawStack('elmununu_l1_mass', cuts_inclusive['emu'], str(lumi*1000), 10, 0.0, 200.0, titlex = "M_{Z}^{e#mu}", units = "GeV",
-                        output=tag+'_melmu',outDir=outdir, separateSignal=True,
-                        drawtex="", channel="")
+# plotter_ll.Stack.drawStack('llnunu_l1_mass', cuts['ll']['inclusive'], str(lumi*1000), 20, 0.0, 200.0, titlex = "M_{Z}^{ll}", units = "GeV",
+#                            output=tag+'_mll',outDir=outdir, separateSignal=True,
+#                            drawtex="", channel="")
+# plotter_eu.Stack.drawStack('elmununu_l1_mass', cuts['emu']['inclusive'], str(lumi*1000), 20, 0.0, 200.0, titlex = "M_{Z}^{e#mu}", units = "GeV",
+#                            output=tag+'_melmu',outDir=outdir, separateSignal=True,
+#                            drawtex="", channel="")
+# htest=plotter_ll.ZJets.drawTH1('llnunu_l1_mass', 'llnunu_l1_mass', cuts['ll']['inclusive'], str(lumi*1000), 20, 0.0, 200.0, titlex = "M_{Z}^{ll}", units = "GeV" )
+# fout=ROOT.TFile("test.root","recreate")
+# htest.Write()
+# fout.Close()
 
 # Make numbers:
-histo=OrderedDict() # will have histo[<reg><zmass>]=[cuts, h1, h2...]
-yields=OrderedDict() # will have yields[<reg><zmass>][<memeber>]=yield
-err=OrderedDict() # will have yields[<reg><zmass>][<memeber>]=err
-var_dic=OrderedDict({'emu': ['elmununu_l1_mass', (10, 0.0, 200.0)],
-                     'll': ['llnunu_l1_mass', (10, 0.0, 200.0)]}) # in format: var_dic[<reg>]=[<var>, (nbins, xmin, xmax)]
+histo=OrderedDict() # will have histo[<reg>][<member>]=h1
+yields=OrderedDict() # will have yields[<reg><zmass>][<member>]=yield
+err=OrderedDict() # will have yields[<reg><zmass>][<member>]=err
+var_dic=OrderedDict({'emu': ['elmununu_l1_mass', (40, 0.0, 200.0)],
+                     'll': ['llnunu_l1_mass', (40, 0.0, 200.0)]}) # in format: var_dic[<reg>]=[<var>, (nbins, xmin, xmax)]
 members={'ll': {'nonres': plotter_ll.NonResBG,
                 'res': plotter_ll.ResBG,
                 'dt': plotter_ll.Data},
          'emu': {'nonres': plotter_eu.NonResBG,
                'res': plotter_eu.ResBG,
                'dt': plotter_eu.Data}
-         } # in format: memebers[<reg>][<mem>]=plotter
+         } # in format: members[<reg>][<mem>]=plotter
 
 for reg in cuts: #  'll' or 'emu'
-    for zmass in cuts[reg]: # 'in' or 'out'
-        histo[reg+zmass] = [cuts[reg][zmass],] # save the cut tex
-        err[reg+zmass] = OrderedDict()
-        yields[reg+zmass] = OrderedDict()        
-        for mem in members[reg]: # loop 'nonres', 'res' and 'dt'
-            lumi_str='1' if mem=='dt' else str(lumi*1000)
-            h_tmp= members[reg][mem].drawTH1(var_dic[reg][0]+'_'+mem+'_'+reg+'_'+zmass,
-                                             var_dic[reg][0], cuts[reg][zmass],
-                                             lumi_str, var_dic[reg][1][0], var_dic[reg][1][1], var_dic[reg][1][2],
-                                             titlex='M_{Z}^{e#mu}',units='GeV', drawStyle="HIST")
-            histo[reg+zmass].append(h_tmp)
-            err[reg+zmass][mem] = ROOT.Double(0.0)
-            yields[reg+zmass][mem] = h_tmp.IntegralAndError(0, 1+h_tmp.GetNbinsX(), err[reg+zmass][mem])
+    histo[reg] = OrderedDict()
+    for mem in members[reg]: # loop 'nonres', 'res' and 'dt'
+        lumi_str='1' if mem=='dt' else str(lumi*1000)
+        h_tmp= members[reg][mem].drawTH1(var_dic[reg][0]+'_'+mem+'_'+reg+'_inclusive',
+                                         var_dic[reg][0], cuts[reg]['inclusive'],
+                                         lumi_str, var_dic[reg][1][0], var_dic[reg][1][1], var_dic[reg][1][2],
+                                         titlex='M_{Z}^{e#mu}',units='GeV', drawStyle="HIST")
+        histo[reg][mem]=h_tmp
+
+    h_dt_sub=copy.deepcopy(histo[reg]['dt'])
+    h_dt_sub.Add(histo[reg]['res'],-1)
+    histo[reg]['dt_sub']=h_dt_sub
+
+# scale the Meu shape using MC to account for selection efficiency diffed per event:
+h_ll_shape=copy.deepcopy(histo['ll']['nonres'])
+h_ll_shape.Scale(h_ll_shape.Integral(0, 1+h_ll_shape.GetNbinsX())) # normalized to 1
+h_emu_shape=copy.deepcopy(histo['emu']['nonres'])
+h_emu_shape.Scale(h_emu_shape.Integral(0, 1+h_emu_shape.GetNbinsX()))  # normalized to 1
+
+h_ll_shape.Divide(h_emu_shape)
+h_dt_corr=copy.deepcopy(histo['emu']['dt_sub'])
+h_dt_corr.Multiply(h_ll_shape)
+histo['emu']['dt_sub_corr']=h_dt_corr
+
+# compute yields/err for the in/out regions:
+xRange={'out':(35,65,115,180), 'in':(70,110)}
+for Reg in histo:
+    for zmass in xRange:
+        yields[Reg+zmass]=OrderedDict()
+        err[Reg+zmass]=OrderedDict()
+        for Mem in histo[Reg]:
+            if len(xRange[zmass])>2:
+                err1,err2=ROOT.Double(0.0),ROOT.Double(0.0)
+                yield1 = myIntegralAndError(histo[Reg][Mem],xRange[zmass][0],xRange[zmass][1]-1,err1)
+                yield2 = myIntegralAndError(histo[Reg][Mem],xRange[zmass][2],xRange[zmass][3]-1,err2)
+                yields[Reg+zmass][Mem]=yield1+yield2
+                err[Reg+zmass][Mem]=math.sqrt(err1**2+err2**2)
+                
+            else:
+                err0=ROOT.Double(0.0)
+                yields[Reg+zmass][Mem]=myIntegralAndError(histo[Reg][Mem],xRange[zmass][0],xRange[zmass][1]-1,err0)
+                err[Reg+zmass][Mem]= err0
             
 ### ----- Finalizing:
-mergePrinter(histo=histo, outTag=outTag+'_all')
+#mergePrinter(histo=histo, outTag=outTag+'_all')
 
 outtxt.write('\n'+'*'*20+'\n')
 for key in yields:
@@ -90,14 +124,13 @@ for key in yields:
         outtxt.write("%s, %s: yield = %.2f +- %.2f \n" % (key, x, yields[key][x], err[key][x]))
 
         
-ll_out_dt=yields['llout']['dt']-yields['llout']['res']
-emu_in_dt=yields['emuin']['dt']-yields['emuin']['res']
-emu_out_dt=yields['emuout']['dt']-yields['emuout']['res']
+ll_out_dt=yields['llout']['dt_sub']
+emu_in_dt=yields['emuin'][whichdt]
+emu_out_dt=yields['emuout'][whichdt]
 
-err_diff=lambda x, y: sqrt(x**2+y**2) # x-y or y-x
-err_ll_out_dt=err_diff(err['llout']['dt'],err['llout']['res'])
-err_emu_in_dt=err_diff(err['emuin']['dt'],err['emuin']['res'])
-err_emu_out_dt=err_diff(err['emuout']['dt'],err['emuout']['res'])
+err_ll_out_dt=err['llout']['dt_sub']
+err_emu_in_dt=err['emuin'][whichdt]
+err_emu_out_dt=err['emuout'][whichdt]
 
 sf='ll_out_dt/emu_out_dt'
 ll_pred='ll_out_dt*emu_in_dt/emu_out_dt'
