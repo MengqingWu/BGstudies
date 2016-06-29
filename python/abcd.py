@@ -114,7 +114,7 @@ class abcdAnalyzer:
                                   titlex = "E_{T}^{miss}", units = "GeV",output=tag+'met_low',outDir=self.outdir,separateSignal=self.sepSig,
                                   drawtex=self.tex_dic['SR'],channel=self.Channel)
             
-            file=ROOT.TFile(self.outdir+'/'+tag+'met_low.root')
+            fin=ROOT.TFile(self.outdir+'/'+tag+'met_low.root')
     
             h_met_zjets_a=self.plotter.ZJets.drawTH1('llnunu_l2_pt','llnunu_l2_pt',self.cuts['SR'],str(self.lumi*1000),self.nbins,self.xMin,self.xMax,titlex='E_{T}^{miss}',units='GeV',drawStyle="HIST")
             h_met_zjets_a.Scale(1./h_met_zjets_a.Integral())
@@ -128,13 +128,13 @@ class abcdAnalyzer:
             h_met_zjets.Multiply(h_met_zjets_a)
             h_met_zjets.Scale(sf_bd)
             
-            hframe=file.Get(tag+'met_low_frame')
-            hs=file.Get(tag+'met_low_stack')
+            hframe=fin.Get(tag+'met_low_frame')
+            hs=fin.Get(tag+'met_low_stack')
             hs.Add(h_met_zjets)
-            hdata=file.Get(tag+'met_low_data')
+            hdata=fin.Get(tag+'met_low_data')
             hratio=GetRatio_TH1(hdata,hs,True)
         
-            legend=file.Get(tag+'met_low_legend')
+            legend=fin.Get(tag+'met_low_legend')
             myentry=ROOT.TLegendEntry(h_met_zjets,"Z+jets(data-driven)","f")
             legend.GetListOfPrimitives().AddFirst(myentry)
     

@@ -66,6 +66,7 @@ def GetCumulativeAndError(inputHist,forward=True, suffix=''):
 def GetRatio_TH1(h1, h2, h2_isStack=False):
     ''' h1/h2 '''
     hratio = h1.Clone("hRatio")
+    h2.Draw()
     if h2_isStack:
         h2_new = h2.GetHistogram()
         h2_new.SetName('hstackmerge')
