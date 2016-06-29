@@ -103,7 +103,7 @@ class InitializePlotter:
         self.TT.setFillProperties(1001,ROOT.kAzure-9)
 
         # --> define different background sets:
-        nonZBGPlotters = wwPlotters + vvPlotters + wjetsPlotters + ttPlotters[]
+        nonZBGPlotters = wwPlotters + vvPlotters + wjetsPlotters + ttPlotters
         self.nonZBGSamples = self.wwSamples + self.vvSamples + self.wjetsSamples + self.ttSamples
         self.NonZBG = MergedPlotter(nonZBGPlotters)
         self.NonZBG.setFillProperties(1001,ROOT.kPink+6)

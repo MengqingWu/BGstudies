@@ -44,17 +44,13 @@ ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
 
 ### ----- Execute (plotting):
 
-# Inclusive stack plot:
-# plotter_ll.Stack.drawStack('llnunu_l1_mass', cuts['ll']['inclusive'], str(lumi*1000), 20, 0.0, 200.0, titlex = "M_{Z}^{ll}", units = "GeV",
-#                            output=tag+'_mll',outDir=outdir, separateSignal=True,
-#                            drawtex="", channel="")
-# plotter_eu.Stack.drawStack('elmununu_l1_mass', cuts['emu']['inclusive'], str(lumi*1000), 20, 0.0, 200.0, titlex = "M_{Z}^{e#mu}", units = "GeV",
-#                            output=tag+'_melmu',outDir=outdir, separateSignal=True,
-#                            drawtex="", channel="")
-# htest=plotter_ll.ZJets.drawTH1('llnunu_l1_mass', 'llnunu_l1_mass', cuts['ll']['inclusive'], str(lumi*1000), 20, 0.0, 200.0, titlex = "M_{Z}^{ll}", units = "GeV" )
-# fout=ROOT.TFile("test.root","recreate")
-# htest.Write()
-# fout.Close()
+#Inclusive stack plot:
+plotter_ll.Stack.drawStack('llnunu_l1_mass', cuts['ll']['inclusive'], str(lumi*1000), 40, 0.0, 200.0, titlex = "M_{Z}^{ll}", units = "GeV",
+                           output=tag+'_mll',outDir=outdir, separateSignal=True,
+                           drawtex="", channel="")
+plotter_eu.Stack.drawStack('elmununu_l1_mass', cuts['emu']['inclusive'], str(lumi*1000), 40, 0.0, 200.0, titlex = "M_{Z}^{e#mu}", units = "GeV",
+                           output=tag+'_melmu',outDir=outdir, separateSignal=True,
+                           drawtex="", channel="")
 
 # Make numbers:
 histo=OrderedDict() # will have histo[<reg>][<member>]=h1
@@ -113,7 +109,7 @@ for Reg in histo:
                 err0=ROOT.Double(0.0)
                 yields[Reg+zmass][Mem]=myIntegralAndError(histo[Reg][Mem],xRange[zmass][0],xRange[zmass][1]-1,err0)
                 err[Reg+zmass][Mem]= err0
-            
+               
 ### ----- Finalizing:
 #mergePrinter(histo=histo, outTag=outTag+'_all')
 
@@ -151,3 +147,47 @@ outtxt.close()
 
 os.system('cat '+outtxt.name)
 
+# Draw the m_ll in z window with data-driven non-res bkg
+h_mll_nonres_dd=copy.deepcopy(histo['emu']['dt_sub_corr'])
+h_mll_nonres_dd.Scale(eval(sf))
+#h_mll_nonres_dd.Rebin(2)
+h_mll_nonres_dd.SetFillColor(ROOT.kAzure-9)
+
+stackTag=tag+'_mll'
+fstack=ROOT.TFile(outdir+'/'+stackTag+'.root')
+hs=fstack.Get(stackTag+"_stack")
+hframe=fstack.Get(stackTag+'_frame')
+hframe.GetXaxis().SetRangeUser(70, 100)
+hdata=fstack.Get(stackTag+'_data')
+legend=fstack.Get(stackTag+'_legend')
+
+hsnew=ROOT.THStack(stackTag+"_stack_new","")
+hsnew.Add(h_mll_nonres_dd)
+
+nonresTag=[stackTag+'_'+sample for sample in ['WJets','TT','WW'] ]
+
+for ihist in hs.GetHists():
+    if ihist.GetName() in nonresTag: print 'I am a nonres bkg: ',ihist.GetName()
+    else:  hsnew.Add(ihist)
+
+for ih in hsnew.GetHists():
+    print '[debug] ', ih.GetName()
+print hsnew
+#hsnew.Draw()
+hratio=GetRatio_TH1(hdata,hsnew,True)
+
+myentry=ROOT.TLegendEntry(h_mll_nonres_dd,"non-Res. bkg(data-driven)","f")
+
+# Let's remove the signal entries in the legend
+for ileg in legend.GetListOfPrimitives():
+    if ileg.GetLabel() in ['W+Jets', 'TT', 'WW, WZ non-reson.']:
+        legend.GetListOfPrimitives().Remove(ileg)
+    if ileg.GetLabel()=='Data': beforeObject=ileg
+
+legend.GetListOfPrimitives().AddBefore(beforeObject,myentry)
+
+drawStack_simple(hframe, hsnew, hdata, hratio, legend,
+                 hstack_opt="A, HIST",
+                 outDir=outdir, output=stackTag+"_datadriven", channel=ROOT.TString("inclusive"),
+                 xmin=70, xmax=100, xtitle="M_{Z}^{ll}" ,units="GeV",
+                 lumi=lumi, notes="")
