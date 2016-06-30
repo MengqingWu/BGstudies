@@ -10,8 +10,10 @@ from python.HistPrinter import mergePrinter
 from python.SimplePlot import *
 
 outtxt = open('num_out.txt', 'a')
-doshapeCorr=True #False
-whichdt='dt_sub_corr' if doshapeCorr else 'dt_sub'
+doshapeCorr=True 
+doResSubInElmu=False
+whichdt='dt_sub' if doResSubInElmu else 'dt'
+whichdt+='_corr' if doshapeCorr else ''
 
 #Channel=raw_input("Please choose a channel (el or mu): \n")
 tag0='nonResBkg'
@@ -80,25 +82,31 @@ for reg in cuts: #  'll' or 'emu'
     h_dt_sub.Add(histo[reg]['res'],-1)
     histo[reg]['dt_sub']=h_dt_sub
 
-# scale the Meu shape using MC to account for selection efficiency diffed per event:
+# Scale the Meu shape using MC to account for selection efficiency diffed per event:
 h_ll_shape=copy.deepcopy(histo['ll']['nonres'])
 h_ll_shape.Scale(1./h_ll_shape.Integral(0, 1+h_ll_shape.GetNbinsX())) # normalized to 1
 h_emu_shape=copy.deepcopy(histo['emu']['nonres'])
+if not doResSubInElmu: h_emu_shape.Add(histo['emu']['res'])
 h_emu_shape.Scale(1./h_emu_shape.Integral(0, 1+h_emu_shape.GetNbinsX()))  # normalized to 1
 
 h_ll_shape.Divide(h_emu_shape)
 h_ll_shape.SetName("sf_vs_Memu")
+iamdt='dt_sub' if doResSubInElmu else 'dt'
+h_dt_corr=copy.deepcopy(histo['emu'][iamdt])
+h_dt_corr.Multiply(h_ll_shape)
+histo['emu'][iamdt+'_corr']=h_dt_corr
+
+#------ begin: save
 ROOT.TH1.AddDirectory(ROOT.kFALSE)
 sfFile=ROOT.TFile("shape_correction.root","recreate")
 sfFile.cd()
 h_ll_shape.Write()
 histo['ll']['nonres'].Write()
 histo['emu']['nonres'].Write()
+histo['emu']['res'].Write()
 sfFile.Close()
+#------ end: save
 
-h_dt_corr=copy.deepcopy(histo['emu']['dt_sub'])
-h_dt_corr.Multiply(h_ll_shape)
-histo['emu']['dt_sub_corr']=h_dt_corr
 
 # compute yields/err for the in/out regions:
 xRange={'out':(35,65,115,180), 'in':(70,110)}
@@ -157,7 +165,7 @@ outtxt.close()
 os.system('cat '+outtxt.name)
 
 # Draw the m_ll in z window with data-driven non-res bkg
-h_mll_nonres_dd=copy.deepcopy(histo['emu']['dt_sub_corr'])
+h_mll_nonres_dd=copy.deepcopy(histo['emu'][whichdt])
 h_mll_nonres_dd.Scale(eval(sf))
 #h_mll_nonres_dd.Rebin(2)
 h_mll_nonres_dd.SetFillColor(ROOT.kAzure-9)
