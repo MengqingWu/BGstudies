@@ -82,11 +82,20 @@ for reg in cuts: #  'll' or 'emu'
 
 # scale the Meu shape using MC to account for selection efficiency diffed per event:
 h_ll_shape=copy.deepcopy(histo['ll']['nonres'])
-h_ll_shape.Scale(h_ll_shape.Integral(0, 1+h_ll_shape.GetNbinsX())) # normalized to 1
+h_ll_shape.Scale(1./h_ll_shape.Integral(0, 1+h_ll_shape.GetNbinsX())) # normalized to 1
 h_emu_shape=copy.deepcopy(histo['emu']['nonres'])
-h_emu_shape.Scale(h_emu_shape.Integral(0, 1+h_emu_shape.GetNbinsX()))  # normalized to 1
+h_emu_shape.Scale(1./h_emu_shape.Integral(0, 1+h_emu_shape.GetNbinsX()))  # normalized to 1
 
 h_ll_shape.Divide(h_emu_shape)
+h_ll_shape.SetName("sf_vs_Memu")
+ROOT.TH1.AddDirectory(ROOT.kFALSE)
+sfFile=ROOT.TFile("shape_correction.root","recreate")
+sfFile.cd()
+h_ll_shape.Write()
+histo['ll']['nonres'].Write()
+histo['emu']['nonres'].Write()
+sfFile.Close()
+
 h_dt_corr=copy.deepcopy(histo['emu']['dt_sub'])
 h_dt_corr.Multiply(h_ll_shape)
 histo['emu']['dt_sub_corr']=h_dt_corr

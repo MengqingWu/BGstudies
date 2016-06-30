@@ -22,7 +22,7 @@ if not os.path.exists(outdir): os.system('mkdir '+outdir)
 tag = tag0+'_'+'test'
 outTag=outdir+'/'+tag
 
-bkg='ttbar' #'nonRes'
+bkg='nonRes' #'ttbar'
 
 #  ll in Z | ll out Z
 # --------------------  M_out (35,65) U (115,180)
@@ -32,8 +32,8 @@ bkg='ttbar' #'nonRes'
 ### ----- Initialize (samples):
 plotter_ll=InitializePlotter(indir, addSig=False, addData=True,doRatio=False)
 plotter_eu=InitializePlotter(indir, addSig=False, addData=True,doRatio=False, doElMu=True)
-bkg_ll, bkg_eu = plotter_ll.TT, plotter_eu.TT
-#bkg_ll, bkg_eu = plotter_ll.NonResBG, plotter_eu.NonResBG
+#bkg_ll, bkg_eu = plotter_ll.TT, plotter_eu.TT
+bkg_ll, bkg_eu = plotter_ll.NonResBG, plotter_eu.NonResBG
 
 setcuts = SetCuts()
 cuts=setcuts.GetAlphaCuts(zpt_cut=zpt_cut, met_cut=met_cut)
@@ -75,6 +75,12 @@ h_Meu_shape_mc.Scale(1./Integral_Meu_yield_mc)
 
 h_Meu_yield_mc_corr=copy.deepcopy(h_Mll_shape_mc)
 h_Meu_yield_mc_corr.Scale(Integral_Meu_yield_mc)
+
+ftest=ROOT.TFile(outdir+"test.root","recreate")
+ROOT.TH1.AddDirectory(ROOT.kFALSE)
+h_Mll_shape_mc.Write()
+h_Meu_yield_mc.Write()
+ftest.Close()
 
 histo={'ll':h_Mll_yield_mc, 'emu':h_Meu_yield_mc_corr}
 xRange={'out':(35,65,115,180), 'in':(70,110)}
