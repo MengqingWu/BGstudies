@@ -34,7 +34,7 @@ class InitializePlotter:
             zjetsPlotters[-1].addCorrectionFactor('puWeight','tree')
             zjetsPlotters[-1].addCorrectionFactor(triggersf,'tree')
             zjetsPlotters[-1].addCorrectionFactor(lepsf,'tree')
-
+            
         self.ZJets = MergedPlotter(zjetsPlotters)
         self.ZJets.setFillProperties(1001,ROOT.kGreen+2)
 
@@ -164,7 +164,9 @@ class InitializePlotter:
         if addData:
             for sample in self.dataSamples:
                 dataPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
-            
+                if doElMu:
+                    dataPlotters[-1].addCorrectionFactor('Melmu_sf','tree')
+
             self.Data = MergedPlotter(dataPlotters)
             self.Data.setFillProperties(1001,ROOT.kGreen+2)
             
