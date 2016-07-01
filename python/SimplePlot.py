@@ -132,7 +132,7 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
                      hstack_opt="nostack",
                      outDir="./", output="output", channel="",
                      xmin=50., xmax=500., xtitle="" ,units="",
-                     lumi=2.169, notes=""):
+                     lumi=2.169, notes="", drawSig=False, hsig=[]):
     
     fout = TFile(outDir+'/'+output+'_'+channel.Data()+'.root', 'recreate')
         
@@ -156,6 +156,8 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
     frame.Draw()
     hstack.Draw(hstack_opt+", same")
     hdata.Draw("Psame")
+    if drawSig and len(hsig)!=0:
+        for ihsig in hsig: ihsig.Draw("HIST, same")
     legend.Draw("same")
     hstack.SetMinimum(0.01)
     hstack.GetHistogram().GetXaxis().SetRangeUser(xmin,xmax)
@@ -205,7 +207,9 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
     p1.Update()
 
     if channel!="":
-        channel_tex="ee" if channel.Contains("el") else "#mu#mu"
+        if channel.Contains("el"): channel_tex="ee"
+        elif channel.Contains("mu"): channel_tex="#mu#mu"
+        else: channel_tex=channel.Data()
         pt.DrawLatex(0.25,0.82, channel_tex+" channel")
             
     fout.cd()
