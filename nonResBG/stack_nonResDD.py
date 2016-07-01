@@ -20,7 +20,7 @@ class StackDataDriven:
                  LogY=True,   doRatio=True,
                  addSig=True, addData=True):
         if not os.path.exists(outdir): os.system('mkdir '+outdir)
-        
+        self.logy=LogY
         self.outdir = outdir
         self.lumi = lumi
         self.plotter_eu=InitializePlotter(indir, addSig=False, addData=True, doRatio=doRatio, doElMu=True, LogY=LogY)
@@ -31,31 +31,42 @@ class StackDataDriven:
         
         self.setcuts=SetCuts()
 
-        var={('llnunu_l1_mass', 'elmununu_l1_mass'): (40, 0.0, 200.0, "M_{Z}^{ll}", "GeV")}
         ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
 
-    def drawDataDrivenStack(self):
+    def drawDataDrivenStack(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax):
         tag = 'stack_nonResDD'+'_'+'test'
         outTag = self.outdir+'/'+tag
-        stackTag=tag+'_mll'
+        stackTag=tag+'_'+var_ll
         zpt_cut, met_cut= '0', '0'
         cuts=self.setcuts.GetAlphaCuts(zpt_cut=zpt_cut, met_cut=met_cut)
                 
-        self.plotter_ll.Stack.drawStack('llnunu_l1_mass', cuts['ll']['inclusive'], str(self.lumi*1000), 40, 0.0, 200.0, titlex = "M_{Z}^{ll}", units = "GeV",
+        self.plotter_ll.Stack.drawStack(var_ll, cuts['ll']['in'], str(self.lumi*1000), nbinsx, xmin, xmax, titlex = titlex, units = units,
                                         output=stackTag, outDir=self.outdir, separateSignal=True, drawtex="", channel="")
-        h_nonRes_dd = self.plotter_eu.Data.drawTH1('elmununu_l1_mass','elmununu_l1_mass', cuts['emu']['inclusive'], '1',
-                                                   40, 0.0, 200.0, titlex = "M_{Z}^{e#mu}", units = "GeV", drawStyle="HIST")
+        h_nonRes_dd = self.plotter_eu.Data.drawTH1(var_emu, var_emu, cuts['emu']['in'], '1',
+                                                   nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
         h_nonRes_dd.SetFillColor(ROOT.kAzure-9)
         
         # Draw the m_ll in z window with data-driven non-res bkg
         ROOT.TH1.AddDirectory(ROOT.kFALSE)
         fstack=ROOT.TFile(self.outdir+'/'+stackTag+'.root')
         hs=fstack.Get(stackTag+"_stack")
+
         hframe=fstack.Get(stackTag+'_frame')
-        hframe.GetXaxis().SetRangeUser(70, 100)
+        hframe.GetXaxis().SetRangeUser(xcutmin, xcutmax)
+        if self.logy: hframe.SetMaximum(hframe.GetMaximum()*100)
+        else: hframe.SetMaximum(hframe.GetMaximum()*1.2)
+        
         hdata=fstack.Get(stackTag+'_data')
         legend=fstack.Get(stackTag+'_legend')
+        
+        hsig1=fstack.Get(stackTag+'_BulkGravToZZToZlepZinv_narrow_800')
+        hsig2=fstack.Get(stackTag+'_BulkGravToZZToZlepZinv_narrow_1000')
+        hsig3=fstack.Get(stackTag+'_BulkGravToZZToZlepZinv_narrow_1200')
         fstack.Close()
+
+        print '[debug] llin, datadriven nonres: ', h_nonRes_dd.Integral()
+        print '[debug] llin, dt: ', hdata.Integral()
+
         
         hsnew=ROOT.THStack(stackTag+"_stack_new","")
         hsnew.Add(h_nonRes_dd)
@@ -68,7 +79,7 @@ class StackDataDriven:
         for ih in hsnew.GetHists():
             print '[debug] ', ih.GetName()
         print hsnew
-        #hsnew.Draw()
+        
         hratio=GetRatio_TH1(hdata,hsnew,True)
         
         myentry=ROOT.TLegendEntry(h_nonRes_dd,"non-reson. (data-driven)","f")
@@ -84,7 +95,8 @@ class StackDataDriven:
         drawStack_simple(hframe, hsnew, hdata, hratio, legend,
                          hstack_opt="A, HIST",
                          outDir=self.outdir, output=stackTag+"_datadriven", channel=ROOT.TString("inclusive"),
-                         xmin=70, xmax=110, xtitle="M_{Z}^{ll}" ,units="GeV",
-                         lumi=self.lumi, notes="")
+                         xmin=xcutmin, xmax=xcutmax, xtitle=titlex ,units=units,
+                         lumi=self.lumi, notes="no E_{T}^{miss}/P_{T}^{Z} cuts",
+                         drawSig=True, hsig=[hsig1, hsig2, hsig3])
         
     
