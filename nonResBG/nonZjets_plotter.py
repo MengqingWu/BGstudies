@@ -10,7 +10,7 @@ from python.HistPrinter import mergePrinter
 from python.SimplePlot import *
 
 outtxt = open('num_out.txt', 'a')
-doshapeCorr=True 
+doshapeCorr=False 
 doResSubInElmu=False
 whichdt='dt_sub' if doResSubInElmu else 'dt'
 whichdt+='_corr' if doshapeCorr else ''
@@ -18,7 +18,7 @@ whichdt+='_corr' if doshapeCorr else ''
 #Channel=raw_input("Please choose a channel (el or mu): \n")
 tag0='nonResBkg'
 outdir='test'
-indir="./nonResSkim_v2"
+indir="./nonResSkim_v3"
 lumi=2.318278305
 logy=True
 zpt_cut, met_cut= '0', '0'
@@ -206,5 +206,5 @@ legend.GetListOfPrimitives().AddBefore(beforeObject,myentry)
 drawStack_simple(hframe, hsnew, hdata, hratio, legend,
                  hstack_opt="A, HIST",
                  outDir=outdir, output=stackTag+"_datadriven", channel=ROOT.TString("inclusive"),
-                 xmin=70, xmax=100, xtitle="M_{Z}^{ll}" ,units="GeV",
+                 xmin=70, xmax=110, xtitle="M_{Z}^{ll}" ,units="GeV",
                  lumi=lumi, notes="")

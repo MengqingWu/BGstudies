@@ -163,9 +163,11 @@ class InitializePlotter:
                            'SingleMuon_Run2015D_16Dec']
         if addData:
             for sample in self.dataSamples:
-                dataPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
                 if doElMu:
+                    dataPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree', weight='1.51'))
                     dataPlotters[-1].addCorrectionFactor('Melmu_sf','tree')
+                else:
+                    dataPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
 
             self.Data = MergedPlotter(dataPlotters)
             self.Data.setFillProperties(1001,ROOT.kGreen+2)
