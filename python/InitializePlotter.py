@@ -10,7 +10,9 @@ class InitializePlotter:
     def __init__(self, indir="../AnalysisRegion",
                  LogY=True,   doRatio=True,
                  addSig=True, addData=True,
-                 doElMu=False, sigK=1000):
+                 doElMu=False, scaleElMu=True,
+                 doMetCorr=False,
+                 sigK=1000):
         
         if doElMu:
             lepsf='elmununu_l1_l1_lepsf*elmununu_l1_l2_lepsf'
@@ -23,7 +25,10 @@ class InitializePlotter:
         zjetsPlotters=[]
         #zjetsSamples = ['DYJetsToLL_M50_HT100to200','DYJetsToLL_M50_HT200to400','DYJetsToLL_M50_HT400to600','DYJetsToLL_M50_HT600toInf']
         #zjetsSamples = ['DYJetsToLL_M50','DYJetsToLL_M50_Ext']
-        self.zjetsSamples = ['DYJetsToLL_M50_BIG'] # M50_BIG = M50 + M50_Ext
+        if doMetCorr:
+            self.zjetsSamples = ['DYJetsToLL_M50_V3MetShiftBeforeJetNewSelV6NoMetLepAnyWayAllJetsBigSig1p4LepResSigProtect'] # M50_BIG = M50 + M50_Ext
+        else:
+            self.zjetsSamples = ['DYJetsToLL_M50_BIG'] # M50_BIG = M50 + M50_Ext
 
         for sample in self.zjetsSamples:
             zjetsPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
@@ -138,6 +143,11 @@ class InitializePlotter:
             'BulkGravToZZToZlepZinv_narrow_1000' : 1.33926e-04*sigk,
             'BulkGravToZZToZlepZinv_narrow_1200' : 4.76544e-05*sigk,
         }
+        if doMetCorr:
+            self.sigSamples.append('BulkGravToZZToZlepZinv_narrow_1000_V3MetShiftBeforeJetNewSelV6NoMetLepAnyWayAllJetsBigSig1p4LepResSigProtect')
+            sigXsec['BulkGravToZZToZlepZinv_narrow_1000_V3MetShiftBeforeJetNewSelV6NoMetLepAnyWayAllJetsBigSig1p4LepResSigProtect']= 1.33926e-04*sigk
+            self.sigSampleNames.append(str(sigk)+' x BulkG-1000')
+
         if addSig:
             for sample in self.sigSamples:
                 self.sigPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
@@ -156,14 +166,17 @@ class InitializePlotter:
         if doElMu:
             self.dataSamples = ['MuonEG_Run2015C_25ns_16Dec',
                            'MuonEG_Run2015D_16Dec']
-        else: 
-            self.dataSamples = ['SingleElectron_Run2015C_25ns_16Dec',
-                           'SingleElectron_Run2015D_16Dec',
-                           'SingleMuon_Run2015C_25ns_16Dec',
-                           'SingleMuon_Run2015D_16Dec']
+        else:
+            if doMetCorr:
+                self.dataSamples= ['SingleEMU_Run2015_15Dec_V3MetShiftBeforeJetNewSelV6NoMetLepAnyWayAllJetsBigSig1p4LepResSigProtect']
+            else:
+                self.dataSamples = ['SingleElectron_Run2015C_25ns_16Dec',
+                                    'SingleElectron_Run2015D_16Dec',
+                                    'SingleMuon_Run2015C_25ns_16Dec',
+                                    'SingleMuon_Run2015D_16Dec']
         if addData:
             for sample in self.dataSamples:
-                if doElMu:
+                if doElMu and scaleElMu:
                     dataPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree', weight='1.51'))
                     dataPlotters[-1].addCorrectionFactor('Melmu_sf','tree')
                 else:
@@ -185,9 +198,13 @@ class InitializePlotter:
         self.Stack.addPlotter(self.ZJets, "ZJets","Z+Jets", "background")
         
         if addSig:
-            for i in range(len(self.sigSamples)):
-                self.sigPlotters[i].setLineProperties(2,ROOT.kRed+i,2)
-                self.Stack.addPlotter(self.sigPlotters[i],self.sigSamples[i],self.sigSampleNames[i],'signal')  
+            if doMetCorr: # only 1000 GeV sample 
+                self.sigPlotters[-1].setLineProperties(2,ROOT.kRed,2)
+                self.Stack.addPlotter(self.sigPlotters[-1],self.sigSamples[-1],self.sigSampleNames[-1],'signal')
+            else:
+                for i in range(len(self.sigSamples)):
+                    self.sigPlotters[i].setLineProperties(2,ROOT.kRed+i,2)
+                    self.Stack.addPlotter(self.sigPlotters[i],self.sigSamples[i],self.sigSampleNames[i],'signal')  
 
         self.Stack.setLog(LogY)
         self.Stack.doRatio(doRatio)

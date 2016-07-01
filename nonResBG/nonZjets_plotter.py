@@ -10,7 +10,7 @@ from python.HistPrinter import mergePrinter
 from python.SimplePlot import *
 
 outtxt = open('num_out.txt', 'a')
-doshapeCorr=False 
+doshapeCorr=True
 doResSubInElmu=False
 whichdt='dt_sub' if doResSubInElmu else 'dt'
 whichdt+='_corr' if doshapeCorr else ''
@@ -34,7 +34,7 @@ outTag=outdir+'/'+tag
 
 ### ----- Initialize (samples):
 plotter_ll=InitializePlotter(indir, addSig=False, addData=True,doRatio=True, LogY=logy)
-plotter_eu=InitializePlotter(indir, addSig=False, addData=True,doRatio=True, doElMu=True, LogY=logy)
+plotter_eu=InitializePlotter(indir, addSig=False, addData=True,doRatio=True, doElMu=True, scaleElMu=False, LogY=logy)
 setcuts=SetCuts()
 cuts=setcuts.GetAlphaCuts(zpt_cut=zpt_cut, met_cut=met_cut)
 
@@ -47,13 +47,14 @@ ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
 ### ----- Execute (plotting):
 
 #Inclusive stack plot:
-plotter_ll.Stack.drawStack('llnunu_l1_mass', cuts['ll']['inclusive'], str(lumi*1000), 40, 0.0, 200.0, titlex = "M_{Z}^{ll}", units = "GeV",
+plotter_ll.Stack.drawStack('llnunu_l1_mass', cuts['ll']['inclusive'], str(lumi*1000), 20, 0.0, 200.0, titlex = "M_{Z}^{ll}", units = "GeV",
                            output=tag+'_mll',outDir=outdir, separateSignal=True,
                            drawtex="", channel="")
-plotter_eu.Stack.drawStack('elmununu_l1_mass', cuts['emu']['inclusive'], str(lumi*1000), 40, 0.0, 200.0, titlex = "M_{Z}^{e#mu}", units = "GeV",
+plotter_eu.Stack.drawStack('elmununu_l1_mass', cuts['emu']['inclusive'], str(lumi*1000), 20, 0.0, 200.0, titlex = "M_{Z}^{e#mu}", units = "GeV",
                            output=tag+'_melmu',outDir=outdir, separateSignal=True,
                            drawtex="", channel="")
 
+exit(0)
 # Make numbers:
 histo=OrderedDict() # will have histo[<reg>][<member>]=h1
 yields=OrderedDict() # will have yields[<reg><zmass>][<member>]=yield

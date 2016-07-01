@@ -6,8 +6,12 @@ from python.MergedPlotter import MergedPlotter
 from python.SimplePlot import *
 
 outdir='./plots/aux'
-indir="../../AnalysisRegion"
+#indir="./zjetsSkim"
+indir="./METSkim"
 #lumi=2.318278305
+issig=True
+tag='_sig_' if issig else ''
+
 if not os.path.exists(outdir): os.system('mkdir '+outdir)
 
 var_dic = {1:{'var':'abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)', 'nick':'udPhi',
@@ -32,13 +36,16 @@ if Channel=="": print "[info] all 3 channels will be plotted."
 
 kincut=raw_input("Please choose ZpT (preselected at 100GeV) > a and met (preselected at 0) > b cuts (no cut applied if you skip): \n a,b = ")
 ZpTCut='&&llnunu_l1_pt>'+kincut.split(',')[0]  if kincut.split(',')[0] else ''
-MetCut='&&met_pt>'+kincut.split(',')[1]  if kincut.split(',')[1] else ''
+MetCut='&&llnunu_l2_pt>'+kincut.split(',')[1]  if kincut.split(',')[1] else ''
 #outtxt.write('[NEW] %s %s %s' % (ZpTCut,MetCut,'*'*20))# use for debug
-
 
 #######----------- Prepare samples to plot:
 zjetsPlotters=[]
-zjetsSamples = ['DYJetsToLL_M50_BIG'] # M50_BIG = M50 + M50_Ext
+#zjetsSamples = ['DYJetsToLL_M50_BIG'] # M50_BIG = M50 + M50_Ext
+if issig:
+    zjetsSamples = ['BulkGravToZZToZlepZinv_narrow_1000_V3MetShiftBeforeJetNewSelV6NoMetLepAnyWayAllJetsBigSig1p4LepResSigProtect'] # M50_BIG = M50 + M50_Ext
+else :
+    zjetsSamples = ['DYJetsToLL_M50_V3MetShiftBeforeJetNewSelV6NoMetLepAnyWayAllJetsBigSig1p4LepResSigProtect'] # M50_BIG = M50 + M50_Ext
 
 for sample in zjetsSamples:
     zjetsPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
@@ -51,7 +58,7 @@ for sample in zjetsSamples:
     zjetsPlotters[-1].addCorrectionFactor('llnunu_l1_l1_lepsf*llnunu_l1_l2_lepsf','tree')
         
 ZJets = MergedPlotter(zjetsPlotters)
-ZJets.setFillProperties(1001,ROOT.kGreen+2)
+#ZJets.setFillProperties(1001,ROOT.kGreen+2)
     
 #######----------- Start Plotting:
 
@@ -65,14 +72,15 @@ for Channel in lsChannel:
     ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
 
     if Channel=='inclusive':
-        factor_cuts='(nllnunu>0&&abs(llnunu_l1_mass-91.1876)<20.0'+ZpTCut+MetCut+')'
+        factor_cuts='(nllnunu>0&&(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)'+ZpTCut+MetCut+')'
     else:
-        factor_cuts='(nllnunu>0&&abs(llnunu_l1_mass-91.1876)<20.0&&abs(llnunu_l1_l1_pdgId)=='+pdgID[Channel]+ZpTCut+MetCut+')'
+        factor_cuts='(nllnunu>0&&(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)&&abs(llnunu_l1_l1_pdgId)=='+pdgID[Channel]+ZpTCut+MetCut+')'
         
         
     print '[info] cuts used here: ', factor_cuts
 
-    h2_var1_var2 = ZJets.drawTH2(var_dic[1]['var']+':'+var_dic[2]['var'],factor_cuts,str(1), #lumi*1000 
+    h2_var1_var2 = ZJets.drawTH2("var1_var2",
+                                 var_dic[1]['var']+':'+var_dic[2]['var'],factor_cuts,str(1), #lumi*1000 
                                  var_dic[2]['par'][0], var_dic[2]['par'][1], var_dic[2]['par'][2],
                                  var_dic[1]['par'][0], var_dic[1]['par'][1], var_dic[1]['par'][2],
                                  titlex = var_dic[2]['title'], unitsx = "",
@@ -87,16 +95,18 @@ for Channel in lsChannel:
 
     c1=ROOT.TCanvas("c1","c1",1)
     h2_var1_var2.Draw("COLZ")
+    c1.SetLogz()
     #print h2_var1_var2.GetEntries(), h2_var1_var2.GetSumOfWeights()
     
     print "%s:%s, correlation factor r = %.5f +- %.5f" %( var_dic[1]['var'], var_dic[2]['var'], h2_var1_var2.GetCorrelationFactor(), GetCorrelationFactorError(h2_var1_var2.GetCorrelationFactor(), h2_var1_var2.GetSumOfWeights()))
     
     res[Channel]=("%.5f +- %.5f" % ( h2_var1_var2.GetCorrelationFactor(), GetCorrelationFactorError(h2_var1_var2.GetCorrelationFactor(), h2_var1_var2.GetSumOfWeights())))
     
-    c1.SaveAs(outdir+"/h2_"+var_dic[1]['nick']+'_'+var_dic[2]['nick']+Channel+'_'+kincut.split(',')[0]+'_'+kincut.split(',')[1]+".eps")
+    c1.SaveAs(outdir+"/h2_"+tag+var_dic[1]['nick']+'_'+var_dic[2]['nick']+'_'+Channel+'_'+kincut.split(',')[0]+'_'+kincut.split(',')[1]+".eps")
     c1.Clear()
     
 print res
+if issig: outtxt.write('\n[info]  %s \n %s \n' % (' It is signal!','*'*20))
 sout2="{inclusive:>20}, {mu:>20}, {el:>20}\n"
 outtxt.write("{0:>6}, {1:>6}, ".format(*kincut.split(','))+sout2.format(**res))
 

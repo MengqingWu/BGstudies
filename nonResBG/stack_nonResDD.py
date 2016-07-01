@@ -44,7 +44,8 @@ class StackDataDriven:
         drawCompareSimple(h_nonRes_dd, h_nonRes_mc, "non-reson. data-driven", "non-reson. MC",
                           xmin=xcutmin, xmax=xcutmax, outdir=self.outdir, notes="",
                           tag='compare_dataDriven_MC'+'_'+var_ll, units=units, lumi=self.lumi, ytitle='events')
-        
+        return
+    
     def drawDataDrivenStack(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax):
         tag = 'stack_nonResDD'+'_'+'test'
         outTag = self.outdir+'/'+tag
@@ -109,4 +110,4 @@ class StackDataDriven:
                          xmin=xcutmin, xmax=xcutmax, xtitle=titlex ,units=units,
                          lumi=self.lumi, notes="no E_{T}^{miss}/P_{T}^{Z} cuts",
                          drawSig=True, hsig=[hsig1, hsig2, hsig3])
-    
+        return
