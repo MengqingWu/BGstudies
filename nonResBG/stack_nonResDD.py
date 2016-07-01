@@ -31,14 +31,14 @@ class StackDataDriven:
         
         self.setcuts=SetCuts()
         ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
-
-    def drawDataDrivenMC(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax):
-        zpt_cut, met_cut= '0', '0'
-        cuts=self.setcuts.GetAlphaCuts(zpt_cut=zpt_cut, met_cut=met_cut)
+        self.zpt_cut, self.met_cut= '0', '0'
+        self.cuts=self.setcuts.GetAlphaCuts(zpt_cut=self.zpt_cut, met_cut=self.met_cut)
         
-        h_nonRes_dd = self.plotter_eu.Data.drawTH1(var_emu, var_emu, cuts['emu']['in'], '1',
+    def drawDataDrivenMC(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax):
+        
+        h_nonRes_dd = self.plotter_eu.Data.drawTH1(var_emu, var_emu, self.cuts['emu']['in'], '1',
                                                    nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
-        h_nonRes_mc = self.plotter_ll.NonResBG.drawTH1(var_ll, var_ll, cuts['ll']['in'], str(self.lumi*1000),
+        h_nonRes_mc = self.plotter_ll.NonResBG.drawTH1(var_ll, var_ll, self.cuts['ll']['in'], str(self.lumi*1000),
                                                        nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
         
         drawCompareSimple(h_nonRes_dd, h_nonRes_mc, "non-reson. data-driven", "non-reson. MC",
@@ -49,12 +49,10 @@ class StackDataDriven:
         tag = 'stack_nonResDD'+'_'+'test'
         outTag = self.outdir+'/'+tag
         stackTag=tag+'_'+var_ll
-        zpt_cut, met_cut= '0', '0'
-        cuts=self.setcuts.GetAlphaCuts(zpt_cut=zpt_cut, met_cut=met_cut)
                 
-        self.plotter_ll.Stack.drawStack(var_ll, cuts['ll']['in'], str(self.lumi*1000), nbinsx, xmin, xmax, titlex = titlex, units = units,
+        self.plotter_ll.Stack.drawStack(var_ll, self.cuts['ll']['in'], str(self.lumi*1000), nbinsx, xmin, xmax, titlex = titlex, units = units,
                                         output=stackTag, outDir=self.outdir, separateSignal=True, drawtex="", channel="")
-        h_nonRes_dd = self.plotter_eu.Data.drawTH1(var_emu, var_emu, cuts['emu']['in'], '1',
+        h_nonRes_dd = self.plotter_eu.Data.drawTH1(var_emu, var_emu, self.cuts['emu']['in'], '1',
                                                    nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
         h_nonRes_dd.SetFillColor(ROOT.kAzure-9)
         
@@ -111,5 +109,4 @@ class StackDataDriven:
                          xmin=xcutmin, xmax=xcutmax, xtitle=titlex ,units=units,
                          lumi=self.lumi, notes="no E_{T}^{miss}/P_{T}^{Z} cuts",
                          drawSig=True, hsig=[hsig1, hsig2, hsig3])
-        
     

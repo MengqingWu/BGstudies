@@ -1,5 +1,5 @@
 import ROOT
-import sys
+import sys, copy
 from array import array
 import pickle
 from PlotterBase import PlotterBase
@@ -46,7 +46,9 @@ class TreePlotter(PlotterBase):
                 corrString = corrString+"*("+str(corr['value'])+")" 
         self.tree.Draw(var+">>"+name,"("+cuts+")*"+lumi+"*"+self.weight+"*("+corrString+")","goff")
 
-        return h
+        h_return=copy.deepcopy(h)
+        del h
+        return h_return
 
 
     def drawTH2(self,name,var,cuts,lumi,binsx,minx,maxx,binsy,miny,maxy,titlex = "",unitsx = "",titley="",unitsy="", drawStyle = "COLZ"):
