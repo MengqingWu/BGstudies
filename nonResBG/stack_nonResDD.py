@@ -30,9 +30,21 @@ class StackDataDriven:
         self.plotter_ll.Stack.rmPlotter(self.plotter_ll.WJets, "WJets","W+Jets", "background")
         
         self.setcuts=SetCuts()
-
         ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
 
+    def drawDataDrivenMC(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax):
+        zpt_cut, met_cut= '0', '0'
+        cuts=self.setcuts.GetAlphaCuts(zpt_cut=zpt_cut, met_cut=met_cut)
+        
+        h_nonRes_dd = self.plotter_eu.Data.drawTH1(var_emu, var_emu, cuts['emu']['in'], '1',
+                                                   nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
+        h_nonRes_mc = self.plotter_ll.NonResBG.drawTH1(var_ll, var_ll, cuts['ll']['in'], str(self.lumi*1000),
+                                                       nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
+        
+        drawCompareSimple(h_nonRes_dd, h_nonRes_mc, "non-reson. data-driven", "non-reson. MC",
+                          xmin=xcutmin, xmax=xcutmax, outdir=self.outdir, notes="",
+                          tag='compare_dataDriven_MC'+'_'+var_ll, units=units, lumi=self.lumi, ytitle='events')
+        
     def drawDataDrivenStack(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax):
         tag = 'stack_nonResDD'+'_'+'test'
         outTag = self.outdir+'/'+tag
@@ -53,8 +65,9 @@ class StackDataDriven:
 
         hframe=fstack.Get(stackTag+'_frame')
         hframe.GetXaxis().SetRangeUser(xcutmin, xcutmax)
-        if self.logy: hframe.SetMaximum(hframe.GetMaximum()*100)
-        else: hframe.SetMaximum(hframe.GetMaximum()*1.2)
+        if ROOT.TString(var_ll).Contains("mass"):
+            if self.logy: hframe.SetMaximum(hframe.GetMaximum()*100)
+            else: hframe.SetMaximum(hframe.GetMaximum()*1.2)
         
         hdata=fstack.Get(stackTag+'_data')
         legend=fstack.Get(stackTag+'_legend')
