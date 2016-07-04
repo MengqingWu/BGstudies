@@ -10,7 +10,7 @@ from python.SimplePlot import *
 tag0='sf_vs_met'
 tag = tag0+'_'+'test'
 outdir='plots/sfvsMet/'
-indir="../zjetsSkim"
+indir="./METSkim"
 lumi=2.3182783052
 
 if not os.path.exists(outdir): os.system('mkdir '+outdir)
@@ -18,7 +18,7 @@ if not os.path.exists(outdir): os.system('mkdir '+outdir)
 #met_pt=np.arange(30,150,5).tolist()
 
 ### ----- Initialize (samples):
-plotter_ll=InitializePlotter(addSig=False, addData=True,doRatio=False, indir=indir)
+plotter_ll=InitializePlotter(addSig=False, addData=True,doRatio=False, indir=indir, doMetCorr=True)
 #plotter_eu=InitializePlotter(addSig=False, addData=True,doRatio=False, doElMu=True)
 setcuts=SetCuts()
 # print "I am cuts_ll:"

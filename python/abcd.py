@@ -12,11 +12,11 @@ class abcdAnalyzer:
     def __init__(self, indir="../AnalysisRegion", outdir='plots',
                  lumi = 2.318278305,  sepSig=True,
                  LogY=True,   doRatio=True,
-                 addSig=True, addData=True):
+                 addSig=True, addData=True, doMetCorr=False):
 
         if not os.path.exists(outdir): os.system('mkdir '+outdir)
 
-        self.plotter=InitializePlotter(indir,addSig=addSig,addData=addData)
+        self.plotter=InitializePlotter(indir,addSig=addSig,addData=addData, doMetCorr=doMetCorr)
         self.mycuts= SetCuts()
         self.Channel=raw_input("Please choose a channel (el or mu): \n")
         self.outdir = outdir
