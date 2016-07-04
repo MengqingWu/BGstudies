@@ -95,7 +95,7 @@ class SetCuts ():
         else:
             preSelection+='&&'
             cut_var1='1.4'
-            cut_var2='0.' 
+            cut_var2='0.4' 
             var1='abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)'
             var2='(llnunu_l2_pt*(abs(llnunu_deltaPhi)-TMath::Pi()/2)/abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)/llnunu_l1_pt)'
             
