@@ -19,7 +19,7 @@ mycuts=SetCuts()
 
 tag0='ZJstudy'
 outdir='test'
-indir="../zjetsSkim/"
+indir="./METSkim/"
 lumi=2.318278305
 doprint=True
 
@@ -39,7 +39,7 @@ if whichregion=="": lswhichregion=['SR', 'VR']
 else: lswhichregion.append(whichregion)
 
 ### ----- Initialize (samples):
-plotter = InitializePlotter(indir=indir, addData=True)
+plotter = InitializePlotter(indir=indir, addData=True, doMetCorr=True)
 ZJets = plotter.ZJets
 Data = plotter.Data
 otherBG = plotter.NonZBG
@@ -51,7 +51,7 @@ print list(product(*comb))
 for Channel, whichregion in list(product(*comb)):
     
     cuts=mycuts.abcdCuts(Channel, whichregion)
-    cuts_loose=mycuts.abcdCuts(Channel, whichregion, met_cut='40')
+    cuts_loose=mycuts.abcdCuts(Channel, whichregion, met_cut='50')
     print cuts
     
     ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
