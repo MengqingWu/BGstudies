@@ -13,7 +13,7 @@ outtxt = open('num_out.txt', 'a')
 channel='inclusive'#raw_input("Please choose a channel (el or mu): \n")
 tag0='ZJstudy'
 outdir='./output/printer/'
-indir="./METSkim"
+indir="./METSkim_v1"
 lumi=2.318278305
 whichregion='SR'
 zpt_cut, met_cut= '100', '50'
@@ -55,13 +55,16 @@ for reg in cuts:
     histo[reg]=OrderedDict()
     yields[reg]=OrderedDict()
     err[reg]=OrderedDict()
+
+    hname='dphi_'+channel+'_'+whichregion+'_'+reg
+
     for mem in members:
         lumi_str='1' if mem=='dt' else str(lumi*1000)
-        hvar=members[mem].drawTH1('dphi_'+channel+'_'+whichregion+'_'+reg+'_'+mem, var,
-                                  cuts[reg], lumi_str, nbins, xmin, xmax, titlex = "#Delta#phi_{Z, MET}", units = "", drawStyle="HIST") 
+        hvar=members[mem].drawTH1(hname+'_'+mem, var, cuts[reg], lumi_str, nbins, xmin, xmax, titlex = "#Delta#phi_{Z, MET}", units = "", drawStyle="HIST") 
         err_reg=ROOT.Double(0.0)
         num_reg = hvar.IntegralAndError(0, 1+hvar.GetNbinsX(), err_reg)
         hreg_shape = copy.deepcopy(hvar)
+        hreg_shape.SetName(hname+'_'+mem+'_shape')
         if num_reg==0: print "[warning]: num_reg==0 for ",mem ,' in ', reg
         else:    hreg_shape.Scale(1./num_reg)
 
@@ -71,10 +74,12 @@ for reg in cuts:
 
     # get the nonzjets contamination subtracted in data:
     h_dt_sub=copy.deepcopy(histo[reg]['dt'][0])
+    h_dt_sub.SetName(hname+"_dt_sub")
     h_dt_sub.Add(histo[reg]['non-zjets'][0], -1)
     err_dtsub=ROOT.Double(0.0)
     num_dtsub=h_dt_sub.IntegralAndError(0, 1+h_dt_sub.GetNbinsX(), err_dtsub)
     h_dt_sub_shape=copy.deepcopy(h_dt_sub)
+    h_dt_sub_shape.SetName(hname+"_dt_sub_shape")
     h_dt_sub_shape.Scale(1./num_dtsub)
     err[reg]['dt_sub'] = err_dtsub
     yields[reg]['dt_sub'] = num_dtsub
