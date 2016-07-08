@@ -22,7 +22,7 @@ if not os.path.exists(outdir): os.system('mkdir '+outdir)
 tag = tag0+'_'+'test'
 outTag=outdir+'/'+tag
 
-bkg='nonRes' #'ttbar'
+bkg='ttbar' #'nonRes'
 
 #  ll in Z | ll out Z
 # --------------------  M_out (35,65) U (115,180)
@@ -32,8 +32,8 @@ bkg='nonRes' #'ttbar'
 ### ----- Initialize (samples):
 plotter_ll=InitializePlotter(indir, addSig=False, addData=True,doRatio=False)
 plotter_eu=InitializePlotter(indir, addSig=False, addData=True,doRatio=False, doElMu=True)
-#bkg_ll, bkg_eu = plotter_ll.TT, plotter_eu.TT
-bkg_ll, bkg_eu = plotter_ll.NonResBG, plotter_eu.NonResBG
+bkg_ll, bkg_eu = plotter_ll.TT, plotter_eu.TT
+#bkg_ll, bkg_eu = plotter_ll.NonResBG, plotter_eu.NonResBG
 
 setcuts = SetCuts()
 cuts=setcuts.GetAlphaCuts(zpt_cut=zpt_cut, met_cut=met_cut)

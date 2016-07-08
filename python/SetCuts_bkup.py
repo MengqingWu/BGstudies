@@ -2,30 +2,22 @@
 
 import ROOT
 import os
-from collections import OrderedDict
 
 ### Please keep the keys same in tex_dic={}  and cuts={}
 class SetCuts ():
     def __init__(self):
          
-        self.Tex_dic = {'regA': 'Region A', 'regB': 'Region B','regC': 'Region C','regD': 'Region D'}
+        self.Tex_dic = {'SR': 'Region A', 'CRb': 'Region B','CRc': 'Region C','CRd': 'Region D'}
         
         self.met_pt_in=raw_input("[info] 'SetCuts' -> please give the MET cut: (enter to use default MET>100GeV)\n")
         self.met_pt='100' if self.met_pt_in=='' else self.met_pt_in
-
-        self.var1='abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)'
-        self.var2='cos(llnunu_deltaPhi)/abs(cos(llnunu_deltaPhi))'
-
-        self.cut_var1 ='TMath::Pi()/4'
-        self.cut_var2 ='0' 
-        
         # define a cutflow for signal region
         self.cutflow=("(nllnunu>0)", #0
                       "(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)", #1
                       "llnunu_l1_pt>100.0", #2
                       "llnunu_l2_pt>"+self.met_pt, #3
-                      self.var1+'>'+self.cut_var1, #4
-                      self.var2+'<'+self.cut_var2, #5
+                      "abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)>1.5", #4
+                      "(llnunu_l2_pt*(abs(llnunu_deltaPhi)-TMath::Pi()/2)/abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)/llnunu_l1_pt)>0.2", #5
                       "nlep<3")  #6
 
     def GetSRCut(self, N_minus_1=''):
@@ -81,42 +73,37 @@ class SetCuts ():
         #print cuts
         return cuts
     
-    def abcdCuts(self, channel="", whichRegion="", isPreSelect=False, zpt_cut='', met_cut=''):
-        if channel in ['el', 'mu', 'inclusive'] : Channel=channel
-        else:
-            Channel='inclusive'
-            print "[Warning] abcdCuts(): ",channel ," is not in ['el', 'mu', 'inclusive'], choose default 'inclusive'."
-
-        channelCut={'el':'abs(llnunu_l1_l1_pdgId)==11',
-                    'mu':'abs(llnunu_l1_l1_pdgId)==13',
-                    'inclusive': '(1)'}
-        
+    def abcdCuts(self,channel, whichRegion="", isPreSelect=False, zpt_cut='', met_cut=''):
         zpt=zpt_cut if zpt_cut!='' else '100.0'
         met=met_cut if met_cut!='' else self.met_pt
 
         #fakeMetCut='llnunu_l1_pt/llnunu_mta<0.7&&dPhi_jetMet_min_a>0.4'
-        #preSelection='nllnunu>0&&(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)&&llnunu_l1_pt>'
-        prestr = "({0}&&{1})" #"({0}&&{1}&&{6})"
-        preSelection = prestr.format(*self.cutflow)
-                        
+        preSelection='nllnunu>0&&(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)&&llnunu_l1_pt>'
+
         if whichRegion=="": whichRegion=raw_input("[info]' abcdCuts' -> Please choose a benchmarck Region (SR or VR): \n")
         if whichRegion=='SR':
-            preSelection='('+preSelection+'&&llnunu_l1_pt>'+zpt+'&&llnunu_l2_pt>'+met+')'
+            preSelection='('+preSelection+zpt+'&&llnunu_l2_pt>'+met+')'
         elif whichRegion=='VR':
-            preSelection='('+preSelection+'&&llnunu_l1_pt>'+zpt+'&&llnunu_l2_pt<'+met+')'
+            preSelection='('+preSelection+zpt+'&&llnunu_l2_pt<'+met+')'
         else:
             print "I do not understand your benchmark Region, should be either 'SR' for MET>"+met+"GeV or 'VR' for MET<"+met+"GeV\n"
             sys.exit(0)
             
-
+        pdgID={'el':'11','mu':'13' }
         if isPreSelect:
-            cuts='('+preSelection+'&&'+channelCut[Channel]+')'
+            cuts='('+preSelection+'&&abs(llnunu_l1_l1_pdgId)=='+pdgID[channel]+')'
         else:
-            cuts_a='('+preSelection+'&&'+channelCut[Channel]+'&&'+self.var1+'>'+self.cut_var1+'&&'+self.var2+'<'+self.cut_var2+')'
-            cuts_b='('+preSelection+'&&'+channelCut[Channel]+'&&'+self.var1+'>'+self.cut_var1+'&&'+self.var2+'>'+self.cut_var2+')'
-            cuts_c='('+preSelection+'&&'+channelCut[Channel]+'&&'+self.var1+'<'+self.cut_var1+'&&'+self.var2+'<'+self.cut_var2+')'
-            cuts_d='('+preSelection+'&&'+channelCut[Channel]+'&&'+self.var1+'<'+self.cut_var1+'&&'+self.var2+'>'+self.cut_var2+')'
-            cuts=OrderedDict({'regA':cuts_a, 'regB':cuts_b, 'regC':cuts_c, 'regD':cuts_d})
+            preSelection+='&&'
+            cut_var1='1.4'
+            cut_var2='0.4' 
+            var1='abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)'
+            var2='(llnunu_l2_pt*(abs(llnunu_deltaPhi)-TMath::Pi()/2)/abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)/llnunu_l1_pt)'
+            
+            cuts_a='('+preSelection+'abs(llnunu_l1_l1_pdgId)=='+pdgID[channel]+'&&'+var1+'>'+cut_var1+'&&'+var2+'>'+cut_var2+')'
+            cuts_b='('+preSelection+'abs(llnunu_l1_l1_pdgId)=='+pdgID[channel]+'&&'+var1+'>'+cut_var1+'&&'+var2+'<'+cut_var2+')'
+            cuts_c='('+preSelection+'abs(llnunu_l1_l1_pdgId)=='+pdgID[channel]+'&&'+var1+'<'+cut_var1+'&&'+var2+'>'+cut_var2+')'
+            cuts_d='('+preSelection+'abs(llnunu_l1_l1_pdgId)=='+pdgID[channel]+'&&'+var1+'<'+cut_var1+'&&'+var2+'<'+cut_var2+')'
+            cuts={'SR':cuts_a, 'CRb':cuts_b, 'CRc':cuts_c, 'CRd':cuts_d}
         
         return cuts
    

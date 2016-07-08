@@ -2,6 +2,14 @@
 from ROOT import *
 import math, os, sys, copy
 
+def CheckDir(outdir):
+    dirlist=outdir.split('/')
+    dirTest=''
+    for idir in range(0,len(dirlist)):
+        if dirlist[idir]=='': continue
+        dirTest+=dirlist[idir]+'/'
+        if not os.path.exists(dirTest):os.system('mkdir '+dirTest)
+                
 def GetCorrelationFactorError(corr, num):
     se=math.sqrt((1-corr**2)/(num-2))
     return se
@@ -20,7 +28,28 @@ def myIntegralAndError(h1, x1, x2, error):
     binx1 = h1.GetXaxis().FindBin(x1)
     binx2 = h1.GetXaxis().FindBin(x2)
     return h1.IntegralAndError(binx1, binx2, error)
-                
+
+def ShiftXaxisTH1(inputHist, Shift, suffix):
+    nbinsx=inputHist.GetNbinsX()
+    hshift = copy.deepcopy(inputHist)
+    hshift.SetName(inputHist.GetName() + suffix)
+    hshift.Reset()
+    
+    for binx in range(0, nbinsx+1):
+        Bin = hshift.GetBin(binx)
+        if inputHist.GetBinContent(Bin):
+            ix = inputHist.GetBinContent(Bin)
+            errx = inputHist.GetBinError(Bin)
+            
+            shiftx = Shift + inputHist.GetBinCenter(Bin)
+            shiftBin = hshift.FindBin(shiftx)
+            
+            hshift.SetBinContent(shiftBin, ix)
+            hshift.SetBinError(shiftBin, errx)
+        else: continue
+    #hshift.Print("all")
+    return hshift
+
 def GetCumulativeAndError(inputHist,forward=True, suffix=''):
     """ Derived from the root TH1::GetCumulative() function
     taking into consider of underflow and overflow bins;
@@ -219,8 +248,8 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
     fout.Close()
 
     c1.Print(outDir+'/'+output+'_'+channel.Data()+'.eps')
-    c1.Clear()
-    del fout, c1, hratio, hstack, frame, p1, p2
+    #c1.Clear()
+    #del fout, c1, hratio, hstack, frame, p1, p2
     return
 
 def drawCompare(hstack, hratio, legend,
