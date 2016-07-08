@@ -13,7 +13,7 @@ class SetCuts ():
         self.met_pt='100' if self.met_pt_in=='' else self.met_pt_in
         # define a cutflow for signal region
         self.cutflow=("(nllnunu>0)", #0
-                      "abs(llnunu_l1_mass-91.1876)<20.0", #1
+                      "(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)", #1
                       "llnunu_l1_pt>100.0", #2
                       "llnunu_l2_pt>"+self.met_pt, #3
                       "abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)>1.5", #4
@@ -47,8 +47,8 @@ class SetCuts ():
         cuts_tmp+='&&'+zpt+'&&'+met
 
         if Zmass=='inclusive': pass
-        elif Zmass=='out': cuts_tmp+="&&abs(llnunu_l1_mass-91.1876)<=55.0&&abs(llnunu_l1_mass-91.1876)>=25.0"
-        elif Zmass=='in': cuts_tmp+="&&abs(llnunu_l1_mass-91.1876)<20.0"
+        elif Zmass=='out': cuts_tmp+="&&((llnunu_l1_mass>35.0&&llnunu_l1_mass<65.0)||(llnunu_l1_mass>115.0&&llnunu_l1_mass<200.0))"
+        elif Zmass=='in': cuts_tmp+="&&(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)"
         else: raise RuntimeError, "ERROR! I do not understand the Zmass value you put in alphaCuts(self, isll, Zmass) from SetCuts.py"
 
         if not isll:
@@ -63,9 +63,12 @@ class SetCuts ():
     def GetAlphaCuts(self, zpt_cut='', met_cut=''):
         """cuts[<reg>][<zmass>]  """
         cuts = {'ll' : { 'in': self.alphaCuts(isll=True, Zmass='in', zpt_cut=zpt_cut, met_cut=met_cut),
-                         'out': self.alphaCuts(isll=True, Zmass='out', zpt_cut=zpt_cut, met_cut=met_cut)},
+                         'out': self.alphaCuts(isll=True, Zmass='out', zpt_cut=zpt_cut, met_cut=met_cut),
+                         'inclusive': self.alphaCuts(Zmass='inclusive', zpt_cut=zpt_cut, met_cut=met_cut)
+                     },
                 'emu':{ 'in' : self.alphaCuts(isll=False, Zmass='in', zpt_cut=zpt_cut, met_cut=met_cut),
-                        'out': self.alphaCuts(isll=False, Zmass='out', zpt_cut=zpt_cut, met_cut=met_cut)}
+                        'out': self.alphaCuts(isll=False, Zmass='out', zpt_cut=zpt_cut, met_cut=met_cut),
+                        'inclusive': self.alphaCuts(isll=False, Zmass='inclusive', zpt_cut=zpt_cut, met_cut=met_cut)}
             }
         #print cuts
         return cuts
@@ -74,8 +77,8 @@ class SetCuts ():
         zpt=zpt_cut if zpt_cut!='' else '100.0'
         met=met_cut if met_cut!='' else self.met_pt
 
-        fakeMetCut='llnunu_l1_pt/llnunu_mta<0.7&&dPhi_jetMet_min_a>0.4'
-        preSelection='nllnunu>0&&abs(llnunu_l1_mass-91.1876)<20.0&&llnunu_l1_pt>'
+        #fakeMetCut='llnunu_l1_pt/llnunu_mta<0.7&&dPhi_jetMet_min_a>0.4'
+        preSelection='nllnunu>0&&(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)&&llnunu_l1_pt>'
 
         if whichRegion=="": whichRegion=raw_input("[info]' abcdCuts' -> Please choose a benchmarck Region (SR or VR): \n")
         if whichRegion=='SR':
@@ -90,16 +93,16 @@ class SetCuts ():
         if isPreSelect:
             cuts='('+preSelection+'&&abs(llnunu_l1_l1_pdgId)=='+pdgID[channel]+')'
         else:
-            preSelection+='&&'+fakeMetCut
+            preSelection+='&&'
             cut_var1='1.4'
-            cut_var2='0.' 
+            cut_var2='0.4' 
             var1='abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)'
             var2='(llnunu_l2_pt*(abs(llnunu_deltaPhi)-TMath::Pi()/2)/abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)/llnunu_l1_pt)'
             
-            cuts_a='('+preSelection+'&&abs(llnunu_l1_l1_pdgId)=='+pdgID[channel]+'&&'+var1+'>'+cut_var1+'&&'+var2+'>'+cut_var2+')'
-            cuts_b='('+preSelection+'&&abs(llnunu_l1_l1_pdgId)=='+pdgID[channel]+'&&'+var1+'>'+cut_var1+'&&'+var2+'<'+cut_var2+')'
-            cuts_c='('+preSelection+'&&abs(llnunu_l1_l1_pdgId)=='+pdgID[channel]+'&&'+var1+'<'+cut_var1+'&&'+var2+'>'+cut_var2+')'
-            cuts_d='('+preSelection+'&&abs(llnunu_l1_l1_pdgId)=='+pdgID[channel]+'&&'+var1+'<'+cut_var1+'&&'+var2+'<'+cut_var2+')'
+            cuts_a='('+preSelection+'abs(llnunu_l1_l1_pdgId)=='+pdgID[channel]+'&&'+var1+'>'+cut_var1+'&&'+var2+'>'+cut_var2+')'
+            cuts_b='('+preSelection+'abs(llnunu_l1_l1_pdgId)=='+pdgID[channel]+'&&'+var1+'>'+cut_var1+'&&'+var2+'<'+cut_var2+')'
+            cuts_c='('+preSelection+'abs(llnunu_l1_l1_pdgId)=='+pdgID[channel]+'&&'+var1+'<'+cut_var1+'&&'+var2+'>'+cut_var2+')'
+            cuts_d='('+preSelection+'abs(llnunu_l1_l1_pdgId)=='+pdgID[channel]+'&&'+var1+'<'+cut_var1+'&&'+var2+'<'+cut_var2+')'
             cuts={'SR':cuts_a, 'CRb':cuts_b, 'CRc':cuts_c, 'CRd':cuts_d}
         
         return cuts

@@ -10,8 +10,9 @@ class InitializePlotter:
     def __init__(self, indir="../AnalysisRegion",
                  LogY=True,   doRatio=True,
                  addSig=True, addData=True,
-                 doElMu=False, scaleElMu=True,
-                 doMetCorr=False,
+                 doElMu=False, scaleElMu=False,
+                 doMetCorr=False, scaleDphi=False,
+                 zjetsscale=False,
                  sigK=1000):
         
         if doElMu:
@@ -29,7 +30,8 @@ class InitializePlotter:
             self.zjetsSamples = ['DYJetsToLL_M50_V3MetShiftBeforeJetNewSelV6NoMetLepAnyWayAllJetsBigSig1p4LepResSigProtect'] # M50_BIG = M50 + M50_Ext
         else:
             self.zjetsSamples = ['DYJetsToLL_M50_BIG'] # M50_BIG = M50 + M50_Ext
-
+        
+        print '[Info] zjets sample: ', self.zjetsSamples[0]
         for sample in self.zjetsSamples:
             zjetsPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
             zjetsPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
@@ -39,7 +41,9 @@ class InitializePlotter:
             zjetsPlotters[-1].addCorrectionFactor('puWeight','tree')
             zjetsPlotters[-1].addCorrectionFactor(triggersf,'tree')
             zjetsPlotters[-1].addCorrectionFactor(lepsf,'tree')
-            
+            if doMetCorr and zjetsscale:
+                zjetsPlotters[-1].addCorrectionFactor('dphi_sf','tree')# to scale dphi shape in BCD regions as the one in regA
+                        
         self.ZJets = MergedPlotter(zjetsPlotters)
         self.ZJets.setFillProperties(1001,ROOT.kGreen+2)
 
@@ -181,7 +185,9 @@ class InitializePlotter:
                     dataPlotters[-1].addCorrectionFactor('Melmu_sf','tree')
                 else:
                     dataPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
-
+                    if doMetCorr and scaleDphi:
+                        dataPlotters[-1].addCorrectionFactor('dphi_sf','tree')# to scale dphi shape in BCD regions as the one in regA
+                    
             self.Data = MergedPlotter(dataPlotters)
             self.Data.setFillProperties(1001,ROOT.kGreen+2)
             

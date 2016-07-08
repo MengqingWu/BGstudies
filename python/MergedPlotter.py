@@ -17,11 +17,15 @@ class MergedPlotter(PlotterBase):
 
     def drawTH1(self,name,var,cuts,lumi,bins,min,max,titlex = "", titley="", units = "",drawStyle = "HIST"):
         h=None
+        plotterCount=0
         for plotter in self.plotters:
+            hname=name+str(plotterCount)
             if h is None:
-                h=plotter.drawTH1(name,var,cuts,lumi,bins,min,max,titlex,units,drawStyle)
+                h=plotter.drawTH1(hname,var,cuts,lumi,bins,min,max,titlex,units,drawStyle)
             else:
-                h.Add(plotter.drawTH1(name,var,cuts,lumi,bins,min,max,titlex,units,drawStyle))
+                h.Add(plotter.drawTH1(hname,var,cuts,lumi,bins,min,max,titlex,units,drawStyle))
+            plotterCount+=1
+                
         h.SetLineColor(self.linecolor)
         h.SetLineWidth(self.linewidth)
         h.SetFillStyle(self.fillstyle)

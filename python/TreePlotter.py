@@ -46,9 +46,10 @@ class TreePlotter(PlotterBase):
                 corrString = corrString+"*("+str(corr['value'])+")" 
         self.tree.Draw(var+">>"+name,"("+cuts+")*"+lumi+"*"+self.weight+"*("+corrString+")","goff")
 
-        h_return=copy.deepcopy(h)
-        del h
-        return h_return
+        # h_return=copy.deepcopy(h)
+        # h.Clear()
+        # return h_return
+        return h
 
 
     def drawTH2(self,name,var,cuts,lumi,binsx,minx,maxx,binsy,miny,maxy,titlex = "",unitsx = "",titley="",unitsy="", drawStyle = "COLZ"):
