@@ -95,9 +95,13 @@ if whichregion=='SR':
     h_AC_shape=ShiftXaxisTH1(histo['regA']['zjets'][1], -ROOT.TMath.Pi()/4, '_shiftC')
     h_AD_shape=ShiftXaxisTH1(histo['regA']['zjets'][1], -ROOT.TMath.Pi()/2, '_shiftD')
 
-    h_B_shape=histo['regB']['zjets'][0];h_B_shape.Add(histo['regB']['non-zjets'][0])
-    h_C_shape=histo['regC']['zjets'][0];h_C_shape.Add(histo['regC']['non-zjets'][0])
-    h_D_shape=histo['regD']['zjets'][0];h_B_shape.Add(histo['regD']['non-zjets'][0])
+    h_B_shape=copy.deepcopy(histo['regB']['zjets'][0]);  h_B_shape.SetName("regB_all_mc_shape")
+    h_C_shape=copy.deepcopy(histo['regC']['zjets'][0]);  h_C_shape.SetName("regC_all_mc_shape")
+    h_D_shape=copy.deepcopy(histo['regD']['zjets'][0]);  h_D_shape.SetName("regD_all_mc_shape")
+    
+    h_B_shape.Add(histo['regB']['non-zjets'][0])
+    h_C_shape.Add(histo['regC']['non-zjets'][0])
+    h_D_shape.Add(histo['regD']['non-zjets'][0])
 
     h_B_shape.Scale(1./h_B_shape.Integral(0,1+h_B_shape.GetNbinsX()))
     h_C_shape.Scale(1./h_C_shape.Integral(0,1+h_C_shape.GetNbinsX()))

@@ -10,12 +10,9 @@ from python.SimplePlot import *
 
 
 class StackZjetsDD:
-    def __init__(self, indir="./METSkim_v2",   outdir='./output/stacker/',
-                 channel='inclusive',  whichregion='SR',
-                 zpt_cut='100', met_cut= '50',
-                 lumi = 2.318278305,  sepSig=True,
-                 LogY=True,   doRatio=True,
-                 addSig=True, addData=True):
+    def __init__(self, indir="./METSkim_v1", indir_dd="./METSkim_v2", outdir='./output/stacker/',
+                 channel='inclusive',  whichregion='SR', zpt_cut='100', met_cut= '50',  lumi = 2.318278305,  
+                 sepSig=True,   LogY=True,      doRatio=True,    addSig=True, addData=True):
         self.outdir=outdir
         self.channel=channel
         self.whichregion=whichregion
@@ -25,7 +22,7 @@ class StackZjetsDD:
         #channel='inclusive'#raw_input("Please choose a channel (el or mu): \n")
         self.tag0='ZJstudy'
                 
-        self.plotter_dd=InitializePlotter(indir="./METSkim_v3", addSig=addSig, addData=addData, doRatio=doRatio, doMetCorr=True, scaleDphi=True)
+        self.plotter_dd=InitializePlotter(indir=indir_dd, addSig=addSig, addData=addData, doRatio=doRatio, doMetCorr=True, scaleDphi=True)
         self.plotter=InitializePlotter(indir=indir, addSig=addSig, addData=addData, doRatio=doRatio, doMetCorr=True)
         self.plotter.Stack.rmPlotter(self.plotter.ZJets, "ZJets","Z+Jets", "background")
         
@@ -77,7 +74,9 @@ class StackZjetsDD:
         hdata=fstack.Get(stackTag+'_data0')
         legend=fstack.Get(stackTag+'_legend')
             
-        hsig=fstack.Get(stackTag+'_BulkGravToZZToZlepZinv_narrow_1000_V3MetShiftBeforeJetNewSelV6NoMetLepAnyWayAllJetsBigSig1p4LepResSigProtect')
+        hsig1=fstack.Get(stackTag+'_BulkGravToZZToZlepZinv_narrow_800')
+        hsig2=fstack.Get(stackTag+'_BulkGravToZZToZlepZinv_narrow_1000')
+        hsig3=fstack.Get(stackTag+'_BulkGravToZZToZlepZinv_narrow_1200')
         fstack.Close()
         
         print '[debug] SR regA, datadriven zjets: ', h_zjets_dd.Integral(0,h_zjets_dd.GetNbinsX()+1)
@@ -111,7 +110,7 @@ class StackZjetsDD:
                          outDir=self.outdir, output=stackTag+"_datadriven", channel=ROOT.TString(self.channel),
                          xmin=150, xmax=500, xtitle="M_{T}^{ZZ}" ,units="GeV",
                          lumi=self.lumi, notes=self.whichregion+" selection",
-                         drawSig=True, hsig=[hsig])
+                         drawSig=True, hsig=[hsig1,hsig2,hsig3])
         return
                                             
     def ValidateDphiShapeCorr(self):
