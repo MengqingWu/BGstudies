@@ -50,8 +50,8 @@ print list(product(*comb))
 
 for Channel, whichregion in list(product(*comb)):
     
-    cuts=mycuts.abcdCuts(Channel, whichregion)
-    cuts_loose=mycuts.abcdCuts(Channel, whichregion, met_cut='50')
+    cuts=mycuts.abcdCuts(Channel, whichregion, zpt_cut='100', met_cut='50')
+    #cuts_loose=mycuts.abcdCuts(Channel, whichregion, met_cut='50')
     print cuts
     
     ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
@@ -96,18 +96,18 @@ for Channel, whichregion in list(product(*comb)):
     
     ### ----- Execute (print):
     if doprint:
-        err_ac=GetError(yields['Zjets']['SR'], yields['Zjets']['CRc'], err['Zjets']['SR'], err['Zjets']['CRc'])
-        err_bd=GetError(yields['Zjets']['CRb'], yields['Zjets']['CRd'], err['Zjets']['CRb'], err['Zjets']['CRd'])
+        err_ac=GetError(yields['Zjets']['regA'], yields['Zjets']['regC'], err['Zjets']['regA'], err['Zjets']['regC'])
+        err_bd=GetError(yields['Zjets']['regB'], yields['Zjets']['regD'], err['Zjets']['regB'], err['Zjets']['regD'])
         
-        B_data=yields['data']['CRb']-yields['non-Zjets']['CRb']
-        D_data=yields['data']['CRd']-yields['non-Zjets']['CRd']
-        err_B_data=math.sqrt(err['data']['CRb']**2+err['non-Zjets']['CRb']**2)
-        err_D_data=math.sqrt(err['data']['CRd']**2+err['non-Zjets']['CRd']**2)
+        B_data=yields['data']['regB']-yields['non-Zjets']['regB']
+        D_data=yields['data']['regD']-yields['non-Zjets']['regD']
+        err_B_data=math.sqrt(err['data']['regB']**2+err['non-Zjets']['regB']**2)
+        err_D_data=math.sqrt(err['data']['regD']**2+err['non-Zjets']['regD']**2)
         err_bd_dt=GetError(B_data, D_data, err_B_data, err_D_data)
     
         sf={}
-        sf['sf_ac_mc']=yields['Zjets']['SR']/yields['Zjets']['CRc']
-        sf['sf_bd_mc']=yields['Zjets']['CRb']/yields['Zjets']['CRd']
+        sf['sf_ac_mc']=yields['Zjets']['regA']/yields['Zjets']['regC']
+        sf['sf_bd_mc']=yields['Zjets']['regB']/yields['Zjets']['regD']
         sf['sf_bd_dt']=B_data/D_data
         sys_sf={}
         sys_sf['sys_var_corr']=abs(sf['sf_ac_mc']-sf['sf_bd_mc'])/(sf['sf_ac_mc']+sf['sf_bd_mc'])
@@ -124,18 +124,18 @@ for Channel, whichregion in list(product(*comb)):
         printfile.write( 'sys_var_corr| %.2f \nsys_nonZ_sub| %.2f\n' % (sys_sf['sys_var_corr'], sys_sf['sys_nonZ_sub']))
         
         # To print the Zjets MC, closure test and data-driven result in SR:
-        zjets_mc=yields['Zjets']['CRc']*yields['Zjets']['CRb']/yields['Zjets']['CRd']
-        zjets_mc_err=math.sqrt((yields['Zjets']['CRc']*err_bd)**2 + (err['Zjets']['SR']*yields['Zjets']['CRb']/yields['Zjets']['CRd'])**2 )
+        zjets_mc=yields['Zjets']['regC']*yields['Zjets']['regB']/yields['Zjets']['regD']
+        zjets_mc_err=math.sqrt((yields['Zjets']['regC']*err_bd)**2 + (err['Zjets']['regA']*yields['Zjets']['regB']/yields['Zjets']['regD'])**2 )
     
-        C_data=yields['data']['CRc']-yields['non-Zjets']['CRc']
-        err_C_data=math.sqrt(err['data']['CRc']**2+err['non-Zjets']['CRc']**2)
+        C_data=yields['data']['regC']-yields['non-Zjets']['regC']
+        err_C_data=math.sqrt(err['data']['regC']**2+err['non-Zjets']['regC']**2)
         zjets_data=C_data*B_data/D_data
         zjets_data_err=math.sqrt( (C_data*GetError(B_data, D_data))**2+ (err_C_data*B_data/D_data)**2 )
     
         zjets_data_sys=sys_bd_dt*zjets_data # FIXME
         
         printfile.write( '*'*40+'\n{:^40}\n'.format('Z+jets estimation')+'-'*40 +'\n') #'\n Z+jets estimation: \n'
-        printfile.write( '          MC| %5.2f +- %5.2f\n' % (yields['Zjets']['SR'], err['Zjets']['SR']))
+        printfile.write( '          MC| %5.2f +- %5.2f\n' % (yields['Zjets']['regA'], err['Zjets']['regA']))
         printfile.write( 'closure test| %5.2f +- %5.2f\n' % (zjets_mc, zjets_mc_err))
         printfile.write( ' data-driven| %5.2f +- %5.2f +- %5.2f\n' % (zjets_data, zjets_data_err, zjets_data_sys))
         printfile.write( '*'*40+'\n')
@@ -143,14 +143,14 @@ for Channel, whichregion in list(product(*comb)):
         # To print the mc and data yields in each region:
         printfile.write( '-'*40+'\n')
         printfile.write( '{:^40}\n'.format('A | C'))
-        printfile.write( '{:^40}\n'.format('Zjets %6.2f | %6.2f Zjets' % (yields['Zjets']['SR'], yields['Zjets']['CRc']) ))
-        printfile.write( '{:^40}\n'.format('non-Z %6.2f | %6.2f non-Z' % (yields['non-Zjets']['SR'], yields['non-Zjets']['CRc'])))
-        printfile.write( '{:^40}\n'.format('data %6.2f | %6.2f data' % (yields['data']['SR'], yields['data']['CRc'])))
+        printfile.write( '{:^40}\n'.format('Zjets %6.2f | %6.2f Zjets' % (yields['Zjets']['regA'], yields['Zjets']['regC']) ))
+        printfile.write( '{:^40}\n'.format('non-Z %6.2f | %6.2f non-Z' % (yields['non-Zjets']['regA'], yields['non-Zjets']['regC'])))
+        printfile.write( '{:^40}\n'.format('data %6.2f | %6.2f data' % (yields['data']['regA'], yields['data']['regC'])))
         printfile.write( '-'*40+'\n')
         printfile.write( '{:^40}\n'.format('B | D'))
-        printfile.write( '{:^40}\n'.format('Zjets %6.2f | %6.2f Zjets' % (yields['Zjets']['CRb'], yields['Zjets']['CRd'])))
-        printfile.write( '{:^40}\n'.format('non-Z %6.2f | %6.2f non-Z' % (yields['non-Zjets']['CRb'], yields['non-Zjets']['CRd'])))
-        printfile.write( '{:^40}\n'.format('data %6.2f | %6.2f data' % (yields['data']['CRb'], yields['data']['CRd'])))
+        printfile.write( '{:^40}\n'.format('Zjets %6.2f | %6.2f Zjets' % (yields['Zjets']['regB'], yields['Zjets']['regD'])))
+        printfile.write( '{:^40}\n'.format('non-Z %6.2f | %6.2f non-Z' % (yields['non-Zjets']['regB'], yields['non-Zjets']['regD'])))
+        printfile.write( '{:^40}\n'.format('data %6.2f | %6.2f data' % (yields['data']['regB'], yields['data']['regD'])))
         printfile.write( '-'*40+'\n')
     
     

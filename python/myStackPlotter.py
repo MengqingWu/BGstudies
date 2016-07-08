@@ -97,7 +97,9 @@ def DrawTex(input_tex="", channel=""):
     pt.DrawLatex(0.25,0.85,input_tex)
 
     if channel and not channel.isspace():
-        channel_tex="ee" if ROOT.TString(channel).Contains("el") else "#mu#mu"
+        if ROOT.TString(channel).Contains("el"):  channel_tex="ee"
+        elif ROOT.TString(channel).Contains("mu"): channel_tex="#mu#mu"
+        else: channel_tex=channel
         pt.DrawLatex(0.25,0.82, channel_tex+" channel")
 
     return

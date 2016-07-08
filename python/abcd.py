@@ -110,20 +110,20 @@ class abcdAnalyzer:
             else: pass
     
             self.plotter.Stack.rmPlotter(self.plotter.ZJets, "ZJets","Z+Jets", "background")
-            self.plotter.Stack.drawStack('llnunu_l2_pt', self.cuts['SR'], str(self.lumi*1000), self.nbins, self.xMin, self.xMax,
+            self.plotter.Stack.drawStack('llnunu_l2_pt', self.cuts['regA'], str(self.lumi*1000), self.nbins, self.xMin, self.xMax,
                                   titlex = "E_{T}^{miss}", units = "GeV",output=tag+'met_low',outDir=self.outdir,separateSignal=self.sepSig,
-                                  drawtex=self.tex_dic['SR'],channel=self.Channel)
+                                  drawtex=self.tex_dic['regA'],channel=self.Channel)
             
             fin=ROOT.TFile(self.outdir+'/'+tag+'met_low.root')
     
-            h_met_zjets_a=self.plotter.ZJets.drawTH1('llnunu_l2_pt','llnunu_l2_pt',self.cuts['SR'],str(self.lumi*1000),self.nbins,self.xMin,self.xMax,titlex='E_{T}^{miss}',units='GeV',drawStyle="HIST")
+            h_met_zjets_a=self.plotter.ZJets.drawTH1('llnunu_l2_pt','llnunu_l2_pt',self.cuts['regA'],str(self.lumi*1000),self.nbins,self.xMin,self.xMax,titlex='E_{T}^{miss}',units='GeV',drawStyle="HIST")
             h_met_zjets_a.Scale(1./h_met_zjets_a.Integral())
-            h_met_zjets_c=self.plotter.ZJets.drawTH1('llnunu_l2_pt','llnunu_l2_pt',self.cuts['CRc'],str(self.lumi*1000),self.nbins,self.xMin,self.xMax,titlex='E_{T}^{miss}',units='GeV',drawStyle="HIST")
+            h_met_zjets_c=self.plotter.ZJets.drawTH1('llnunu_l2_pt','llnunu_l2_pt',self.cuts['regC'],str(self.lumi*1000),self.nbins,self.xMin,self.xMax,titlex='E_{T}^{miss}',units='GeV',drawStyle="HIST")
             h_met_zjets_c.Scale(1./h_met_zjets_c.Integral())
             h_met_zjets_a.Divide(h_met_zjets_c)
     
-            h_met_zjets=self.plotter.Data.drawTH1('llnunu_l2_pt','llnunu_l2_pt',self.cuts['CRc'],str('1'),self.nbins,self.xMin,self.xMax,titlex='E_{T}^{miss}',units='GeV',drawStyle="HIST")
-            h_met_nonzjets=self.plotter.NonZBG.drawTH1('llnunu_l2_pt','llnunu_l2_pt',self.cuts['CRc'],str(self.lumi*1000),self.nbins,self.xMin,self.xMax,titlex='E_{T}^{miss}',units='GeV',drawStyle="HIST")
+            h_met_zjets=self.plotter.Data.drawTH1('llnunu_l2_pt','llnunu_l2_pt',self.cuts['regC'],str('1'),self.nbins,self.xMin,self.xMax,titlex='E_{T}^{miss}',units='GeV',drawStyle="HIST")
+            h_met_nonzjets=self.plotter.NonZBG.drawTH1('llnunu_l2_pt','llnunu_l2_pt',self.cuts['regC'],str(self.lumi*1000),self.nbins,self.xMin,self.xMax,titlex='E_{T}^{miss}',units='GeV',drawStyle="HIST")
             h_met_zjets.Add(h_met_nonzjets,-1) # subtract the non-z bkg MC from data-C
             h_met_zjets.Multiply(h_met_zjets_a)
             h_met_zjets.Scale(sf_bd)
@@ -154,9 +154,9 @@ class abcdAnalyzer:
             self.plotter.Stack.addPlotter(self.plotter.ZJets, "ZJets","Z+Jets", "background")
 
         else:
-            self.plotter.Stack.drawStack('llnunu_l2_pt', self.cuts['SR'], str(self.lumi*1000), self.nbins, self.xMin, self.xMax,
+            self.plotter.Stack.drawStack('llnunu_l2_pt', self.cuts['regA'], str(self.lumi*1000), self.nbins, self.xMin, self.xMax,
                                          titlex = "E_{T}^{miss}", units = "GeV",output=tag+'met_low',outDir=self.outdir,separateSignal=self.sepSig,
-                                         drawtex=self.tex_dic['SR'],channel=self.Channel)
+                                         drawtex=self.tex_dic['regA'],channel=self.Channel)
             
         return
         

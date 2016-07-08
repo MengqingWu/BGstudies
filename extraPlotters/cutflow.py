@@ -60,30 +60,30 @@ for ientry in range(0, fchain.GetEntriesFast()):
                             if fchain.llnunu_l2_pt[0]>100.0:
                                 nmet+=1
                                 cutflow.Fill(3.)
+                                
+                                # if (fchain.njet_corr>0&&fchain.dPhi_jetMet_min_a>0.4)||(fchain.njet_corr==0):
+                                #     ndjetfakeMet+=1
+                                #     cutflow.Fill(4.)
 
-                                if (fchain.njet_corr>0&&fchain.dPhi_jetMet_min_a>0.4)||(fchain.njet_corr==0):
-                                    ndjetfakeMet+=1
-                                    cutflow.Fill(4.)
+                                #     if fchain.llnunu_l1_pt[0]/fchain.llnunu_mta[0]<0.7:
+                                #         nlepfakeMet+=1
+                                #         cutflow.Fill(5.)
 
-                                    if fchain.llnunu_l1_pt[0]/fchain.llnunu_mta[0]<0.7:
-                                        nlepfakeMet+=1
-                                        cutflow.Fill(5.)
-
-                                        if abs(abs(fchain.llnunu_deltaPhi[0]) - TMath.Pi()/2)>1.5: 
-                                            nvar1+=1; 
-                                            cutflow.Fill(6.)
-                                            if (fchain.llnunu_l2_pt[0]*(abs(fchain.llnunu_deltaPhi[0])-TMath.Pi()/2)/abs(abs(fchain.llnunu_deltaPhi[0])-TMath.Pi()/2)/fchain.llnunu_l1_pt[0])>0.2:
-                                                nvar2+=1
-                                                cutflow.Fill(7.)
+                                #         if abs(abs(fchain.llnunu_deltaPhi[0]) - TMath.Pi()/2)>1.5: 
+                                #             nvar1+=1; 
+                                #             cutflow.Fill(6.)
+                                            # if (fchain.llnunu_l2_pt[0]*(abs(fchain.llnunu_deltaPhi[0])-TMath.Pi()/2)/abs(abs(fchain.llnunu_deltaPhi[0])-TMath.Pi()/2)/fchain.llnunu_l1_pt[0])>0.2:
+                                            #     nvar2+=1
+                                            #     cutflow.Fill(7.)
                                                 
-                                                toVeto=False
-                                                if (fchain.nlep>2):
-                                                    for ilep in range(0,fchain.nlep):
-                                                        if fchain.lep_pt[ilep] in [fchain.llnunu_l1_l1_pt[0], fchain.llnunu_l1_l2_pt[0]]: continue
-                                                        else: 
-                                                            if fchain.deltaR_lep[ilep]>0.4 and fchain.deltaR_jet[ilep]>0.4: toVeto=True
-                                                            else: print '[info] evt==', fchain.evt 
-                                                if not toVeto: nlepVeto+=1; cutflow.Fill(8.)
+                                                # toVeto=False
+                                                # if (fchain.nlep>2):
+                                                #     for ilep in range(0,fchain.nlep):
+                                                #         if fchain.lep_pt[ilep] in [fchain.llnunu_l1_l1_pt[0], fchain.llnunu_l1_l2_pt[0]]: continue
+                                                #         else: 
+                                                #             if fchain.deltaR_lep[ilep]>0.4 and fchain.deltaR_jet[ilep]>0.4: toVeto=True
+                                                #             else: print '[info] evt==', fchain.evt 
+                                                # if not toVeto: nlepVeto+=1; cutflow.Fill(8.)
                                     
 outtxt.Write('we have ', fchain.GetEntriesFast(), 'entries.')
 outtxt.Write('llnunu pair:   ', nll)
@@ -93,10 +93,10 @@ outtxt.Write('lead lepton:   ', nsiglep) #1
 outtxt.Write('Z window:      ', nZwindow) #2
 outtxt.Write('Z pt>100:      ', nZpt) #3
 outtxt.Write('met>100:       ', nmet) #4
-outtxt.Write('dphi(j,met)>.4:', ndjetfakeMet) #5
-outtxt.Write('Zpt/mT<0.7:    ', nlepfakeMet) #6
-outtxt.Write('|dphi-pi/2|>1.5:', nvar1) #7
-outtxt.Write('pTbalance>0.2: ', nvar2) #8
+# outtxt.Write('dphi(j,met)>.4:', ndjetfakeMet) #5
+# outtxt.Write('Zpt/mT<0.7:    ', nlepfakeMet) #6
+# outtxt.Write('|dphi-pi/2|>1.5:', nvar1) #7
+# outtxt.Write('pTbalance>0.2: ', nvar2) #8
 outtxt.Write('3rd lepton veto:',nlepVeto) #9
 
 #---- Finalize:
