@@ -8,8 +8,6 @@ from python.InitializePlotter import InitializePlotter
 from python.HistPrinter import mergePrinter
 from python.SimplePlot import *
 
-outtxt = open('num_out.txt', 'a')
-
 channel='inclusive'#raw_input("Please choose a channel (el or mu): \n")
 tag0='ZJstudy'
 outdir='./output/printer/'
@@ -17,15 +15,20 @@ indir="./METSkim_v1"
 lumi=2.318278305
 whichregion='SR'
 zpt_cut, met_cut= '100', '50'
-var="abs(llnunu_deltaPhi)"
+var="fabs(llnunu_deltaPhi)"
+
+doSub=True
+whichdt='dt_sub' if doSub else 'dt'
+whichbcd='zjets' if doSub else 'allmc'
 
 tag = tag0+'_'+'printer'
 outTag=outdir+'/'+tag
 
 CheckDir(outdir)
+outtxt = open(outdir+'/num_out.txt', 'a')
 
 ### ----- Initialize (samples):
-plotter=InitializePlotter(indir=indir, addData=True, doMetCorr=True)
+plotter=InitializePlotter(indir=indir, addData=True)
 
 setcuts = SetCuts()
 cuts=setcuts.abcdCuts(channel=channel, whichRegion=whichregion, zpt_cut=zpt_cut, met_cut=met_cut)
@@ -47,11 +50,12 @@ ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
 ROOT.gStyle.SetPadBottomMargin(0.2)
 ROOT.gStyle.SetPadLeftMargin(0.15)
 
+textodraw=setcuts.Tex_dic
 ### ----- Execute (plotting):
 for reg in cuts:
-    # plotter.Stack.drawStack(var, cuts[reg], str(lumi*1000), 30, 0.0, 3.0, titlex = "#Delta#phi_{Z, MET}", units = "",
-    #                         output=tag+'_'+whichregion+'_'+channel+'_'+reg+'_absDphi',outDir=outdir,
-    #                         separateSignal=True, drawtex="", channel="")
+    plotter.Stack.drawStack(var, cuts[reg], str(lumi*1000), 30, 0.0, 3.0, titlex = "|#Delta#phi_{Z, MET}|", units = "",
+                            output=tag+'_'+whichregion+'_'+channel+'_'+reg+'_absDphi',outDir=outdir,
+                            separateSignal=True, drawtex = textodraw[reg], channel="inclusive")
     histo[reg]=OrderedDict()
     yields[reg]=OrderedDict()
     err[reg]=OrderedDict()
@@ -60,7 +64,7 @@ for reg in cuts:
 
     for mem in members:
         lumi_str='1' if mem=='dt' else str(lumi*1000)
-        hvar=members[mem].drawTH1(hname+'_'+mem, var, cuts[reg], lumi_str, nbins, xmin, xmax, titlex = "#Delta#phi_{Z, MET}", units = "", drawStyle="HIST") 
+        hvar=members[mem].drawTH1(hname+'_'+mem, var, cuts[reg], lumi_str, nbins, xmin, xmax, titlex = "|#Delta#phi_{Z, MET}|", units = "", drawStyle="HIST") 
         err_reg=ROOT.Double(0.0)
         num_reg = hvar.IntegralAndError(0, 1+hvar.GetNbinsX(), err_reg)
         hreg_shape = copy.deepcopy(hvar)
@@ -85,43 +89,23 @@ for reg in cuts:
     yields[reg]['dt_sub'] = num_dtsub
     histo[reg]['dt_sub'] = [h_dt_sub, h_dt_sub_shape]
 
-
-####**** begin: shape correction save regA(zjets)/regControl(all bkg)
-if whichregion=='SR':
-    ROOT.TH1.AddDirectory(ROOT.kFALSE)
-    ftest=ROOT.TFile(outdir+'/'+"zjets_shape_correction.root","recreate")
+    h_allmc=copy.deepcopy(histo[reg]['zjets'][0])
+    h_allmc.SetName(hname+"_allMC")
+    h_allmc.Add(histo[reg]['non-zjets'][0], 1)
+    err_allmc=ROOT.Double(0.0)
+    num_allmc=h_allmc.IntegralAndError(0, 1+h_allmc.GetNbinsX(), err_allmc)
+    err[reg]['allmc'] = err_allmc
+    yields[reg]['allmc'] = num_allmc
+    histo[reg]['allmc'] = [h_allmc]
     
-    h_AB_shape=ShiftXaxisTH1(histo['regA']['zjets'][1], -3*ROOT.TMath.Pi()/4, '_shiftB')
-    h_AC_shape=ShiftXaxisTH1(histo['regA']['zjets'][1], -ROOT.TMath.Pi()/4, '_shiftC')
-    h_AD_shape=ShiftXaxisTH1(histo['regA']['zjets'][1], -ROOT.TMath.Pi()/2, '_shiftD')
-
-    h_B_shape=copy.deepcopy(histo['regB']['zjets'][0]);  h_B_shape.SetName("regB_all_mc_shape")
-    h_C_shape=copy.deepcopy(histo['regC']['zjets'][0]);  h_C_shape.SetName("regC_all_mc_shape")
-    h_D_shape=copy.deepcopy(histo['regD']['zjets'][0]);  h_D_shape.SetName("regD_all_mc_shape")
-    
-    h_B_shape.Add(histo['regB']['non-zjets'][0])
-    h_C_shape.Add(histo['regC']['non-zjets'][0])
-    h_D_shape.Add(histo['regD']['non-zjets'][0])
-
-    h_B_shape.Scale(1./h_B_shape.Integral(0,1+h_B_shape.GetNbinsX()))
-    h_C_shape.Scale(1./h_C_shape.Integral(0,1+h_C_shape.GetNbinsX()))
-    h_D_shape.Scale(1./h_D_shape.Integral(0,1+h_D_shape.GetNbinsX()))
-
-    h_AB_shape.Divide(h_B_shape)
-    h_AC_shape.Divide(h_C_shape)
-    h_AD_shape.Divide(h_D_shape)
-    
-    ftest.cd()
-    for ih in histo:
-        for imem in histo[ih]:
-            histo[ih][imem][1].Write()
-            histo[ih][imem][0].Write()
-    h_B_shape.Write();     h_C_shape.Write();    h_D_shape.Write();   
-    h_AB_shape.Write()
-    h_AC_shape.Write()
-    h_AD_shape.Write()
-    ftest.Close()
-####**** end: shape correction save
+####**** begin: save all histos
+fdtshape=ROOT.TFile(outdir+'/'+"all_histos.root","recreate")
+fdtshape.cd()
+for ih in histo:
+    for imem in histo[ih]:
+        for iih in histo[ih][imem]:
+            iih.Write()
+####**** end: save all histos
 
 # drawCompareSimple(h_Mll_shape_mc, h_Meu_shape_mc, "ll inclusive", "e#mu inclusive",
 #                   xmin=0.0, xmax=200.0, outdir=outdir, notes='from '+bkg+' MC',
@@ -146,20 +130,20 @@ for key in yields:
 err_product=lambda A, B, a, b: sqrt((a*B)**2+(b*A)**2) # A*B
 err_division=lambda A, B, a, b: sqrt((a/B)**2+(b*A/B**2)**2) # A/B
     
-ratioAB=yields['regA']['zjets']/yields['regB']['zjets']
-ratioAC=yields['regA']['zjets']/yields['regC']['zjets']
-ratioAD=yields['regA']['zjets']/yields['regD']['zjets']
+ratioAB=yields['regA']['zjets']/yields['regB'][whichbcd]
+ratioAC=yields['regA']['zjets']/yields['regC'][whichbcd]
+ratioAD=yields['regA']['zjets']/yields['regD'][whichbcd]
 
-err_ratioAB=err_division(yields['regA']['zjets'], yields['regB']['zjets'], err['regA']['zjets'],err['regB']['zjets'])
-err_ratioAC=err_division(yields['regA']['zjets'], yields['regC']['zjets'], err['regA']['zjets'],err['regC']['zjets'])
-err_ratioAD=err_division(yields['regA']['zjets'], yields['regD']['zjets'], err['regA']['zjets'],err['regD']['zjets'])
+err_ratioAB=err_division(yields['regA']['zjets'], yields['regB'][whichbcd], err['regA']['zjets'],err['regB'][whichbcd])
+err_ratioAC=err_division(yields['regA']['zjets'], yields['regC'][whichbcd], err['regA']['zjets'],err['regC'][whichbcd])
+err_ratioAD=err_division(yields['regA']['zjets'], yields['regD'][whichbcd], err['regA']['zjets'],err['regD'][whichbcd])
 
-regA_pred=(ratioAB*yields['regB']['dt_sub']\
-           +ratioAC*yields['regC']['dt_sub']\
-           +ratioAD*yields['regD']['dt_sub'])/3
-err_regA_pred = sqrt(err_product(ratioAB,yields['regB']['dt_sub'],err_ratioAB,err['regB']['dt_sub'])**2\
-                     + err_product(ratioAC,yields['regC']['dt_sub'],err_ratioAB,err['regC']['dt_sub'])**2\
-                     + err_product(ratioAD,yields['regD']['dt_sub'],err_ratioAB,err['regD']['dt_sub'])**2)
+regA_pred=(ratioAB*yields['regB'][whichdt]\
+          +ratioAC*yields['regC'][whichdt]\
+          +ratioAD*yields['regD'][whichdt])/3
+err_regA_pred = sqrt(err_product(ratioAB,yields['regB'][whichdt],err_ratioAB,err['regB'][whichdt])**2\
+                   + err_product(ratioAC,yields['regC'][whichdt],err_ratioAB,err['regC'][whichdt])**2\
+                   + err_product(ratioAD,yields['regD'][whichdt],err_ratioAB,err['regD'][whichdt])**2)
 
 zjets_exp=yields['regA']['zjets']
 err_zjets_exp=err['regA']['zjets']
@@ -172,7 +156,7 @@ outtxt.write(" A/B = %.2f +- %.2f\n A/C = %.2f +- %.2f\n A/D = %.2f +- %.2f\n" \
 
 outtxt.close()
 os.system('cat '+outtxt.name)
-
+fdtshape.Close()
 # h_Meu_yield_mc_corr.Scale(eval(sf))
 # h_Mll_yield_mc.Rebin(2)
 # drawCompareSimple(h_Mll_yield_mc, h_Meu_yield_mc_corr, "ll expect", "ll predict",

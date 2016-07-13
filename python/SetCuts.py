@@ -13,8 +13,8 @@ class SetCuts ():
         self.met_pt_in=raw_input("[info] 'SetCuts' -> please give the MET cut: (enter to use default MET>100GeV)\n")
         self.met_pt='100' if self.met_pt_in=='' else self.met_pt_in
 
-        self.var1='abs(abs(llnunu_deltaPhi)-TMath::Pi()/2)'
-        self.var2='cos(llnunu_deltaPhi)/abs(cos(llnunu_deltaPhi))'
+        self.var1='fabs(fabs(llnunu_deltaPhi)-TMath::Pi()/2)'
+        self.var2='cos(llnunu_deltaPhi)/fabs(cos(llnunu_deltaPhi))'
 
         self.cut_var1 ='TMath::Pi()/4'
         self.cut_var2 ='0' 
@@ -96,7 +96,7 @@ class SetCuts ():
 
         #fakeMetCut='llnunu_l1_pt/llnunu_mta<0.7&&dPhi_jetMet_min_a>0.4'
         #preSelection='nllnunu>0&&(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)&&llnunu_l1_pt>'
-        prestr = "({0}&&{1})" #"({0}&&{1}&&{6})"
+        prestr = "({0}&&{1}&&{6})"
         preSelection = prestr.format(*self.cutflow)
                         
         if whichRegion=="": whichRegion=raw_input("[info]' abcdCuts' -> Please choose a benchmarck Region (SR or VR): \n")

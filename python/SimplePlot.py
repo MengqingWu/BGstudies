@@ -145,6 +145,23 @@ def GetRatio_TH1(h1, h2, h2_isStack=False):
 
     return hratio
 
+def GetLegendv1(xmin, ymin, xmax,  ymax, hist, label, opt=[]):
+    """ hist, label and opt are in type of list """
+    legend=TLegend(xmin, ymin, xmax, ymax,"","brNDC");
+    legend.SetFillStyle(0); #set legend box transparent
+    legend.SetBorderSize(0);
+    legend.SetTextSize(0.05);
+    legend.SetTextFont(42);
+#    legend.SetNColumns(2);
+    legend.SetLineColor(0);
+    if len(hist)!=len(label): print "[Error] GetLegendv1(): %d hists and %d labels, please check accordingly! " % (len(hist), len(label)); exit(0)
+    if len(opt)!=0 and len(opt)!=len(hist):  print "[Error] GetLegendv1(): %d hists and %d labels, please check accordingly! "; exit(0)
+
+    for ih, ilabel,iopt in zip(hist, label, opt):
+        legend.AddEntry(ih,ilabel,iopt);
+
+    return legend
+
 def GetLegend(h1,label1,opt1,h2,label2,opt2):
     legend=TLegend(0.65,0.75,0.85,0.90,"","brNDC");
     legend.SetFillStyle(0); #set legend box transparent
@@ -255,7 +272,7 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
 def drawCompare(hstack, hratio, legend,
                 hstack_opt="nostack",outdir="./",tag="test",
                 xmin=50., xmax=500., xtitle="" , ytitle="Events", units="",
-                lumi=2.169, notes=""):
+                lumi=2.169, notes="", setmax=0):
 
     fout = TFile(outdir+'/'+tag+'.root', 'recreate')
     
@@ -277,6 +294,9 @@ def drawCompare(hstack, hratio, legend,
     
     p1.cd()
     hstack.Draw(hstack_opt)
+    if setmax!=0:
+        print 'I am setting maximum*', setmax
+        hstack.SetMaximum(hstack.GetMaximum()*setmax)
     legend.Draw("same")
         
     hstack.SetMinimum(0.01)
@@ -339,7 +359,7 @@ def drawCompare(hstack, hratio, legend,
 def drawCompareSimple(h1, h2, leg1, leg2,
                       xmin=50., xmax=500., xtitle="" , ytitle="", units="",
                       lumi=2.169, notes="",
-                      outdir="./", tag="test"):
+                      outdir="./", tag="test", setmax=0):
 
     h1.SetLineColor(kRed)
     h1.SetFillColor(kRed)
@@ -360,5 +380,5 @@ def drawCompareSimple(h1, h2, leg1, leg2,
                  xmin=xmin, xmax=xmax,
                  xtitle=xtitle, ytitle=ytitle, units=units,
                  lumi=lumi,
-                 notes=notes)
+                 notes=notes, setmax=setmax)
     return
