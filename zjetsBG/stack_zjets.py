@@ -67,9 +67,9 @@ class StackZjetsDD:
         hc=self.plotter_dd.Data.drawTH1('regC', self.Mt['C'], self.cuts['regC'], '1', 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV", drawStyle="HIST") 
         hd=self.plotter_dd.Data.drawTH1('regD', self.Mt['D'], self.cuts['regD'], '1', 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV", drawStyle="HIST") 
 
-        subb=self.plotter_dd.NonZBG.drawTH1('regB',self.Mt['B'],self.cuts['regB'], str(self.lumi*1000), 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units="GeV", drawStyle="HIST") 
-        subc=self.plotter_dd.NonZBG.drawTH1('regC',self.Mt['C'],self.cuts['regC'], str(self.lumi*1000), 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units="GeV", drawStyle="HIST") 
-        subd=self.plotter_dd.NonZBG.drawTH1('regD',self.Mt['D'],self.cuts['regD'], str(self.lumi*1000), 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units="GeV", drawStyle="HIST") 
+        subb=self.plotter_dd.NonZBG.drawTH1('subregB',self.Mt['B'],self.cuts['regB'],str(self.lumi*1000),70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units="GeV") 
+        subc=self.plotter_dd.NonZBG.drawTH1('subregC',self.Mt['C'],self.cuts['regC'],str(self.lumi*1000),70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units="GeV") 
+        subd=self.plotter_dd.NonZBG.drawTH1('subregD',self.Mt['D'],self.cuts['regD'],str(self.lumi*1000),70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units="GeV") 
         hb.Add(subb,-1)
         hc.Add(subc,-1)
         hd.Add(subd,-1)
@@ -81,8 +81,8 @@ class StackZjetsDD:
         h_zjets_dd=copy.deepcopy(hb)
         #h_zjets_dd.Add(hc)
         #h_zjets_dd.Add(hd)
-        
         #h_zjets_dd.Scale(1.0/3.0)
+        
         h_zjets_dd.SetFillColor(ROOT.kGreen+2)
 
         ROOT.TH1.AddDirectory(ROOT.kFALSE)
