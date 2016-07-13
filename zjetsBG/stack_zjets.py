@@ -22,12 +22,26 @@ class StackZjetsDD:
         #channel='inclusive'#raw_input("Please choose a channel (el or mu): \n")
         self.tag0='ZJstudy'
                 
-        self.plotter_dd=InitializePlotter(indir=indir_dd, addSig=addSig, addData=addData, doRatio=doRatio, doMetCorr=True, scaleDphi=True)
-        self.plotter=InitializePlotter(indir=indir, addSig=addSig, addData=addData, doRatio=doRatio, doMetCorr=True)
+        self.plotter_dd=InitializePlotter(indir=indir_dd, addSig=addSig, addData=addData, doRatio=doRatio, scaleDphi=True)
+        self.plotter=InitializePlotter(indir=indir, addSig=addSig, addData=addData, doRatio=doRatio)
         self.plotter.Stack.rmPlotter(self.plotter.ZJets, "ZJets","Z+Jets", "background")
         
         setcuts = SetCuts()
         self.cuts = setcuts.abcdCuts(channel=channel, whichRegion=whichregion, zpt_cut=zpt_cut, met_cut=met_cut)
+
+        et1="TMath::Sqrt(llnunu_l1_pt*llnunu_l1_pt+llnunu_l1_mass*llnunu_l1_mass)"
+        et2="TMath::Sqrt(llnunu_l2_pt*llnunu_l2_pt+llnunu_l1_mass*llnunu_l1_mass)"
+        newMtB='TMath::Sqrt(2.0*(llnunu_l1_mass*llnunu_l1_mass+'+et1+'*'+et2+'-llnunu_l1_pt*llnunu_l2_pt*cos(llnunu_deltaPhi+TMath::Pi()*3/4)))'
+        newMtD='TMath::Sqrt(2.0*(llnunu_l1_mass*llnunu_l1_mass+'+et1+'*'+et2+'-llnunu_l1_pt*llnunu_l2_pt*cos(llnunu_deltaPhi+TMath::Pi()/2)))'
+        newMtC='TMath::Sqrt(2.0*(llnunu_l1_mass*llnunu_l1_mass+'+et1+'*'+et2+'-llnunu_l1_pt*llnunu_l2_pt*cos(llnunu_deltaPhi+TMath::Pi()/4)))'
+        self.Mt={'A':'llnunu_mt',
+                 'B':newMtB,
+                 'C':newMtC,
+                 'D':newMtD}
+        self.fabsdPhi={'A': "fabs(llnunu_deltaPhi)",
+                       'B': "fabs(llnunu_deltaPhi)+TMath::Pi()*3/4",
+                       'D': "fabs(llnunu_deltaPhi)+TMath::Pi()/2",
+                       'C': "fabs(llnunu_deltaPhi)+TMath::Pi()/4"}
         
         ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
         ROOT.gStyle.SetPadBottomMargin(0.2)
@@ -36,29 +50,39 @@ class StackZjetsDD:
     def drawDataDrivenStack(self):
         stackTag = self.tag0+'_'+'stacker'+'_'+self.whichregion+'_'+self.channel+'_'+'regA'+'_'+'absDphi'
         outTag=self.outdir+'/'+stackTag
-        var="llnunu_mtc"
-        
-        et1="TMath::Sqrt(llnunu_l1_pt*llnunu_l1_pt+llnunu_l1_mass*llnunu_l1_mass)"
-        et2="TMath::Sqrt(llnunu_l2_pt*llnunu_l2_pt+llnunu_l1_mass*llnunu_l1_mass)"
-        newMtB='TMath::Sqrt(2.0*(llnunu_l1_mass*llnunu_l1_mass+'+et1+'*'+et2+'-llnunu_l1_pt*llnunu_l2_pt*cos(llnunu_deltaPhi+TMath::Pi()*3/4)))'
-        newMtD='TMath::Sqrt(2.0*(llnunu_l1_mass*llnunu_l1_mass+'+et1+'*'+et2+'-llnunu_l1_pt*llnunu_l2_pt*cos(llnunu_deltaPhi+TMath::Pi()/2)))'
-        newMtC='TMath::Sqrt(2.0*(llnunu_l1_mass*llnunu_l1_mass+'+et1+'*'+et2+'-llnunu_l1_pt*llnunu_l2_pt*cos(llnunu_deltaPhi+TMath::Pi()/4)))'
+        # var="llnunu_mt"
+        # et1="TMath::Sqrt(llnunu_l1_pt*llnunu_l1_pt+llnunu_l1_mass*llnunu_l1_mass)"
+        # et2="TMath::Sqrt(llnunu_l2_pt*llnunu_l2_pt+llnunu_l1_mass*llnunu_l1_mass)"
+        # newMtB='TMath::Sqrt(2.0*(llnunu_l1_mass*llnunu_l1_mass+'+et1+'*'+et2+'-llnunu_l1_pt*llnunu_l2_pt*cos(llnunu_deltaPhi+TMath::Pi()*3/4)))'
+        # newMtD='TMath::Sqrt(2.0*(llnunu_l1_mass*llnunu_l1_mass+'+et1+'*'+et2+'-llnunu_l1_pt*llnunu_l2_pt*cos(llnunu_deltaPhi+TMath::Pi()/2)))'
+        # newMtC='TMath::Sqrt(2.0*(llnunu_l1_mass*llnunu_l1_mass+'+et1+'*'+et2+'-llnunu_l1_pt*llnunu_l2_pt*cos(llnunu_deltaPhi+TMath::Pi()/4)))'
         
         ### ----- Execute (plotting):
-        self.plotter.Stack.drawStack(var, self.cuts['regA'], str(self.lumi*1000), 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV",
+        self.plotter.Stack.drawStack(self.Mt['A'], self.cuts['regA'], str(self.lumi*1000), 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV",
                                      output=stackTag, outDir=self.outdir, separateSignal=True,
                                      drawtex=self.whichregion+' selection', channel=self.channel)
         
         #ha=self.plotter.ZJets.drawTH1('zjets', var, self.cuts['regA'], str(lumi*1000), 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV", drawStyle="HIST")
-        hb=self.plotter_dd.Data.drawTH1('regB', newMtB, self.cuts['regB'], '1', 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV", drawStyle="HIST") #'3.65'
-        hc=self.plotter_dd.Data.drawTH1('regC', newMtC, self.cuts['regC'], '1', 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV", drawStyle="HIST") #'2.73'
-        hd=self.plotter_dd.Data.drawTH1('regD', newMtD, self.cuts['regD'], '1', 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV", drawStyle="HIST") #'3.69'
+        hb=self.plotter_dd.Data.drawTH1('regB', self.Mt['B'], self.cuts['regB'], '1', 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV", drawStyle="HIST") 
+        hc=self.plotter_dd.Data.drawTH1('regC', self.Mt['C'], self.cuts['regC'], '1', 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV", drawStyle="HIST") 
+        hd=self.plotter_dd.Data.drawTH1('regD', self.Mt['D'], self.cuts['regD'], '1', 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV", drawStyle="HIST") 
+
+        subb=self.plotter_dd.NonZBG.drawTH1('regB', self.Mt['B'], self.cuts['regB'], str(lumi*1000), 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV", drawStyle="HIST") 
+        subc=self.plotter_dd.NonZBG.drawTH1('regC', self.Mt['C'], self.cuts['regC'], str(lumi*1000), 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV", drawStyle="HIST") 
+        subd=self.plotter_dd.NonZBG.drawTH1('regD', self.Mt['D'], self.cuts['regD'], str(lumi*1000), 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV", drawStyle="HIST") 
+        hb.Add(subb,-1)
+        hc.Add(subc,-1)
+        hd.Add(subd,-1)
+        hb.Scale(3.46)
+        hc.Scale(2.45)
+        hd.Scale(4.08)
 
         #-> Use 3 CRs to get the zjets distribution in regA:
         h_zjets_dd=copy.deepcopy(hb)
-        h_zjets_dd.Add(hc)
-        h_zjets_dd.Add(hd)
-        h_zjets_dd.Scale(1.0/3.0)
+        #h_zjets_dd.Add(hc)
+        #h_zjets_dd.Add(hd)
+        
+        #h_zjets_dd.Scale(1.0/3.0)
         h_zjets_dd.SetFillColor(ROOT.kGreen+2)
 
         ROOT.TH1.AddDirectory(ROOT.kFALSE)
@@ -112,33 +136,98 @@ class StackZjetsDD:
                          lumi=self.lumi, notes=self.whichregion+" selection",
                          drawSig=True, hsig=[hsig1,hsig2,hsig3])
         return
-                                            
-    def ValidateDphiShapeCorr(self):
-        plotter_zjets=InitializePlotter(indir="./METSkim_v4", addSig=True, addData=True, doRatio=True, doMetCorr=True, scaleDphi=True, zjetsscale=True)
-        var_check="abs(llnunu_deltaPhi)"
-        ha=plotter_zjets.ZJets.drawTH1('regA',var_check, self.cuts['regA'],str(self.lumi*1000),32, 0., 3.2, titlex = "#Delta#phi_{Z,MET}", units = "", drawStyle="HIST")
-        hb=plotter_zjets.ZJets.drawTH1('regB',var_check, self.cuts['regB'],str(self.lumi*1000),32, 0., 3.2, titlex = "#Delta#phi_{Z,MET}", units = "", drawStyle="HIST")
-        hc=plotter_zjets.ZJets.drawTH1('regC',var_check, self.cuts['regC'],str(self.lumi*1000),32, 0., 3.2, titlex = "#Delta#phi_{Z,MET}", units = "", drawStyle="HIST")
-        hd=plotter_zjets.ZJets.drawTH1('regD',var_check, self.cuts['regD'],str(self.lumi*1000),32, 0., 3.2, titlex = "#Delta#phi_{Z,MET}", units = "", drawStyle="HIST")
 
-        newhb=ShiftXaxisTH1(hb, 3*ROOT.TMath.Pi()/4, '_shiftB')
-        newhc=ShiftXaxisTH1(hc, ROOT.TMath.Pi()/4, '_shiftC')
-        newhd=ShiftXaxisTH1(hd, ROOT.TMath.Pi()/2, '_shiftD')
+    def ValidateDphiShapeCorr(self, whichvar='fabsDphi', isNormalized=True, whichbcd='allBG', scaleDphi=True):
+        """ use shape correction that is derived from MC to apply to all the MC samples to validate the 'dphi_sf' algorithm 
+        whichvar=(absDphi, mt, zpt, met)
+        """
+        validatorMC=InitializePlotter(indir="./METSkim_v3", addSig=False, addData=False, doRatio=False, scaleDphi=scaleDphi)
+        compareTag = self.tag0+'_'+'closureTest'+'_'+self.whichregion+'_'+self.channel+'_'+'regA'+'_'+whichvar
+        outTag=self.outdir+'/'+compareTag
+
+        if whichvar=='fabsDphi':
+            var=self.fabsdPhi
+            nbins, xmin, xmax, titlex, units =8, 3*ROOT.TMath.Pi()/4, ROOT.TMath.Pi(), "|#Delta#phi_{Z,MET}|", ""
             
-        ha.SetLineColor(ROOT.kRed)
-        newhb.SetLineColor(ROOT.kBlue)
-        newhc.SetLineColor(ROOT.kBlack)
-        newhd.SetLineColor(ROOT.kYellow)
+        elif whichvar=='mt':
+            var=self.Mt
+            if  int(self.zpt_cut)*int(self.met_cut) == 0: nbins, xmin, xmax, titlex, units =140, 100.0, 800.0, "M_{T}^{ZZ}", "GeV"
+            else: nbins, xmin, xmax, titlex, units =13, 150.0, 800.0, "M_{T}^{ZZ}", "GeV"
+        elif whichvar=='zpt':
+            var=copy.deepcopy(self.Mt)
+            for i in var: var[i]='llnunu_l1_pt'
+            if int(self.zpt_cut)==0: nbins, xmin, xmax, titlex, units =120, 0.0, 1200.0, "p_{T}^{ll}", "GeV"
+            else: xmin, xmax, titlex, units = int(self.zpt_cut)-10, 1200.0, "p_{T}^{ll}", "GeV"; nbins=int((xmax-xmin)/10) if (xmax-xmin)%10==0 else 50
+            
+        elif whichvar=='met':
+            var=copy.deepcopy(self.Mt)
+            for i in var: var[i]='llnunu_l2_pt'
+            if int(self.met_cut)==0: nbins, xmin, xmax, titlex, units =90, 0.0, 450.0, "p_{T}^{ll}", "GeV"
+            else: xmin, xmax, titlex, units = int(self.met_cut)-10, 450.0, "E_{T}^{miss}", "GeV"; nbins=int((xmax-xmin)/10) if (xmax-xmin)%10==0 else 40
+            
+        if whichbcd=='allBG':
+            bcdPlotter = validatorMC.allBG
+            notes='bcd from all bg'
+        elif whichbcd=='ZJets':
+            bcdPlotter = validatorMC.ZJets
+            notes='bcd from zjets'
+        else: print "[error] Please check the whichbcd = %s, is 'allBG' or 'ZJets'" % (whichbcd); exit(0)
 
-        ha.Scale(1./ha.Integral(0,1+ha.GetNbinsX()))
-        newhb.Scale(1./newhb.Integral(0,1+newhb.GetNbinsX()))
-        newhc.Scale(1./newhc.Integral(0,1+newhc.GetNbinsX()))
-        newhd.Scale(1./newhd.Integral(0,1+newhd.GetNbinsX()))
-        #TLegend leg()
+        leg_suffix='corr.' if scaleDphi else ''
+                    
+        ### ----- Execute (plotting):
+        ha=self.plotter.ZJets.drawTH1('regA', var['A'], self.cuts['regA'], str(self.lumi*1000), nbins, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
+        hb=bcdPlotter.drawTH1('regB_shift', var['B'], self.cuts['regB'], str(self.lumi*1000), nbins, xmin, xmax,titlex = titlex,units = units,drawStyle="HIST")
+        hc=bcdPlotter.drawTH1('regC_shift', var['C'], self.cuts['regC'], str(self.lumi*1000), nbins, xmin, xmax,titlex = titlex,units = units,drawStyle="HIST")
+        hd=bcdPlotter.drawTH1('regD_shift', var['D'], self.cuts['regD'], str(self.lumi*1000), nbins, xmin, xmax,titlex = titlex,units = units,drawStyle="HIST")
+
+        print 'regB: ', hb.GetSumOfWeights(),\
+              '\nregC: ', hc.GetSumOfWeights(),\
+              '\nregD(sum of weight): ', hd.GetSumOfWeights(), '; integral:', hd.Integral(0,1+hd.GetNbinsX())
+        if isNormalized:
+            ha.Scale(1./ha.Integral(0,1+ha.GetNbinsX()))
+            hb.Scale(1./hb.Integral(0,1+hb.GetNbinsX()))
+            hc.Scale(1./hc.Integral(0,1+hc.GetNbinsX()))
+            hd.Scale(1./hd.Integral(0,1+hd.GetNbinsX()))
+            ytitle='normalized'
+        else: ytitle='events'
+        
+        drawCompareSimple(hb, ha, "reg.B"+' '+leg_suffix, "reg. A",
+                          xmin=xmin, xmax=xmax, outdir=self.outdir, notes=notes,lumi=self.lumi,
+                          tag=compareTag+'BA', units=units, ytitle=ytitle, setmax=2)
+
+        drawCompareSimple(hc, ha, "reg.C"+' '+leg_suffix, "reg. A",
+                          xmin=xmin, xmax=xmax, outdir=self.outdir, notes=notes,lumi=self.lumi,
+                          tag=compareTag+'CA', units=units, ytitle=ytitle, setmax=2)
+
+        drawCompareSimple(hd, ha, "reg.D"+' '+leg_suffix, "reg. A",
+                          xmin=xmin, xmax=xmax, outdir=self.outdir, notes=notes,lumi=self.lumi,
+                          tag=compareTag+'DA', units=units, ytitle=ytitle, setmax=2)
+
+        ha.SetLineColor(ROOT.kRed)
+        hb.SetLineColor(ROOT.kBlue)
+        hc.SetLineColor(ROOT.kGreen)
+        hd.SetLineColor(ROOT.kYellow)
+
+        ha.SetMarkerColor(ROOT.kRed)
+        hb.SetMarkerColor(ROOT.kBlue)
+        hc.SetMarkerColor(ROOT.kGreen)
+        hd.SetMarkerColor(ROOT.kYellow)
+        
         c1=ROOT.TCanvas(1)
-        ha.Draw("L")
-        ha.GetXaxis().SetRangeUser(2.2, 3.2)
-        newhb.Draw("same")
-        newhc.Draw("same")
-        newhd.Draw("same")
-        c1.SaveAs(self.outdir+"ValidateDphiShapeCorr_out.pdf")
+        legend=GetLegendv1(0.65,0.75,0.85,0.90,
+                           [ha,hb,hc,hd],
+                           ['reg. A','reg. B','reg. C','reg. D'],
+                           opt=['lpe','lpe','lpe','lpe'])
+        ha.Draw("e")
+        hb.Draw("e same")
+        hc.Draw("e same")
+        hd.Draw("e same")
+        legend.Draw("same")
+        c1.SetLogy()
+        nameseq=[whichvar, whichbcd, 'bcd', leg_suffix, 'ValidateDphiShapeCorr','met'+self.met_cut,'zpt'+self.zpt_cut]
+        c1.SaveAs(self.outdir+'/'+'_'.join(nameseq)+'.pdf')
+
+        #fout=ROOT.TFile(self.outdir+'/'+'_'.join(nameseq)+'.root','recreate')
+        
+        return

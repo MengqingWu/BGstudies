@@ -11,9 +11,7 @@ class InitializePlotter:
                  LogY=True,   doRatio=True,
                  addSig=True, addData=True,
                  doElMu=False, scaleElMu=False,
-                 doMetCorr=False, scaleDphi=False,
-                 zjetsscale=False,
-                 sigK=1000):
+                 scaleDphi=False, sigK=1000):
         
         if doElMu:
             lepsf='elmununu_l1_l1_lepsf*elmununu_l1_l2_lepsf'
@@ -22,14 +20,16 @@ class InitializePlotter:
             lepsf='llnunu_l1_l1_lepsf*llnunu_l1_l2_lepsf'
             triggersf='triggersf'
 
- 
+        if scaleDphi:
+            print "[Info] plotters: 'dphi_sf' applied."
+        else: print "[Info] plotters: NO 'dphi_sf' applied."
         #######----------- Prepare samples to plot:
         zjetsPlotters=[]
         #zjetsSamples = ['DYJetsToLL_M50_HT100to200','DYJetsToLL_M50_HT200to400','DYJetsToLL_M50_HT400to600','DYJetsToLL_M50_HT600toInf']
         #zjetsSamples = ['DYJetsToLL_M50','DYJetsToLL_M50_Ext']
         self.zjetsSamples = ['DYJetsToLL_M50_BIG'] # M50_BIG = M50 + M50_Ext
         
-        print '[Info] zjets sample: ', self.zjetsSamples[0]
+        print '[Info] zjets sample: %s' %(indir+'/'+self.zjetsSamples[0]+'.root')
         for sample in self.zjetsSamples:
             zjetsPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
             zjetsPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
@@ -39,16 +39,16 @@ class InitializePlotter:
             zjetsPlotters[-1].addCorrectionFactor('puWeight','tree')
             zjetsPlotters[-1].addCorrectionFactor(triggersf,'tree')
             zjetsPlotters[-1].addCorrectionFactor(lepsf,'tree')
-            if doMetCorr and zjetsscale:
+            if scaleDphi:
                 zjetsPlotters[-1].addCorrectionFactor('dphi_sf','tree')# to scale dphi shape in BCD regions as the one in regA
-                        
+
         self.ZJets = MergedPlotter(zjetsPlotters)
         self.ZJets.setFillProperties(1001,ROOT.kGreen+2)
 
 
         wwPlotters=[]
         self.wwSamples = ['WWTo2L2Nu','WWToLNuQQ','WZTo1L1Nu2Q']
-        
+
         for sample in self.wwSamples:
             wwPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
             wwPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
@@ -57,6 +57,8 @@ class InitializePlotter:
             wwPlotters[-1].addCorrectionFactor('puWeight','tree')
             wwPlotters[-1].addCorrectionFactor(triggersf,'tree')
             wwPlotters[-1].addCorrectionFactor(lepsf,'tree')
+            if scaleDphi:
+                wwPlotters[-1].addCorrectionFactor('dphi_sf','tree')# to scale dphi shape in BCD regions as the one in regA
             
         self.WW = MergedPlotter(wwPlotters)
         self.WW.setFillProperties(1001,ROOT.kOrange)
@@ -75,6 +77,9 @@ class InitializePlotter:
             vvPlotters[-1].addCorrectionFactor('puWeight','tree')
             vvPlotters[-1].addCorrectionFactor(triggersf,'tree')
             vvPlotters[-1].addCorrectionFactor(lepsf,'tree')
+            if scaleDphi:
+                vvPlotters[-1].addCorrectionFactor('dphi_sf','tree')# to scale dphi shape in BCD regions as the one in regA
+
         
         self.VV = MergedPlotter(vvPlotters)
         self.VV.setFillProperties(1001,ROOT.kMagenta)
@@ -90,6 +95,8 @@ class InitializePlotter:
             wjetsPlotters[-1].addCorrectionFactor('puWeight','tree')
             wjetsPlotters[-1].addCorrectionFactor(triggersf,'tree')
             wjetsPlotters[-1].addCorrectionFactor(lepsf,'tree')
+            if scaleDphi:
+                wjetsPlotters[-1].addCorrectionFactor('dphi_sf','tree')# to scale dphi shape in BCD regions as the one in regA
 
         self.WJets = MergedPlotter(wjetsPlotters)
         self.WJets.setFillProperties(1001,ROOT.kBlue-6)
@@ -105,7 +112,9 @@ class InitializePlotter:
             ttPlotters[-1].addCorrectionFactor('puWeight','tree')
             ttPlotters[-1].addCorrectionFactor(triggersf,'tree')
             ttPlotters[-1].addCorrectionFactor(lepsf,'tree')
-            
+            if scaleDphi:
+                ttPlotters[-1].addCorrectionFactor('dphi_sf','tree')# to scale dphi shape in BCD regions as the one in regA
+
         self.TT = MergedPlotter(ttPlotters)
         self.TT.setFillProperties(1001,ROOT.kAzure-9)
 
@@ -126,6 +135,10 @@ class InitializePlotter:
         self.ResBG = MergedPlotter(resBGPlotters)
         self.ResBG.setFillProperties(1001,ROOT.kRed)
 
+        allBGPlotters = zjetsPlotters + wwPlotters + vvPlotters + wjetsPlotters + ttPlotters
+        self.allBGSamples = self.zjetsSamples + self.wwSamples + self.vvSamples + self.wjetsSamples + self.ttSamples
+        self.allBG = MergedPlotter(allBGPlotters)
+        self.allBG.setFillProperties(1001, ROOT.kRed)
         
         # --> Prepare the signal plotters:
         self.sigPlotters=[]
@@ -176,7 +189,7 @@ class InitializePlotter:
                     dataPlotters[-1].addCorrectionFactor('Melmu_sf','tree')
                 else:
                     dataPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
-                    if doMetCorr and scaleDphi:
+                    if scaleDphi:
                         dataPlotters[-1].addCorrectionFactor('dphi_sf','tree')# to scale dphi shape in BCD regions as the one in regA
                     
             self.Data = MergedPlotter(dataPlotters)
