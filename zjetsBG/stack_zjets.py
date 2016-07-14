@@ -10,7 +10,7 @@ from python.SimplePlot import *
 
 
 class StackZjetsDD:
-    def __init__(self, indir="./METSkim_v1", indir_dd="./METSkim_v2", outdir='./output/stacker/',
+    def __init__(self, indir="./METSkim_v1", indir_dd="./METSkim_v3", outdir='./output/stacker/',
                  channel='inclusive',  whichregion='SR', zpt_cut='100', met_cut= '50',  lumi = 2.318278305,  
                  sepSig=True,   LogY=True,      doRatio=True,    addSig=True, addData=True):
         self.outdir=outdir
@@ -50,13 +50,7 @@ class StackZjetsDD:
     def drawDataDrivenStack(self):
         stackTag = self.tag0+'_'+'stacker'+'_'+self.whichregion+'_'+self.channel+'_'+'regA'+'_'+'absDphi'
         outTag=self.outdir+'/'+stackTag
-        # var="llnunu_mt"
-        # et1="TMath::Sqrt(llnunu_l1_pt*llnunu_l1_pt+llnunu_l1_mass*llnunu_l1_mass)"
-        # et2="TMath::Sqrt(llnunu_l2_pt*llnunu_l2_pt+llnunu_l1_mass*llnunu_l1_mass)"
-        # newMtB='TMath::Sqrt(2.0*(llnunu_l1_mass*llnunu_l1_mass+'+et1+'*'+et2+'-llnunu_l1_pt*llnunu_l2_pt*cos(llnunu_deltaPhi+TMath::Pi()*3/4)))'
-        # newMtD='TMath::Sqrt(2.0*(llnunu_l1_mass*llnunu_l1_mass+'+et1+'*'+et2+'-llnunu_l1_pt*llnunu_l2_pt*cos(llnunu_deltaPhi+TMath::Pi()/2)))'
-        # newMtC='TMath::Sqrt(2.0*(llnunu_l1_mass*llnunu_l1_mass+'+et1+'*'+et2+'-llnunu_l1_pt*llnunu_l2_pt*cos(llnunu_deltaPhi+TMath::Pi()/4)))'
-        
+                
         ### ----- Execute (plotting):
         self.plotter.Stack.drawStack(self.Mt['A'], self.cuts['regA'], str(self.lumi*1000), 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV",
                                      output=stackTag, outDir=self.outdir, separateSignal=True,
@@ -79,9 +73,9 @@ class StackZjetsDD:
 
         #-> Use 3 CRs to get the zjets distribution in regA:
         h_zjets_dd=copy.deepcopy(hb)
-        #h_zjets_dd.Add(hc)
-        #h_zjets_dd.Add(hd)
-        #h_zjets_dd.Scale(1.0/3.0)
+        h_zjets_dd.Add(hc)
+        h_zjets_dd.Add(hd)
+        h_zjets_dd.Scale(1.0/3.0)
         
         h_zjets_dd.SetFillColor(ROOT.kGreen+2)
 
@@ -116,7 +110,7 @@ class StackZjetsDD:
             
         for ih in hsnew.GetHists():
             print '[debug] ', ih.GetName()
-        print hsnew
+        #print hsnew
         hsnew.Add(h_zjets_dd)
             
         hratio=GetRatio_TH1(hdata,hsnew,True)
@@ -129,12 +123,12 @@ class StackZjetsDD:
         myentry=ROOT.TLegendEntry(h_zjets_dd,"Z_Jets (data-driven)","f")
         legend.GetListOfPrimitives().AddFirst(myentry)
         
-        drawStack_simple(hframe, hsnew, hdata, hratio, legend,
-                         hstack_opt="A, HIST",
-                         outDir=self.outdir, output=stackTag+"_datadriven", channel=ROOT.TString(self.channel),
-                         xmin=150, xmax=500, xtitle="M_{T}^{ZZ}" ,units="GeV",
-                         lumi=self.lumi, notes=self.whichregion+" selection",
-                         drawSig=True, hsig=[hsig1,hsig2,hsig3])
+        # drawStack_simple(hframe, hsnew, hdata, hratio, legend,
+        #                  hstack_opt="A, HIST",
+        #                  outDir=self.outdir, output=stackTag+"_datadriven", channel=ROOT.TString(self.channel),
+        #                  xmin=150, xmax=500, xtitle="M_{T}^{ZZ}" ,units="GeV",
+        #                  lumi=self.lumi, notes=self.whichregion+" selection",
+        #                  drawSig=True, hsig=[hsig1,hsig2,hsig3])
         return
 
     def ValidateDphiShapeCorr(self, whichvar='fabsDphi', isNormalized=True, whichbcd='allBG', scaleDphi=True):
@@ -156,8 +150,8 @@ class StackZjetsDD:
         elif whichvar=='zpt':
             var=copy.deepcopy(self.Mt)
             for i in var: var[i]='llnunu_l1_pt'
-            if int(self.zpt_cut)==0: nbins, xmin, xmax, titlex, units =120, 0.0, 1200.0, "p_{T}^{ll}", "GeV"
-            else: xmin, xmax, titlex, units = int(self.zpt_cut)-10, 1200.0, "p_{T}^{ll}", "GeV"; nbins=int((xmax-xmin)/10) if (xmax-xmin)%10==0 else 50
+            if int(self.zpt_cut)==0: nbins, xmin, xmax, titlex, units =60, 0.0, 1200.0, "p_{T}^{ll}", "GeV"
+            else: xmin, xmax, titlex, units = int(self.zpt_cut)-10, 1200.0, "p_{T}^{ll}", "GeV"; nbins=int((xmax-xmin)/20) if (xmax-xmin)%10==0 else 50
             
         elif whichvar=='met':
             var=copy.deepcopy(self.Mt)
