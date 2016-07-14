@@ -264,10 +264,8 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
     hstack.Write()
     fout.Close()
 
-    c1.Print(outDir+'/'+output+'_'+channel.Data()+'.eps')
-    #c1.Clear()
-    #del fout, c1, hratio, hstack, frame, p1, p2
-    #return
+    c1.SaveAs(outDir+'/'+output+'_'+channel.Data()+'.eps')
+    return
 
 def drawCompare(hstack, hratio, legend,
                 hstack_opt="nostack",outdir="./",tag="test",
