@@ -19,9 +19,9 @@ outtxt = open(outdir+'num_out_2d.txt', 'a')
 
 whichregion='SR'
 zpt_cut, met_cut= '100', '50'
-whichbcd='ZJets' # for closure test
+whichbcd='ZJets' 
 #whichbcd='allBG'
-isClosureTest=True
+isClosureTest=False
 
 xvar={'A': "fabs(llnunu_deltaPhi)",
      'AtoB': "fabs(llnunu_deltaPhi)-TMath::Pi()*3/4",
