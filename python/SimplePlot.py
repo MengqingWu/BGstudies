@@ -50,6 +50,19 @@ def ShiftXaxisTH1(inputHist, Shift, suffix):
     #hshift.Print("all")
     return hshift
 
+def addOverflowTH2(h2):
+    """ add overflow bins to the last bin of th2"""
+    nbinsx, nbinsy = h2.GetNbinsX(), h2.GetNbinsY()
+    for binx in range(0,nbinsx):
+        lastBin=h2.GetBin(binx, nbinsy)
+        offBin=h2.GetBin(binx, nbinsy+1)
+        Content = h2.GetBinContent(lastBin)
+        Content += h2.GetBinContent(offBin)
+        err2 = h2.GetBinError(lastBin)*h2.GetBinError(lastBin)
+        err2 += h2.GetBinError(offBin)*h2.GetBinError(offBin)
+        h2.SetBinContent(lastBin, Content)
+        h2.SetBinContent(lastBin, TMath.Sqrt(err2))
+        
 def GetCumulativeAndError(inputHist,forward=True, suffix=''):
     """ Derived from the root TH1::GetCumulative() function
     taking into consider of underflow and overflow bins;

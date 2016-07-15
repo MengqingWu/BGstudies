@@ -46,11 +46,8 @@ class TreePlotter(PlotterBase):
                 corrString = corrString+"*("+str(corr['value'])+")" 
         self.tree.Draw(var+">>"+name,"("+cuts+")*"+lumi+"*"+self.weight+"*("+corrString+")","goff")
 
-        # h_return=copy.deepcopy(h)
-        # h.Clear()
-        # return h_return
         return h
-
+    
 
     def drawTH2(self,name,var,cuts,lumi,binsx,minx,maxx,binsy,miny,maxy,titlex = "",unitsx = "",titley="",unitsy="", drawStyle = "COLZ"):
         h = ROOT.TH2D(name,name,binsx,minx,maxx,binsy,miny,maxy)
@@ -103,9 +100,24 @@ class TreePlotter(PlotterBase):
         return h
 
 
-
     def drawTH2Binned(self,name,var,cuts,lumi,binningx,binningy,titlex = "",unitsx = "",titley="",unitsy="", drawStyle = "COLZ"):
         h = ROOT.TH2D(name,name,len(binningx)-1,array('f',binningx),len(binningy)-1,array('f',binningy))
+        h.Sumw2()
+        h.SetFillStyle(self.fillstyle)
+        h.SetFillColor(self.fillcolor)
+        h.GetXaxis().SetTitle(titlex+ " ["+unitsx+"]")
+        h.GetYaxis().SetTitle(titley+ " ["+unitsy+"]")
+
+        #Apply correction factors
+        corrString='1'
+        for corr in self.corrFactors:
+                corrString = corrString+"*"+str(corr['value']) 
+        self.tree.Draw(var+">>"+name,"("+cuts+")*"+lumi+"*"+self.weight+"*("+corrString+")","goff")
+
+        return h
+
+    def drawTH2Binnedv1(self,name,var,cuts,lumi,binsx,minx,maxx,binningy,titlex = "",unitsx = "",titley="",unitsy="", drawStyle = "COLZ"):
+        h = ROOT.TH2D(name,name,binsx,minx,maxx,len(binningy)-1,array('d',binningy))
         h.Sumw2()
         h.SetFillStyle(self.fillstyle)
         h.SetFillColor(self.fillcolor)

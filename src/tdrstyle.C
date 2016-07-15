@@ -55,7 +55,7 @@ void setTDRStyle()
 
 	tdrStyle->SetEndErrorSize(2);
 //	tdrStyle->SetErrorMarker(20);
-	tdrStyle->SetErrorX(0.);
+	tdrStyle->SetErrorX(1.);
 
 	tdrStyle->SetMarkerStyle(20);
 

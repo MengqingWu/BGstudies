@@ -11,7 +11,8 @@ class InitializePlotter:
                  LogY=True,   doRatio=True,
                  addSig=True, addData=True,
                  doElMu=False, scaleElMu=False,
-                 scaleDphi=False, sigK=1000):
+                 scaleDphi=False, onlyStats=False,
+                 sigK=1000):
         
         if doElMu:
             lepsf='elmununu_l1_l1_lepsf*elmununu_l1_l2_lepsf'
@@ -25,20 +26,19 @@ class InitializePlotter:
         else: print "[Info] plotters: NO 'dphi_sf' applied."
         #######----------- Prepare samples to plot:
         zjetsPlotters=[]
-        #zjetsSamples = ['DYJetsToLL_M50_HT100to200','DYJetsToLL_M50_HT200to400','DYJetsToLL_M50_HT400to600','DYJetsToLL_M50_HT600toInf']
-        #zjetsSamples = ['DYJetsToLL_M50','DYJetsToLL_M50_Ext']
         self.zjetsSamples = ['DYJetsToLL_M50_BIG'] # M50_BIG = M50 + M50_Ext
         
         print '[Info] zjets sample: %s' %(indir+'/'+self.zjetsSamples[0]+'.root')
         for sample in self.zjetsSamples:
             zjetsPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
-            zjetsPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
-            #zjetsPlotters[-1].addCorrectionFactor('xsec','tree')
-            zjetsPlotters[-1].addCorrectionFactor('(1921.8*3)','xsec')
-            zjetsPlotters[-1].addCorrectionFactor('genWeight','tree')
-            zjetsPlotters[-1].addCorrectionFactor('puWeight','tree')
-            zjetsPlotters[-1].addCorrectionFactor(triggersf,'tree')
-            zjetsPlotters[-1].addCorrectionFactor(lepsf,'tree')
+            if not onlyStats:
+                zjetsPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
+                zjetsPlotters[-1].addCorrectionFactor('xsec','tree')
+                #zjetsPlotters[-1].addCorrectionFactor('(1921.8*3)','xsec')
+                zjetsPlotters[-1].addCorrectionFactor('genWeight','tree')
+                zjetsPlotters[-1].addCorrectionFactor('puWeight','tree')
+                zjetsPlotters[-1].addCorrectionFactor(triggersf,'tree')
+                zjetsPlotters[-1].addCorrectionFactor(lepsf,'tree')
             if scaleDphi:
                 zjetsPlotters[-1].addCorrectionFactor('dphi_sf','tree')# to scale dphi shape in BCD regions as the one in regA
 
@@ -51,12 +51,13 @@ class InitializePlotter:
 
         for sample in self.wwSamples:
             wwPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
-            wwPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
-            wwPlotters[-1].addCorrectionFactor('xsec','tree')
-            wwPlotters[-1].addCorrectionFactor('genWeight','tree')
-            wwPlotters[-1].addCorrectionFactor('puWeight','tree')
-            wwPlotters[-1].addCorrectionFactor(triggersf,'tree')
-            wwPlotters[-1].addCorrectionFactor(lepsf,'tree')
+            if not onlyStats:
+                wwPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
+                wwPlotters[-1].addCorrectionFactor('xsec','tree')
+                wwPlotters[-1].addCorrectionFactor('genWeight','tree')
+                wwPlotters[-1].addCorrectionFactor('puWeight','tree')
+                wwPlotters[-1].addCorrectionFactor(triggersf,'tree')
+                wwPlotters[-1].addCorrectionFactor(lepsf,'tree')
             if scaleDphi:
                 wwPlotters[-1].addCorrectionFactor('dphi_sf','tree')# to scale dphi shape in BCD regions as the one in regA
             
@@ -71,12 +72,13 @@ class InitializePlotter:
             
         for sample in self.vvSamples:
             vvPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
-            vvPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
-            vvPlotters[-1].addCorrectionFactor('xsec','tree')
-            vvPlotters[-1].addCorrectionFactor('genWeight','tree')
-            vvPlotters[-1].addCorrectionFactor('puWeight','tree')
-            vvPlotters[-1].addCorrectionFactor(triggersf,'tree')
-            vvPlotters[-1].addCorrectionFactor(lepsf,'tree')
+            if not onlyStats:
+                vvPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
+                vvPlotters[-1].addCorrectionFactor('xsec','tree')
+                vvPlotters[-1].addCorrectionFactor('genWeight','tree')
+                vvPlotters[-1].addCorrectionFactor('puWeight','tree')
+                vvPlotters[-1].addCorrectionFactor(triggersf,'tree')
+                vvPlotters[-1].addCorrectionFactor(lepsf,'tree')
             if scaleDphi:
                 vvPlotters[-1].addCorrectionFactor('dphi_sf','tree')# to scale dphi shape in BCD regions as the one in regA
 
@@ -89,12 +91,13 @@ class InitializePlotter:
             
         for sample in self.wjetsSamples:
             wjetsPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
-            wjetsPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
-            wjetsPlotters[-1].addCorrectionFactor('xsec','tree')
-            wjetsPlotters[-1].addCorrectionFactor('genWeight','tree')
-            wjetsPlotters[-1].addCorrectionFactor('puWeight','tree')
-            wjetsPlotters[-1].addCorrectionFactor(triggersf,'tree')
-            wjetsPlotters[-1].addCorrectionFactor(lepsf,'tree')
+            if not onlyStats:
+                wjetsPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
+                wjetsPlotters[-1].addCorrectionFactor('xsec','tree')
+                wjetsPlotters[-1].addCorrectionFactor('genWeight','tree')
+                wjetsPlotters[-1].addCorrectionFactor('puWeight','tree')
+                wjetsPlotters[-1].addCorrectionFactor(triggersf,'tree')
+                wjetsPlotters[-1].addCorrectionFactor(lepsf,'tree')
             if scaleDphi:
                 wjetsPlotters[-1].addCorrectionFactor('dphi_sf','tree')# to scale dphi shape in BCD regions as the one in regA
 
@@ -106,12 +109,13 @@ class InitializePlotter:
 
         for sample in self.ttSamples:
             ttPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
-            ttPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
-            ttPlotters[-1].addCorrectionFactor('xsec','tree')
-            ttPlotters[-1].addCorrectionFactor('genWeight','tree')
-            ttPlotters[-1].addCorrectionFactor('puWeight','tree')
-            ttPlotters[-1].addCorrectionFactor(triggersf,'tree')
-            ttPlotters[-1].addCorrectionFactor(lepsf,'tree')
+            if not onlyStats:
+                ttPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
+                ttPlotters[-1].addCorrectionFactor('xsec','tree')
+                ttPlotters[-1].addCorrectionFactor('genWeight','tree')
+                ttPlotters[-1].addCorrectionFactor('puWeight','tree')
+                ttPlotters[-1].addCorrectionFactor(triggersf,'tree')
+                ttPlotters[-1].addCorrectionFactor(lepsf,'tree')
             if scaleDphi:
                 ttPlotters[-1].addCorrectionFactor('dphi_sf','tree')# to scale dphi shape in BCD regions as the one in regA
 
@@ -162,13 +166,14 @@ class InitializePlotter:
         if addSig:
             for sample in self.sigSamples:
                 self.sigPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
-                self.sigPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
-                self.sigPlotters[-1].addCorrectionFactor(str(sigXsec[sample]),'tree')
-                self.sigPlotters[-1].addCorrectionFactor('genWeight','tree')
-                self.sigPlotters[-1].addCorrectionFactor('puWeight','tree')
-                self.sigPlotters[-1].addCorrectionFactor(triggersf,'tree')
-                self.sigPlotters[-1].addCorrectionFactor(lepsf,'tree')
-                self.sigPlotters[-1].setFillProperties(0,ROOT.kWhite)
+                if not onlyStats:
+                    self.sigPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
+                    self.sigPlotters[-1].addCorrectionFactor(str(sigXsec[sample]),'tree')
+                    self.sigPlotters[-1].addCorrectionFactor('genWeight','tree')
+                    self.sigPlotters[-1].addCorrectionFactor('puWeight','tree')
+                    self.sigPlotters[-1].addCorrectionFactor(triggersf,'tree')
+                    self.sigPlotters[-1].addCorrectionFactor(lepsf,'tree')
+                    self.sigPlotters[-1].setFillProperties(0,ROOT.kWhite)
         else:
             print "[Info] I do not add Signal samples to plot "
                 

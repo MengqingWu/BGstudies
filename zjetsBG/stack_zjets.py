@@ -131,17 +131,19 @@ class StackZjetsDD:
         #                  drawSig=True, hsig=[hsig1,hsig2,hsig3])
         return
 
-    def ValidateDphiShapeCorr(self, whichvar='fabsDphi', isNormalized=True, whichbcd='allBG', scaleDphi=True):
+    def ValidateDphiShapeCorr(self, whichvar='fabsDphi', isNormalized=True, whichbcd='allBG', scaleDphi=True, suffix=''):
         """ use shape correction that is derived from MC to apply to all the MC samples to validate the 'dphi_sf' algorithm 
         whichvar=(absDphi, mt, zpt, met)
         """
-        validatorMC=InitializePlotter(indir="./METSkim_v3", addSig=False, addData=False, doRatio=False, scaleDphi=scaleDphi)
+        lumi_str='1' if isNormalized else str(self.lumi*1000)
+
+        validatorMC=InitializePlotter(indir="./METSkim_v4", addSig=False, addData=False, doRatio=False, scaleDphi=scaleDphi)
         compareTag = self.tag0+'_'+'closureTest'+'_'+self.whichregion+'_'+self.channel+'_'+'regA'+'_'+whichvar
         outTag=self.outdir+'/'+compareTag
 
         if whichvar=='fabsDphi':
             var=self.fabsdPhi
-            nbins, xmin, xmax, titlex, units =8, 3*ROOT.TMath.Pi()/4, ROOT.TMath.Pi(), "|#Delta#phi_{Z,MET}|", ""
+            nbins, xmin, xmax, titlex, units =4, 3*ROOT.TMath.Pi()/4, ROOT.TMath.Pi(), "|#Delta#phi_{Z,MET}|", ""
             
         elif whichvar=='mt':
             var=self.Mt
@@ -156,8 +158,11 @@ class StackZjetsDD:
         elif whichvar=='met':
             var=copy.deepcopy(self.Mt)
             for i in var: var[i]='llnunu_l2_pt'
-            if int(self.met_cut)==0: nbins, xmin, xmax, titlex, units =90, 0.0, 450.0, "p_{T}^{ll}", "GeV"
-            else: xmin, xmax, titlex, units = int(self.met_cut)-10, 450.0, "E_{T}^{miss}", "GeV"; nbins=int((xmax-xmin)/10) if (xmax-xmin)%10==0 else 40
+            #if int(self.met_cut)==0: nbins, xmin, xmax, titlex, units =90, 0.0, 450.0, "E_{T}^{miss}", "GeV"
+            #else: xmin, xmax, titlex, units = int(self.met_cut)-10, 450.0, "E_{T}^{miss}", "GeV"; nbins=int((xmax-xmin)/10) if (xmax-xmin)%10==0 else 40
+            titlex, units = "E_{T}^{miss}", "GeV"
+            xbins=[0,25,50,80,120,1000]
+            xmin,xmax=0, 1000
             
         if whichbcd=='allBG':
             bcdPlotter = validatorMC.allBG
@@ -170,11 +175,17 @@ class StackZjetsDD:
         leg_suffix='corr.' if scaleDphi else ''
                     
         ### ----- Execute (plotting):
-        ha=self.plotter.ZJets.drawTH1('regA', var['A'], self.cuts['regA'], str(self.lumi*1000), nbins, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
-        hb=bcdPlotter.drawTH1('regB_shift', var['B'], self.cuts['regB'], str(self.lumi*1000), nbins, xmin, xmax,titlex = titlex,units = units,drawStyle="HIST")
-        hc=bcdPlotter.drawTH1('regC_shift', var['C'], self.cuts['regC'], str(self.lumi*1000), nbins, xmin, xmax,titlex = titlex,units = units,drawStyle="HIST")
-        hd=bcdPlotter.drawTH1('regD_shift', var['D'], self.cuts['regD'], str(self.lumi*1000), nbins, xmin, xmax,titlex = titlex,units = units,drawStyle="HIST")
-
+        if whichvar=='met':
+            ha=self.plotter.ZJets.drawTH1Binned('regA', var['A'], self.cuts['regA'], lumi_str, xbins, titlex = titlex, unitsx = units)
+            hb=bcdPlotter.drawTH1Binned('regB_shift', var['B'], self.cuts['regB'], lumi_str, xbins,titlex = titlex,unitsx = units)
+            hc=bcdPlotter.drawTH1Binned('regC_shift', var['C'], self.cuts['regC'], lumi_str, xbins,titlex = titlex,unitsx = units)
+            hd=bcdPlotter.drawTH1Binned('regD_shift', var['D'], self.cuts['regD'], lumi_str, xbins,titlex = titlex,unitsx = units)
+        else:
+            ha=self.plotter.ZJets.drawTH1('regA', var['A'], self.cuts['regA'], lumi_str, nbins, xmin, xmax, titlex = titlex, units = units)
+            hb=bcdPlotter.drawTH1('regB_shift', var['B'], self.cuts['regB'], lumi_str, nbins, xmin, xmax,titlex = titlex,units = units)
+            hc=bcdPlotter.drawTH1('regC_shift', var['C'], self.cuts['regC'], lumi_str, nbins, xmin, xmax,titlex = titlex,units = units)
+            hd=bcdPlotter.drawTH1('regD_shift', var['D'], self.cuts['regD'], lumi_str, nbins, xmin, xmax,titlex = titlex,units = units)
+        
         print 'regB: ', hb.GetSumOfWeights(),\
               '\nregC: ', hc.GetSumOfWeights(),\
               '\nregD(sum of weight): ', hd.GetSumOfWeights(), '; integral:', hd.Integral(0,1+hd.GetNbinsX())
@@ -219,7 +230,8 @@ class StackZjetsDD:
         hd.Draw("e same")
         legend.Draw("same")
         c1.SetLogy()
-        nameseq=[whichvar, whichbcd, 'bcd', leg_suffix, 'ValidateDphiShapeCorr','met'+self.met_cut,'zpt'+self.zpt_cut]
+        nameseq=[whichvar, whichbcd, 'bcd', leg_suffix, 'ValidateDphiShapeCorr','met'+self.met_cut,'zpt'+self.zpt_cut, suffix]
+        nameseq.remove('')
         c1.SaveAs(self.outdir+'/'+'_'.join(nameseq)+'.pdf')
 
         #fout=ROOT.TFile(self.outdir+'/'+'_'.join(nameseq)+'.root','recreate')
