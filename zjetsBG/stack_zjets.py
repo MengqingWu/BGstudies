@@ -137,8 +137,18 @@ class StackZjetsDD:
         """
         lumi_str='1' if isNormalized else str(self.lumi*1000)
 
-        validatorMC=InitializePlotter(indir="./METSkim_v4", addSig=False, addData=False, doRatio=False, scaleDphi=scaleDphi)
-        compareTag = self.tag0+'_'+'closureTest'+'_'+self.whichregion+'_'+self.channel+'_'+'regA'+'_'+whichvar
+        validatorMC=InitializePlotter(indir="./METSkim_v4", addSig=False, addData=False, doRatio=False, scaleDphi=scaleDphi,onlyStats=True)
+        zjetsMC=InitializePlotter(indir="./METSkim_v4", addSig=False, addData=False, doRatio=False, scaleDphi=False,onlyStats=True)
+        
+        nom_suffix='normalized' if isNormalized else 'yield'
+        leg_suffix='corr.' if scaleDphi else ''
+                
+        compareTagseq=[self.tag0, 'closureTest',self.whichregion,self.channel, whichvar, nom_suffix]
+        nameseq=[whichvar, self.tag0, 'closureTest', self.whichregion, self.channel, 'met'+self.met_cut,'zpt'+self.zpt_cut,
+                 leg_suffix+'bcd'+whichbcd, nom_suffix, suffix]
+        nameseq.remove('')
+        compareTag='_'.join(nameseq)
+        #compareTag = self.tag0+'_'+'closureTest'+'_'+self.whichregion+'_'+self.channel+'_'+'regA'+'_'+whichvar
         outTag=self.outdir+'/'+compareTag
 
         if whichvar=='fabsDphi':
@@ -172,11 +182,10 @@ class StackZjetsDD:
             notes='bcd from zjets'
         else: print "[error] Please check the whichbcd = %s, is 'allBG' or 'ZJets'" % (whichbcd); exit(0)
 
-        leg_suffix='corr.' if scaleDphi else ''
                     
         ### ----- Execute (plotting):
         if whichvar=='met':
-            ha=self.plotter.ZJets.drawTH1Binned('regA', var['A'], self.cuts['regA'], lumi_str, xbins, titlex = titlex, unitsx = units)
+            ha=zjetsMC.ZJets.drawTH1Binned('regA', var['A'], self.cuts['regA'], lumi_str, xbins, titlex = titlex, unitsx = units)
             hb=bcdPlotter.drawTH1Binned('regB_shift', var['B'], self.cuts['regB'], lumi_str, xbins,titlex = titlex,unitsx = units)
             hc=bcdPlotter.drawTH1Binned('regC_shift', var['C'], self.cuts['regC'], lumi_str, xbins,titlex = titlex,unitsx = units)
             hd=bcdPlotter.drawTH1Binned('regD_shift', var['D'], self.cuts['regD'], lumi_str, xbins,titlex = titlex,unitsx = units)
@@ -185,17 +194,25 @@ class StackZjetsDD:
             hb=bcdPlotter.drawTH1('regB_shift', var['B'], self.cuts['regB'], lumi_str, nbins, xmin, xmax,titlex = titlex,units = units)
             hc=bcdPlotter.drawTH1('regC_shift', var['C'], self.cuts['regC'], lumi_str, nbins, xmin, xmax,titlex = titlex,units = units)
             hd=bcdPlotter.drawTH1('regD_shift', var['D'], self.cuts['regD'], lumi_str, nbins, xmin, xmax,titlex = titlex,units = units)
-        
+
+        iga=ha.Integral(0,1+ha.GetNbinsX())
+        igb=hb.Integral(0,1+hb.GetNbinsX())
+        igc=hc.Integral(0,1+hc.GetNbinsX())
+        igd=hd.Integral(0,1+hd.GetNbinsX())
         print 'regB: ', hb.GetSumOfWeights(),\
               '\nregC: ', hc.GetSumOfWeights(),\
               '\nregD(sum of weight): ', hd.GetSumOfWeights(), '; integral:', hd.Integral(0,1+hd.GetNbinsX())
         if isNormalized:
-            ha.Scale(1./ha.Integral(0,1+ha.GetNbinsX()))
-            hb.Scale(1./hb.Integral(0,1+hb.GetNbinsX()))
-            hc.Scale(1./hc.Integral(0,1+hc.GetNbinsX()))
-            hd.Scale(1./hd.Integral(0,1+hd.GetNbinsX()))
+            ha.Scale(1./iga)
+            hb.Scale(1./igb)
+            hc.Scale(1./igc)
+            hd.Scale(1./igd)
             ytitle='normalized'
-        else: ytitle='events'
+        else: # Scale yield of bcd regions
+            hb.Scale(iga/igb)
+            hc.Scale(iga/igb)
+            hd.Scale(iga/igb)
+            ytitle='events'
         
         drawCompareSimple(hb, ha, "reg.B"+' '+leg_suffix, "reg. A",
                           xmin=xmin, xmax=xmax, outdir=self.outdir, notes=notes,lumi=self.lumi,
@@ -218,22 +235,26 @@ class StackZjetsDD:
         hb.SetMarkerColor(ROOT.kBlue)
         hc.SetMarkerColor(ROOT.kGreen)
         hd.SetMarkerColor(ROOT.kYellow)
-        
-        c1=ROOT.TCanvas(1)
-        legend=GetLegendv1(0.65,0.75,0.85,0.90,
-                           [ha,hb,hc,hd],
-                           ['reg. A','reg. B','reg. C','reg. D'],
-                           opt=['lpe','lpe','lpe','lpe'])
-        ha.Draw("e")
-        hb.Draw("e same")
-        hc.Draw("e same")
-        hd.Draw("e same")
-        legend.Draw("same")
-        c1.SetLogy()
-        nameseq=[whichvar, whichbcd, 'bcd', leg_suffix, 'ValidateDphiShapeCorr','met'+self.met_cut,'zpt'+self.zpt_cut, suffix]
-        nameseq.remove('')
-        c1.SaveAs(self.outdir+'/'+'_'.join(nameseq)+'.pdf')
 
+        if suffix=='': nameseq.insert(-1, '3v1')
+        else : nameseq.append('3v1')
+        if isNormalized:
+            c1=ROOT.TCanvas(1)
+            legend=GetLegendv1(0.65,0.75,0.85,0.90, [ha,hb,hc,hd],['reg. A','reg. B','reg. C','reg. D'],opt=['lpe','lpe','lpe','lpe'])
+            ha.Draw("e")
+            hb.Draw("e same")
+            hc.Draw("e same")
+            hd.Draw("e same")
+            legend.Draw("same")
+            c1.SaveAs(self.outdir+'/'+'_'.join(nameseq)+'.pdf')
+        else:
+            hb.Add(hc);hb.Add(hd);hb.Scale(1.0/3.0)
+            drawCompareSimple(ha, hb, "reg.A(MC)", "reg.A(bcd)",
+                              xmin=xmin, xmax=xmax, outdir=self.outdir, notes=notes,lumi=self.lumi,
+                              tag='_'.join(nameseq), units=units, ytitle=ytitle, setmax=2)
+            
+        
+       
         #fout=ROOT.TFile(self.outdir+'/'+'_'.join(nameseq)+'.root','recreate')
         
         return
