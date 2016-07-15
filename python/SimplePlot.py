@@ -333,7 +333,7 @@ def drawCompare(hstack, hratio, legend,
     hline.SetFillStyle(0)
     p2.cd()
     hratio.Draw('AXIS')
-    hline.Draw('HIST,SAME')
+    hline.Draw('HIST, e2,SAME')
     hratio.Draw('P,SAME')
     hratio.GetXaxis().SetRangeUser(xmin,xmax)
 
