@@ -195,10 +195,10 @@ class StackZjetsDD:
             hc=bcdPlotter.drawTH1('regC_shift', var['C'], self.cuts['regC'], lumi_str, nbins, xmin, xmax,titlex = titlex,units = units)
             hd=bcdPlotter.drawTH1('regD_shift', var['D'], self.cuts['regD'], lumi_str, nbins, xmin, xmax,titlex = titlex,units = units)
 
-        iga=ha.Integral(0,1+ha.GetNbinsX())
-        igb=hb.Integral(0,1+hb.GetNbinsX())
-        igc=hc.Integral(0,1+hc.GetNbinsX())
-        igd=hd.Integral(0,1+hd.GetNbinsX())
+        iga=ha.GetSumOfWeights() #ha.Integral(0,1+ha.GetNbinsX())
+        igb=hb.GetSumOfWeights() #hb.Integral(0,1+hb.GetNbinsX())
+        igc=hc.GetSumOfWeights() #hc.Integral(0,1+hc.GetNbinsX())
+        igd=hd.GetSumOfWeights() #hd.Integral(0,1+hd.GetNbinsX())
         print 'regB: ', hb.GetSumOfWeights(),\
               '\nregC: ', hc.GetSumOfWeights(),\
               '\nregD(sum of weight): ', hd.GetSumOfWeights(), '; integral:', hd.Integral(0,1+hd.GetNbinsX())
@@ -210,8 +210,8 @@ class StackZjetsDD:
             ytitle='normalized'
         else: # Scale yield of bcd regions
             hb.Scale(iga/igb)
-            hc.Scale(iga/igb)
-            hd.Scale(iga/igb)
+            hc.Scale(iga/igc)
+            hd.Scale(iga/igd)
             ytitle='events'
         
         drawCompareSimple(hb, ha, "reg.B"+' '+leg_suffix, "reg. A",
