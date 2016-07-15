@@ -93,7 +93,7 @@ def GetCumulativeAndError(inputHist,forward=True, suffix=''):
         igerr2 = 0.
         #for binz in reversed(range(0, nbinsz+1)):
         #for biny in reversed(range(0, nbinsy+1)):
-        for binx in reversed(range(0, nbinsx+1)):
+        for binx in reversed(range(0, nbinsx+2)):
             #bin = hintegrated.GetBin(binx, biny, binz)
             Bin = hintegrated.GetBin(binx)
             Sum += inputHist.GetBinContent(Bin)
