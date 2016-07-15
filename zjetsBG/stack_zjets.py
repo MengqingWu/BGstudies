@@ -131,14 +131,14 @@ class StackZjetsDD:
         #                  drawSig=True, hsig=[hsig1,hsig2,hsig3])
         return
 
-    def ValidateDphiShapeCorr(self, whichvar='fabsDphi', isNormalized=True, whichbcd='allBG', scaleDphi=True, suffix=''):
+    def ValidateDphiShapeCorr(self, whichvar='fabsDphi', isNormalized=True, whichbcd='allBG', scaleDphi=True, onlyStats=False, suffix=''):
         """ use shape correction that is derived from MC to apply to all the MC samples to validate the 'dphi_sf' algorithm 
         whichvar=(absDphi, mt, zpt, met)
         """
         lumi_str='1' if isNormalized else str(self.lumi*1000)
 
-        validatorMC=InitializePlotter(indir="./METSkim_v4", addSig=False, addData=False, doRatio=False, scaleDphi=scaleDphi,onlyStats=True)
-        zjetsMC=InitializePlotter(indir="./METSkim_v4", addSig=False, addData=False, doRatio=False, scaleDphi=False,onlyStats=True)
+        validatorMC=InitializePlotter(indir="./METSkim_v4", addSig=False, addData=False, doRatio=False, scaleDphi=scaleDphi,onlyStats=onlyStats)
+        zjetsMC=InitializePlotter(indir="./METSkim_v4", addSig=False, addData=False, doRatio=False, scaleDphi=False,onlyStats=onlyStats)
         
         nom_suffix='normalized' if isNormalized else 'yield'
         leg_suffix='corr.' if scaleDphi else ''
