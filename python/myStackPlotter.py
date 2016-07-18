@@ -429,13 +429,13 @@ class StackPlotter(object):
         canvas.SetFrameBorderMode(0)
 
 
-        for (plotter,typeP,label) in zip(self.plotters,self.types,self.labels):
-                hist = plotter.drawTH1(hist.GetName()+label,var,cut,"1",bins,mini,maxi,titlex,units)
-                #hist.SetFillStyle(0)
-                #hist.SetName(hist.GetName()+label)
-                hist.Scale(1./hist.Integral())
-                stack.Add(hist)
-                hists.append(hist)
+        for (plotter,typeP,label,name) in zip(self.plotters,self.types,self.labels, self.names):
+            hist = plotter.drawTH1(name,var,cut,"1",bins,mini,maxi,titlex,units)
+            #hist.SetFillStyle(0)
+            #hist.SetName(hist.GetName()+label)
+            hist.Scale(1./hist.Integral())
+            stack.Add(hist)
+            hists.append(hist)
 
 
         stack.Draw("HIST,NOSTACK")
@@ -451,7 +451,15 @@ class StackPlotter(object):
 
 
         legend = ROOT.TLegend(0.6,0.6,0.9,0.9)
-        legend.SetFillColor(ROOT.kWhite)
+        legend.SetName(output+'_'+'legend')
+        legend.SetBorderSize(0)
+        legend.SetLineColor(1)
+        legend.SetLineStyle(1)
+        legend.SetLineWidth(1)
+        legend.SetFillColor(0)
+        legend.SetFillStyle(0)
+        legend.SetTextFont(42)
+                        
         for (histo,label,typeP) in zip(hists,self.labels,self.types):
                 legend.AddEntry(histo,label,"lf")
         ROOT.SetOwnership(legend,False)

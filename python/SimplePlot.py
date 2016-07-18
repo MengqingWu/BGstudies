@@ -93,7 +93,7 @@ def GetCumulativeAndError(inputHist,forward=True, suffix=''):
         igerr2 = 0.
         #for binz in reversed(range(0, nbinsz+1)):
         #for biny in reversed(range(0, nbinsy+1)):
-        for binx in reversed(range(0, nbinsx+1)):
+        for binx in reversed(range(0, nbinsx+2)):
             #bin = hintegrated.GetBin(binx, biny, binz)
             Bin = hintegrated.GetBin(binx)
             Sum += inputHist.GetBinContent(Bin)
@@ -117,7 +117,7 @@ def GetRatio_TH1(h1, h2, h2_isStack=False):
     else:
         h2_new=h2.Clone("single h2 as denominator")
             
-    for i in xrange(h1.GetXaxis().GetNbins()):
+    for i in xrange(h1.GetXaxis().GetNbins()+1):
         N1 = h1.GetBinContent(i)
         N2 = h2_new.GetBinContent(i)
         E1 = h1.GetBinError(i)
@@ -319,7 +319,7 @@ def drawCompare(hstack, hratio, legend,
     
     if len(units)>0:
         hstack.GetHistogram().GetXaxis().SetTitle(xtitle + " (" +units+")")
-        hstack.GetHistogram().GetYaxis().SetTitle(ytitle +" / "+str((maxi-mini)/bins)+ " "+units)
+        hstack.GetHistogram().GetYaxis().SetTitle(ytitle +" / "+"{:.2}".format((maxi-mini)/bins)+ " "+units)
     else:
         hstack.GetHistogram().GetXaxis().SetTitle(xtitle)
         hstack.GetHistogram().GetYaxis().SetTitle(ytitle)
