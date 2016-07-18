@@ -30,7 +30,8 @@ xvar={'A': "fabs(llnunu_deltaPhi)",
 nbinsx=4
 xmin=[0, ROOT.TMath.Pi()/4, ROOT.TMath.Pi()/2, 3*ROOT.TMath.Pi()/4]
 xmax=[ROOT.TMath.Pi()/4, ROOT.TMath.Pi()/2, 3*ROOT.TMath.Pi()/4, ROOT.TMath.Pi()]
-ybins=[0,25,50,80,120,1000]
+yvar, ytitle="llnunu_l2_pt/llnunu_l1_pt","E_{T}^{miss}/p_{T}^{Z}"
+ybins=[0.1,0.2,0.4,0.6,3]
 
 ### ----- Initialize (samples):
 plotter=InitializePlotter(indir=indir, addData=True, onlyStats=isClosureTest)
@@ -61,23 +62,23 @@ print "[info] I am using ",whichbcd," bcd for shape correction weighting factor.
 
 print "[info] I am drawing 'met vs fabs(dphi)' in region BCD shifted from A... (be patient)"
 
-h2_AB_shape=plotter.ZJets.drawTH2Binnedv1(tag0+'_regA_shiftB', "llnunu_l2_pt"+':'+xvar['AtoB'], cuts['regA'], str(lumi*1000), 
-                                          nbinsx, xmin[0], xmax[0], ybins, titlex = "|#Delta#phi_{Z,MET}|", unitsx='', titley = "llnunu_l2_pt", unitsy='GeV')
-h2_AD_shape=plotter.ZJets.drawTH2Binnedv1(tag0+'_regA_shiftD', "llnunu_l2_pt"+':'+xvar['AtoD'], cuts['regA'], str(lumi*1000), 
-                                          nbinsx, xmin[1], xmax[1], ybins, titlex = "|#Delta#phi_{Z,MET}|", unitsx='', titley = "llnunu_l2_pt", unitsy='GeV')
-h2_AC_shape=plotter.ZJets.drawTH2Binnedv1(tag0+'_regA_shiftC', "llnunu_l2_pt"+':'+xvar['AtoC'], cuts['regA'], str(lumi*1000), 
-                                          nbinsx, xmin[2], xmax[2], ybins, titlex = "|#Delta#phi_{Z,MET}|", unitsx='', titley = "llnunu_l2_pt", unitsy='GeV')
+h2_AB_shape=plotter.ZJets.drawTH2Binnedv1(tag0+'_regA_shiftB', yvar+':'+xvar['AtoB'], cuts['regA'], str(lumi*1000), 
+                                          nbinsx, xmin[0], xmax[0], ybins, titlex = "|#Delta#phi_{Z,MET}|", unitsx='', titley = ytitle, unitsy='')
+h2_AD_shape=plotter.ZJets.drawTH2Binnedv1(tag0+'_regA_shiftD', yvar+':'+xvar['AtoD'], cuts['regA'], str(lumi*1000), 
+                                          nbinsx, xmin[1], xmax[1], ybins, titlex = "|#Delta#phi_{Z,MET}|", unitsx='', titley = ytitle, unitsy='')
+h2_AC_shape=plotter.ZJets.drawTH2Binnedv1(tag0+'_regA_shiftC', yvar+':'+xvar['AtoC'], cuts['regA'], str(lumi*1000), 
+                                          nbinsx, xmin[2], xmax[2], ybins, titlex = "|#Delta#phi_{Z,MET}|", unitsx='', titley = ytitle, unitsy='')
 
 print "[info] I am drawing 'met vs fabs(dphi)' in region BCD... (be patient)"
 
-h2_A_shape=plotter.ZJets.drawTH2Binnedv1(tag0+'_regA', "llnunu_l2_pt"+':'+xvar['A'], cuts['regA'], str(lumi*1000), 
-                                          nbinsx, xmin[3], xmax[3], ybins, titlex = "|#Delta#phi_{Z,MET}|", unitsx='', titley = "llnunu_l2_pt", unitsy='GeV')
-h2_B_shape=bcdPlotter.drawTH2Binnedv1(tag0+'_regB', "llnunu_l2_pt"+':'+xvar['A'], cuts['regB'], str(lumi*1000), 
-                                      nbinsx, xmin[0], xmax[0], ybins, titlex = "|#Delta#phi_{Z,MET}|", unitsx='', titley = "llnunu_l2_pt", unitsy='GeV')
-h2_D_shape=bcdPlotter.drawTH2Binnedv1(tag0+'_regD', "llnunu_l2_pt"+':'+xvar['A'], cuts['regD'], str(lumi*1000), 
-                                      nbinsx, xmin[1], xmax[1], ybins, titlex = "|#Delta#phi_{Z,MET}|", unitsx='', titley = "llnunu_l2_pt", unitsy='GeV')
-h2_C_shape=bcdPlotter.drawTH2Binnedv1(tag0+'_regC', "llnunu_l2_pt"+':'+xvar['A'], cuts['regC'], str(lumi*1000), 
-                                      nbinsx, xmin[2], xmax[2], ybins, titlex = "|#Delta#phi_{Z,MET}|", unitsx='', titley = "llnunu_l2_pt", unitsy='GeV')
+h2_A_shape=plotter.ZJets.drawTH2Binnedv1(tag0+'_regA', yvar+':'+xvar['A'], cuts['regA'], str(lumi*1000), 
+                                          nbinsx, xmin[3], xmax[3], ybins, titlex = "|#Delta#phi_{Z,MET}|", unitsx='', titley = ytitle, unitsy='')
+h2_B_shape=bcdPlotter.drawTH2Binnedv1(tag0+'_regB', yvar+':'+xvar['A'], cuts['regB'], str(lumi*1000), 
+                                      nbinsx, xmin[0], xmax[0], ybins, titlex = "|#Delta#phi_{Z,MET}|", unitsx='', titley = ytitle, unitsy='')
+h2_D_shape=bcdPlotter.drawTH2Binnedv1(tag0+'_regD', yvar+':'+xvar['A'], cuts['regD'], str(lumi*1000), 
+                                      nbinsx, xmin[1], xmax[1], ybins, titlex = "|#Delta#phi_{Z,MET}|", unitsx='', titley = ytitle, unitsy='')
+h2_C_shape=bcdPlotter.drawTH2Binnedv1(tag0+'_regC', yvar+':'+xvar['A'], cuts['regC'], str(lumi*1000), 
+                                      nbinsx, xmin[2], xmax[2], ybins, titlex = "|#Delta#phi_{Z,MET}|", unitsx='', titley = ytitle, unitsy='')
 
 outtxt.write('*result*\nregA: '+ str(h2_AB_shape.Integral(0,5,0,6))+\
              '\nregB: '+ str(h2_B_shape.Integral(0,5,0,6))+\

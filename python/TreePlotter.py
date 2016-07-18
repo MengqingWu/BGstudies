@@ -36,7 +36,8 @@ class TreePlotter(PlotterBase):
         h.SetFillStyle(self.fillstyle)
         h.SetFillColor(self.fillcolor)
         h.SetMarkerStyle(self.markerstyle)
-        h.GetXaxis().SetTitle(titlex+ " ["+units+"]")
+        if units: titlex+=" ["+units+"]"
+        h.GetXaxis().SetTitle(titlex)
         if titley:
             h.GetYaxis().SetTitle(titley)
     
@@ -54,9 +55,11 @@ class TreePlotter(PlotterBase):
         h.Sumw2()
         h.SetFillStyle(self.fillstyle)
         h.SetFillColor(self.fillcolor)
-        h.GetXaxis().SetTitle(titlex+ " ["+unitsx+"]")
-        h.GetYaxis().SetTitle(titley+ " ["+unitsy+"]")
-
+        if unitsx: titlex+=" ["+unitsx+"]"
+        if unitsy: titley+=" ["+unitsy+"]"
+        h.GetXaxis().SetTitle(titlex)
+        h.GetYaxis().SetTitle(titley)
+        
         #Apply correction factors
         corrString='1'
         for corr in self.corrFactors:
@@ -121,8 +124,10 @@ class TreePlotter(PlotterBase):
         h.Sumw2()
         h.SetFillStyle(self.fillstyle)
         h.SetFillColor(self.fillcolor)
-        h.GetXaxis().SetTitle(titlex+ " ["+unitsx+"]")
-        h.GetYaxis().SetTitle(titley+ " ["+unitsy+"]")
+        if unitsx: titlex+=" ["+unitsx+"]"
+        if unitsy: titley+=" ["+unitsy+"]"
+        h.GetXaxis().SetTitle(titlex)
+        h.GetYaxis().SetTitle(titley)
 
         #Apply correction factors
         corrString='1'
@@ -137,7 +142,8 @@ class TreePlotter(PlotterBase):
         h.Sumw2()
         h.SetFillStyle(self.fillstyle)
         h.SetFillColor(self.fillcolor)
-        h.GetXaxis().SetTitle(titlex+ " ["+unitsx+"]")
+        if unitsx: titlex+=" ["+unitsx+"]"
+        h.GetXaxis().SetTitle(titlex)
 
         #Apply correction factors
         corrString='1'

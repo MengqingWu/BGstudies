@@ -131,14 +131,14 @@ class StackZjetsDD:
         #                  drawSig=True, hsig=[hsig1,hsig2,hsig3])
         return
 
-    def ValidateDphiShapeCorr(self, whichvar='fabsDphi', isNormalized=True, whichbcd='allBG', scaleDphi=True, onlyStats=False, suffix=''):
+    def ValidateDphiShapeCorr(self, indir, whichvar='fabsDphi', isNormalized=True, whichbcd='allBG', scaleDphi=True, onlyStats=False, suffix=''):
         """ use shape correction that is derived from MC to apply to all the MC samples to validate the 'dphi_sf' algorithm 
         whichvar=(absDphi, mt, zpt, met)
         """
         lumi_str='1' if isNormalized else str(self.lumi*1000)
 
-        validatorMC=InitializePlotter(indir="./METSkim_v4", addSig=False, addData=False, doRatio=False, scaleDphi=scaleDphi,onlyStats=onlyStats)
-        zjetsMC=InitializePlotter(indir="./METSkim_v4", addSig=False, addData=False, doRatio=False, scaleDphi=False,onlyStats=onlyStats)
+        validatorMC=InitializePlotter(indir=indir, addSig=False, addData=False, doRatio=False, scaleDphi=scaleDphi,onlyStats=onlyStats)
+        zjetsMC=InitializePlotter(indir=indir, addSig=False, addData=False, doRatio=False, scaleDphi=False,onlyStats=onlyStats)
         
         nom_suffix='normalized' if isNormalized else 'yield'
         leg_suffix='corr.' if scaleDphi else ''
@@ -159,6 +159,7 @@ class StackZjetsDD:
             var=self.Mt
             if  int(self.zpt_cut)*int(self.met_cut) == 0: nbins, xmin, xmax, titlex, units =140, 100.0, 800.0, "M_{T}^{ZZ}", "GeV"
             else: nbins, xmin, xmax, titlex, units =13, 150.0, 800.0, "M_{T}^{ZZ}", "GeV"
+
         elif whichvar=='zpt':
             var=copy.deepcopy(self.Mt)
             for i in var: var[i]='llnunu_l1_pt'
@@ -173,7 +174,14 @@ class StackZjetsDD:
             titlex, units = "E_{T}^{miss}", "GeV"
             xbins=[0,25,50,80,120,1000]
             xmin,xmax=0, 1000
+
+        elif whichvar=='zmass':
+            var=copy.deepcopy(self.Mt)
+            for i in var: var[i]='llnunu_l1_mass'
+            nbins, xmin, xmax, titlex, units =40, 70., 110., "M_{ll}", "GeV"
             
+        else: print "[error] not right whichvar = ", whichvar," please check!"; exit(0)
+                            
         if whichbcd=='allBG':
             bcdPlotter = validatorMC.allBG
             notes='bcd from all bg'
@@ -181,7 +189,6 @@ class StackZjetsDD:
             bcdPlotter = validatorMC.ZJets
             notes='bcd from zjets'
         else: print "[error] Please check the whichbcd = %s, is 'allBG' or 'ZJets'" % (whichbcd); exit(0)
-
                     
         ### ----- Execute (plotting):
         if whichvar=='met':
