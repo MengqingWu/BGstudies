@@ -50,10 +50,10 @@ class MergedPlotter(PlotterBase):
         h.SetFillStyle(self.fillstyle)
         h.SetFillColor(self.fillcolor)
         h.SetMarkerStyle(self.markerstyle)
+        if unitsx: titlex+=" ["+unitsx+"]"
+        if unitsy: titley+=" ["+unitsy+"]"
         h.GetXaxis().SetTitle(titlex)
-        if unitsx != '' : h.GetXaxis().SetTitle(titlex+ " ("+unitsx+")")
         h.GetYaxis().SetTitle(titley)
-        if unitsy != '' : h.GetYaxis().SetTitle(titley+ " ("+unitsy+")")
         return h
 
 
@@ -124,8 +124,10 @@ class MergedPlotter(PlotterBase):
         h.SetFillStyle(self.fillstyle)
         h.SetFillColor(self.fillcolor)
         h.SetMarkerStyle(self.markerstyle)
-        h.GetXaxis().SetTitle(titlex+ " ["+unitsx+"]")
-        h.GetYaxis().SetTitle(titley+ " ["+unitsy+"]")
+        if unitsx: titlex+=" ["+unitsx+"]"
+        if unitsy: titley+=" ["+unitsy+"]"
+        h.GetXaxis().SetTitle(titlex)
+        h.GetYaxis().SetTitle(titley)
         return h
 
     def drawTH1Binned(self,name,var,cuts,lumi,binningx,titlex = "",unitsx = "",drawStyle = "COLZ"):

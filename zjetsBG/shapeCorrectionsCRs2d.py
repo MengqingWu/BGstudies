@@ -32,7 +32,7 @@ xmin=[0, ROOT.TMath.Pi()/4, ROOT.TMath.Pi()/2, 3*ROOT.TMath.Pi()/4]
 xmax=[ROOT.TMath.Pi()/4, ROOT.TMath.Pi()/2, 3*ROOT.TMath.Pi()/4, ROOT.TMath.Pi()]
 yvar, ytitle="llnunu_l2_pt/llnunu_l1_pt","E_{T}^{miss}/p_{T}^{Z}"
 #yvar, ytitle="llnunu_l2_pt","E_{T}^{miss}"
-ybins=[0.1,0.2,0.4,0.6,3]
+ybins=[0,0.1,0.2,0.4,0.6,3]
 #ybins=[0,25,50,80,120,1000]
 
 ### ----- Initialize (samples):
@@ -46,11 +46,6 @@ outtxt.write( '\n'+ '*'*20+'\n')
 outtxt.write( '\n'+ whichregion+'\n')
 for reg in cuts:
     outtxt.write(reg+" "+channel+" : "+cuts[reg]+'\n'+'-'*20+'\n')
-
-ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
-ROOT.gStyle.SetPadBottomMargin(0.2)
-ROOT.gStyle.SetPadLeftMargin(0.15)
-#ROOT.TH1.AddDirectory(ROOT.kFALSE)
 
 ### ----- Execute (plotting):
 #ha=plotter.ZJets.drawTH1('regA', xvar['A'], cuts['regA'], str(lumi*1000), nbins, xmin, xmax, titlex = "#Delta#phi_{Z,MET}", units = "GeV", drawStyle="HIST")
@@ -103,6 +98,7 @@ h2_AC_shape.Divide(h2_C_shape)
 h2_AD_shape.Divide(h2_D_shape)
 
 ### ----- Finalize (Saving):
+ROOT.TH1.AddDirectory(ROOT.kFALSE)
 fdtshape=ROOT.TFile(outdir+'/'+whichbcd+"_shape_correction_2d.root","recreate")
 fdtshape.cd()
 h2_A_shape.Write()
