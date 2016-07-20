@@ -10,9 +10,9 @@ from python.SimplePlot import *
 
 
 class StackZjetsDD:
-    def __init__(self, indir="./METSkim_v1", indir_dd="./METSkim_v3", outdir='./output/stacker/',
+    def __init__(self, indir="./METSkim_v1", indir_dd="./METSkim_v4", outdir='./output/stacker/',
                  channel='inclusive',  whichregion='SR', zpt_cut='100', met_cut= '50',  lumi = 2.318278305,  
-                 sepSig=True,   LogY=True,      doRatio=True,    addSig=True, addData=True):
+                 sepSig=True,   LogY=True,      doRatio=True,    addSig=True, addData=True, scaleDphi=True):
         self.outdir=outdir
         self.channel=channel
         self.whichregion=whichregion
@@ -22,7 +22,7 @@ class StackZjetsDD:
         #channel='inclusive'#raw_input("Please choose a channel (el or mu): \n")
         self.tag0='ZJstudy'
                 
-        self.plotter_dd=InitializePlotter(indir=indir_dd, addSig=addSig, addData=addData, doRatio=doRatio, scaleDphi=True)
+        self.plotter_dd=InitializePlotter(indir=indir_dd, addSig=addSig, addData=addData, doRatio=doRatio, scaleDphi=scaleDphi)
         self.plotter=InitializePlotter(indir=indir, addSig=addSig, addData=addData, doRatio=doRatio)
         self.plotter.Stack.rmPlotter(self.plotter.ZJets, "ZJets","Z+Jets", "background")
         
@@ -31,9 +31,9 @@ class StackZjetsDD:
 
         et1="TMath::Sqrt(llnunu_l1_pt*llnunu_l1_pt+llnunu_l1_mass*llnunu_l1_mass)"
         et2="TMath::Sqrt(llnunu_l2_pt*llnunu_l2_pt+llnunu_l1_mass*llnunu_l1_mass)"
-        newMtB='TMath::Sqrt(2.0*(llnunu_l1_mass*llnunu_l1_mass+'+et1+'*'+et2+'-llnunu_l1_pt*llnunu_l2_pt*cos(llnunu_deltaPhi+TMath::Pi()*3/4)))'
-        newMtD='TMath::Sqrt(2.0*(llnunu_l1_mass*llnunu_l1_mass+'+et1+'*'+et2+'-llnunu_l1_pt*llnunu_l2_pt*cos(llnunu_deltaPhi+TMath::Pi()/2)))'
-        newMtC='TMath::Sqrt(2.0*(llnunu_l1_mass*llnunu_l1_mass+'+et1+'*'+et2+'-llnunu_l1_pt*llnunu_l2_pt*cos(llnunu_deltaPhi+TMath::Pi()/4)))'
+        newMtB='TMath::Sqrt(2.0*(llnunu_l1_mass*llnunu_l1_mass+'+et1+'*'+et2+'-llnunu_l1_pt*llnunu_l2_pt*cos(fabs(llnunu_deltaPhi)+TMath::Pi()*3/4)))'
+        newMtD='TMath::Sqrt(2.0*(llnunu_l1_mass*llnunu_l1_mass+'+et1+'*'+et2+'-llnunu_l1_pt*llnunu_l2_pt*cos(fabs(llnunu_deltaPhi)+TMath::Pi()/2)))'
+        newMtC='TMath::Sqrt(2.0*(llnunu_l1_mass*llnunu_l1_mass+'+et1+'*'+et2+'-llnunu_l1_pt*llnunu_l2_pt*cos(fabs(llnunu_deltaPhi)+TMath::Pi()/4)))'
         self.Mt={'A':'llnunu_mt',
                  'B':newMtB,
                  'C':newMtC,
@@ -46,6 +46,39 @@ class StackZjetsDD:
         ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
         ROOT.gStyle.SetPadBottomMargin(0.2)
         ROOT.gStyle.SetPadLeftMargin(0.15)
+
+    def getAllmcRegA(self):
+        stackTag = self.tag0+'_'+'stacker'+'_'+self.whichregion+'_'+self.channel+'_'+'regA'+'_'+'allMC'
+        self.plotter.Stack.addPlotter(self.plotter.ZJets, "ZJets","Z+Jets", "background")
+        self.plotter.Stack.drawStack(self.Mt['A'], self.cuts['regA'], str(self.lumi*1000), 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV",
+                                     output=stackTag, outDir=self.outdir, separateSignal=True,
+                                     drawtex=self.whichregion+' selection', channel=self.channel)
+        self.plotter.Stack.rmPlotter(self.plotter.ZJets, "ZJets","Z+Jets", "background")
+        return
+    
+    def getYieldCorr(self):
+        var=self.fabsdPhi
+        nbins, xmin, xmax, titlex, units =4, 3*ROOT.TMath.Pi()/4, ROOT.TMath.Pi(), "|#Delta#phi_{Z,MET}|", ""
+        lumi_str = str(self.lumi*1000)
+        
+        ha=self.plotter.ZJets.drawTH1('regA', var['A'], self.cuts['regA'], lumi_str, nbins, xmin, xmax, titlex = titlex, units = units)
+        hb=self.plotter.ZJets.drawTH1('regB_shift', var['B'], self.cuts['regB'], lumi_str, nbins, xmin, xmax,titlex = titlex,units = units)
+        hc=self.plotter.ZJets.drawTH1('regC_shift', var['C'], self.cuts['regC'], lumi_str, nbins, xmin, xmax,titlex = titlex,units = units)
+        hd=self.plotter.ZJets.drawTH1('regD_shift', var['D'], self.cuts['regD'], lumi_str, nbins, xmin, xmax,titlex = titlex,units = units)
+            
+        iga=ha.Integral(0,1+ha.GetNbinsX())
+        igb=hb.Integral(0,1+hb.GetNbinsX())
+        igc=hc.Integral(0,1+hc.GetNbinsX())
+        igd=hd.Integral(0,1+hd.GetNbinsX())
+        print 'regB: ', hb.GetSumOfWeights(),\
+            '\nregC: ', hc.GetSumOfWeights(),\
+            '\nregD(sum of weight): ', hd.GetSumOfWeights(), '; integral:', hd.Integral(0,1+hd.GetNbinsX())
+
+        rAB=iga/igb
+        rAC=iga/igc
+        rAD=iga/igd
+        print "[info] yield ratios: A/B=%.2f, A/C=%.2f, A/D=%.2f" % (rAB, rAC, rAD)
+        return   rAB, rAC, rAD                                                                                                 \
         
     def drawDataDrivenStack(self):
         stackTag = self.tag0+'_'+'stacker'+'_'+self.whichregion+'_'+self.channel+'_'+'regA'+'_'+'absDphi'
@@ -67,9 +100,11 @@ class StackZjetsDD:
         hb.Add(subb,-1)
         hc.Add(subc,-1)
         hd.Add(subd,-1)
-        hb.Scale(3.46)
-        hc.Scale(2.45)
-        hd.Scale(4.08)
+        rab,rac,rad = self.getYieldCorr()
+                
+        hb.Scale(rab)
+        hc.Scale(rac)
+        hd.Scale(rad)
 
         #-> Use 3 CRs to get the zjets distribution in regA:
         h_zjets_dd=copy.deepcopy(hb)
@@ -123,20 +158,21 @@ class StackZjetsDD:
         myentry=ROOT.TLegendEntry(h_zjets_dd,"Z_Jets (data-driven)","f")
         legend.GetListOfPrimitives().AddFirst(myentry)
         
-        # drawStack_simple(hframe, hsnew, hdata, hratio, legend,
-        #                  hstack_opt="A, HIST",
-        #                  outDir=self.outdir, output=stackTag+"_datadriven", channel=ROOT.TString(self.channel),
-        #                  xmin=150, xmax=500, xtitle="M_{T}^{ZZ}" ,units="GeV",
-        #                  lumi=self.lumi, notes=self.whichregion+" selection",
-        #                  drawSig=True, hsig=[hsig1,hsig2,hsig3])
+        drawStack_simple(hframe, hsnew, hdata, hratio, legend,
+                         hstack_opt="A, HIST",
+                         outDir=self.outdir, output=stackTag+"_datadriven", channel=ROOT.TString(self.channel),
+                         xmin=150, xmax=500, xtitle="M_{T}^{ZZ}" ,units="GeV",
+                         lumi=self.lumi, notes=self.whichregion+" selection",
+                         drawSig=True, hsig=[hsig1,hsig2,hsig3])
         return
 
-    def ValidateDphiShapeCorr(self, indir, whichvar='fabsDphi', isNormalized=True, whichbcd='allBG', scaleDphi=True, onlyStats=False, suffix=''):
+    def ValidateDphiShapeCorr(self, indir, whichvar='fabsDphi', isNormalized=True, yieldCorr=False, whichbcd='allBG', scaleDphi=True, onlyStats=False, suffix=''):
         """ use shape correction that is derived from MC to apply to all the MC samples to validate the 'dphi_sf' algorithm 
         whichvar=(absDphi, mt, zpt, met)
         """
+        if isNormalized: yieldCorr=False
         lumi_str='1' if isNormalized else str(self.lumi*1000)
-
+        
         validatorMC=InitializePlotter(indir=indir, addSig=False, addData=False, doRatio=False, scaleDphi=scaleDphi,onlyStats=onlyStats)
         zjetsMC=InitializePlotter(indir=indir, addSig=False, addData=False, doRatio=False, scaleDphi=False,onlyStats=onlyStats)
         
@@ -163,9 +199,11 @@ class StackZjetsDD:
         elif whichvar=='zpt':
             var=copy.deepcopy(self.Mt)
             for i in var: var[i]='llnunu_l1_pt'
-            if int(self.zpt_cut)==0: nbins, xmin, xmax, titlex, units =60, 0.0, 1200.0, "p_{T}^{ll}", "GeV"
-            else: xmin, xmax, titlex, units = int(self.zpt_cut)-10, 1200.0, "p_{T}^{ll}", "GeV"; nbins=int((xmax-xmin)/20) if (xmax-xmin)%10==0 else 50
-            
+            titlex, units = "p_{T}^{Z}", "GeV"
+            xbins=[0,100,150,200,300,400,1000]
+            if int(self.zpt_cut)==0: xmin, xmax = 0.0, 1000.0
+            else:                    xmin, xmax = int(self.zpt_cut), 1000.0
+                
         elif whichvar=='met':
             var=copy.deepcopy(self.Mt)
             for i in var: var[i]='llnunu_l2_pt'
@@ -178,7 +216,7 @@ class StackZjetsDD:
         elif whichvar=='zmass':
             var=copy.deepcopy(self.Mt)
             for i in var: var[i]='llnunu_l1_mass'
-            nbins, xmin, xmax, titlex, units =40, 70., 110., "M_{ll}", "GeV"
+            nbins, xmin, xmax, titlex, units =40, 70., 110., "M_{Z}", "GeV"
             
         else: print "[error] not right whichvar = ", whichvar," please check!"; exit(0)
                             
@@ -191,7 +229,7 @@ class StackZjetsDD:
         else: print "[error] Please check the whichbcd = %s, is 'allBG' or 'ZJets'" % (whichbcd); exit(0)
                     
         ### ----- Execute (plotting):
-        if whichvar=='met':
+        if whichvar in ['met', 'zpt']:
             ha=zjetsMC.ZJets.drawTH1Binned('regA', var['A'], self.cuts['regA'], lumi_str, xbins, titlex = titlex, unitsx = units)
             hb=bcdPlotter.drawTH1Binned('regB_shift', var['B'], self.cuts['regB'], lumi_str, xbins,titlex = titlex,unitsx = units)
             hc=bcdPlotter.drawTH1Binned('regC_shift', var['C'], self.cuts['regC'], lumi_str, xbins,titlex = titlex,unitsx = units)
@@ -216,9 +254,10 @@ class StackZjetsDD:
             hd.Scale(1./igd)
             ytitle='normalized'
         else: # Scale yield of bcd regions
-            hb.Scale(iga/igb)
-            hc.Scale(iga/igc)
-            hd.Scale(iga/igd)
+            if yieldCorr:
+                hb.Scale(iga/igb)
+                hc.Scale(iga/igc)
+                hd.Scale(iga/igd)
             ytitle='events'
         
         drawCompareSimple(hb, ha, "reg.B"+' '+leg_suffix, "reg. A",
@@ -245,7 +284,8 @@ class StackZjetsDD:
 
         if suffix=='': nameseq.insert(-1, '3v1')
         else : nameseq.append('3v1')
-        if isNormalized:
+        #if isNormalized:
+        if not yieldCorr:
             c1=ROOT.TCanvas(1)
             legend=GetLegendv1(0.65,0.75,0.85,0.90, [ha,hb,hc,hd],['reg. A','reg. B','reg. C','reg. D'],opt=['lpe','lpe','lpe','lpe'])
             ha.Draw("e")
@@ -253,7 +293,9 @@ class StackZjetsDD:
             hc.Draw("e same")
             hd.Draw("e same")
             legend.Draw("same")
+            c1.SetLogy()
             c1.SaveAs(self.outdir+'/'+'_'.join(nameseq)+'.pdf')
+            
         else:
             hb.Add(hc);hb.Add(hd);hb.Scale(1.0/3.0)
             drawCompareSimple(ha, hb, "reg.A(MC)", "reg.A(bcd)",
