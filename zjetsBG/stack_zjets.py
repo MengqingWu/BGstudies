@@ -178,7 +178,7 @@ class StackZjetsDD:
         
         nom_suffix='normalized' if isNormalized else 'yield'
         leg_suffix='corr.' if scaleDphi else ''
-                
+
         compareTagseq=[self.tag0, 'closureTest',self.whichregion,self.channel, whichvar, nom_suffix]
         nameseq=[whichvar, self.tag0, 'closureTest', self.whichregion, self.channel, 'met'+self.met_cut,'zpt'+self.zpt_cut,
                  leg_suffix+'bcd'+whichbcd, nom_suffix, suffix]
@@ -209,14 +209,19 @@ class StackZjetsDD:
             for i in var: var[i]='llnunu_l2_pt'
             #if int(self.met_cut)==0: nbins, xmin, xmax, titlex, units =90, 0.0, 450.0, "E_{T}^{miss}", "GeV"
             #else: xmin, xmax, titlex, units = int(self.met_cut)-10, 450.0, "E_{T}^{miss}", "GeV"; nbins=int((xmax-xmin)/10) if (xmax-xmin)%10==0 else 40
-            titlex, units = "E_{T}^{miss}", "GeV"
+            xmin,xmax, titlex, units = 0, 1000, "E_{T}^{miss}", "GeV"
             xbins=[0,25,50,80,120,1000]
-            xmin,xmax=0, 1000
 
         elif whichvar=='zmass':
             var=copy.deepcopy(self.Mt)
             for i in var: var[i]='llnunu_l1_mass'
             nbins, xmin, xmax, titlex, units =40, 70., 110., "M_{Z}", "GeV"
+
+        elif whichvar=='metzpt':
+            var=copy.deepcopy(self.Mt)
+            for i in var: var[i]='llnunu_l2_pt/llnunu_l1_pt'
+            xmin, xmax, titlex, units = 0., 3., "E_{T}^{miss}/p_{T}^{Z}", ""
+            xbins=[0,0.1,0.2,0.4,0.6,3]
             
         else: print "[error] not right whichvar = ", whichvar," please check!"; exit(0)
                             
@@ -229,7 +234,7 @@ class StackZjetsDD:
         else: print "[error] Please check the whichbcd = %s, is 'allBG' or 'ZJets'" % (whichbcd); exit(0)
                     
         ### ----- Execute (plotting):
-        if whichvar in ['met', 'zpt']:
+        if whichvar in ['met', 'zpt', 'metzpt']:
             ha=zjetsMC.ZJets.drawTH1Binned('regA', var['A'], self.cuts['regA'], lumi_str, xbins, titlex = titlex, unitsx = units)
             hb=bcdPlotter.drawTH1Binned('regB_shift', var['B'], self.cuts['regB'], lumi_str, xbins,titlex = titlex,unitsx = units)
             hc=bcdPlotter.drawTH1Binned('regC_shift', var['C'], self.cuts['regC'], lumi_str, xbins,titlex = titlex,unitsx = units)
