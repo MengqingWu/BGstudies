@@ -376,10 +376,14 @@ def drawCompareSimple(h1, h2, leg1, leg2,
     h1.SetFillColor(kRed)
     h2.SetMarkerStyle(20)
     h2.SetMarkerSize(1.0)
+    herror=copy.deepcopy(h1)
+    herror.SetFillColor(kBlue)
+    herror.SetFillStyle(3018)
     
     hstack=THStack("h_stack","stack histograms")
     hstack.Add(h1,"hist,0")
     hstack.Add(h2,"p,0")
+    hstack.Add(herror,"e2,0")
 
     if xtitle=="": xtitle=h1.GetXaxis().GetTitle()
     if ytitle=="": ytitle=h1.GetYaxis().GetTitle()
