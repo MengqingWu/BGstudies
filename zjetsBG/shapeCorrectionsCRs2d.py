@@ -2,12 +2,11 @@
 import ROOT, os, copy
 #from array import *
 from math import *
-from collections import OrderedDict
 from python.SetCuts import SetCuts
 from python.InitializePlotter import InitializePlotter
 from python.HistPrinter import mergePrinter
 from python.SimplePlot import *
-
+### ----- Parameter setting:
 channel='inclusive'#raw_input("Please choose a channel (el or mu): \n")
 lumi=2.318278305
 indir="./METSkim_v1"
