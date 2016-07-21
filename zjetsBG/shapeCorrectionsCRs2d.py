@@ -19,9 +19,8 @@ outtxt = open(outdir+'num_out_2d.txt', 'a')
 
 whichregion='SR'
 zpt_cut, met_cut= '100', '50'
-whichbcd='ZJets' 
-#whichbcd='allBG'
-isClosureTest=False
+whichbcd='ZJets' #whichbcd='allBG'
+onlyStats=False
 
 xvar={'A': "fabs(llnunu_deltaPhi)",
      'AtoB': "fabs(llnunu_deltaPhi)-TMath::Pi()*3/4",
@@ -30,13 +29,13 @@ xvar={'A': "fabs(llnunu_deltaPhi)",
 nbinsx=4
 xmin=[0, ROOT.TMath.Pi()/4, ROOT.TMath.Pi()/2, 3*ROOT.TMath.Pi()/4]
 xmax=[ROOT.TMath.Pi()/4, ROOT.TMath.Pi()/2, 3*ROOT.TMath.Pi()/4, ROOT.TMath.Pi()]
-yvar, ytitle="llnunu_l2_pt/llnunu_l1_pt","E_{T}^{miss}/p_{T}^{Z}"
-#yvar, ytitle="llnunu_l2_pt","E_{T}^{miss}"
-ybins=[0,0.1,0.2,0.4,0.6,3]
-#ybins=[0,25,50,80,120,1000]
+#yvar, ytitle="llnunu_l2_pt/llnunu_l1_pt","E_{T}^{miss}/p_{T}^{Z}"
+yvar, ytitle="llnunu_l2_pt","E_{T}^{miss}"
+#ybins=[0,0.1,0.2,0.4,0.6,3]
+ybins=[0,25,50,80,120,1000]
 
 ### ----- Initialize (samples):
-plotter=InitializePlotter(indir=indir, addData=True, onlyStats=isClosureTest)
+plotter=InitializePlotter(indir=indir, addData=True, onlyStats=onlyStats)
 
 setcuts = SetCuts()
 cuts=setcuts.abcdCuts(channel=channel, whichRegion=whichregion, zpt_cut=zpt_cut, met_cut=met_cut)
