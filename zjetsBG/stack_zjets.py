@@ -201,6 +201,7 @@ class StackZjetsDD:
             for i in var: var[i]='llnunu_l1_pt'
             titlex, units = "p_{T}^{Z}", "GeV"
             xbins=[0,100,150,200,300,400,1000]
+            nbins=len(xbins)-1
             if int(self.zpt_cut)==0: xmin, xmax = 0.0, 1000.0
             else:                    xmin, xmax = int(self.zpt_cut), 1000.0
                 
@@ -211,6 +212,7 @@ class StackZjetsDD:
             #else: xmin, xmax, titlex, units = int(self.met_cut)-10, 450.0, "E_{T}^{miss}", "GeV"; nbins=int((xmax-xmin)/10) if (xmax-xmin)%10==0 else 40
             xmin,xmax, titlex, units = 0, 1000, "E_{T}^{miss}", "GeV"
             xbins=[0,25,50,80,120,1000]
+            nbins=len(xbins)-1
 
         elif whichvar=='zmass':
             var=copy.deepcopy(self.Mt)
@@ -222,7 +224,7 @@ class StackZjetsDD:
             for i in var: var[i]='llnunu_l2_pt/llnunu_l1_pt'
             xmin, xmax, titlex, units = 0., 3., "E_{T}^{miss}/p_{T}^{Z}", ""
             xbins=[0,0.1,0.2,0.4,0.6,3]
-            
+            nbins=len(xbins)-1
         else: print "[error] not right whichvar = ", whichvar," please check!"; exit(0)
                             
         if whichbcd=='allBG':
@@ -267,15 +269,15 @@ class StackZjetsDD:
         
         drawCompareSimple(hb, ha, "reg.B"+' '+leg_suffix, "reg. A",
                           xmin=xmin, xmax=xmax, outdir=self.outdir, notes=notes,lumi=self.lumi,
-                          tag=compareTag+'BA', units=units, ytitle=ytitle, setmax=2)
+                          tag=compareTag+'BA', units='', ytitle=ytitle, setmax=2)
 
         drawCompareSimple(hc, ha, "reg.C"+' '+leg_suffix, "reg. A",
                           xmin=xmin, xmax=xmax, outdir=self.outdir, notes=notes,lumi=self.lumi,
-                          tag=compareTag+'CA', units=units, ytitle=ytitle, setmax=2)
+                          tag=compareTag+'CA', units='', ytitle=ytitle, setmax=2)
 
         drawCompareSimple(hd, ha, "reg.D"+' '+leg_suffix, "reg. A",
                           xmin=xmin, xmax=xmax, outdir=self.outdir, notes=notes,lumi=self.lumi,
-                          tag=compareTag+'DA', units=units, ytitle=ytitle, setmax=2)
+                          tag=compareTag+'DA', units='', ytitle=ytitle, setmax=2)
 
         ha.SetLineColor(ROOT.kRed)
         hb.SetLineColor(ROOT.kBlue)
@@ -293,10 +295,17 @@ class StackZjetsDD:
         if not yieldCorr:
             c1=ROOT.TCanvas(1)
             legend=GetLegendv1(0.65,0.75,0.85,0.90, [ha,hb,hc,hd],['reg. A','reg. B','reg. C','reg. D'],opt=['lpe','lpe','lpe','lpe'])
-            ha.Draw("e")
-            hb.Draw("e same")
-            hc.Draw("e same")
-            hd.Draw("e same")
+            nostack=ROOT.THStack("hs","hs")
+            nostack.Add(ha,"e")
+            nostack.Add(hb,"e")
+            nostack.Add(hc,"e")
+            nostack.Add(hd,"e")
+            nostack.Draw("nostack")
+            
+            if units: ytitle+=' /' + str((xmax-xmin)/nbins) + '['+ units +']'
+            nostack.GetXaxis().SetTitle(titlex)
+            nostack.GetYaxis().SetTitle(ytitle)
+            c1.Update()
             legend.Draw("same")
             c1.SetLogy()
             c1.SaveAs(self.outdir+'/'+'_'.join(nameseq)+'.pdf')
@@ -307,8 +316,6 @@ class StackZjetsDD:
                               xmin=xmin, xmax=xmax, outdir=self.outdir, notes=notes,lumi=self.lumi,
                               tag='_'.join(nameseq), units=units, ytitle=ytitle, setmax=2)
             
-        
-       
         #fout=ROOT.TFile(self.outdir+'/'+'_'.join(nameseq)+'.root','recreate')
         
         return
