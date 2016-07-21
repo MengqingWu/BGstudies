@@ -140,6 +140,7 @@ class MergedPlotter(PlotterBase):
         h.SetFillStyle(self.fillstyle)
         h.SetFillColor(self.fillcolor)
         h.SetMarkerStyle(self.markerstyle)
-        h.GetXaxis().SetTitle(titlex+ " ["+unitsx+"]")
+        if unitsx: titlex+=" ["+unitsx+"]"
+        h.GetXaxis().SetTitle(titlex)
         return h
 
