@@ -378,7 +378,8 @@ def drawCompareSimple(h1, h2, leg1, leg2,
     h2.SetMarkerSize(1.0)
     herror=copy.deepcopy(h1)
     herror.SetFillColor(kBlue)
-    herror.SetFillStyle(3018)
+    herror.SetFillStyle(3345)
+    herror.SetMarkerSize(0)
     
     hstack=THStack("h_stack","stack histograms")
     hstack.Add(h1,"hist,0")
