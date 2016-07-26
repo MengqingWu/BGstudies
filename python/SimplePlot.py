@@ -383,8 +383,8 @@ def drawCompareSimple(h1, h2, leg1, leg2,
     
     hstack=THStack("h_stack","stack histograms")
     hstack.Add(h1,"hist,0")
-    hstack.Add(h2,"p,0")
     hstack.Add(herror,"e2,0")
+    hstack.Add(h2,"p,0")
 
     if xtitle=="": xtitle=h1.GetXaxis().GetTitle()
     if ytitle=="": ytitle=h1.GetYaxis().GetTitle()
