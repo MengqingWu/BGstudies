@@ -80,23 +80,25 @@ class StackZjetsDD:
         print "[info] yield ratios: A/B=%.2f, A/C=%.2f, A/D=%.2f" % (rAB, rAC, rAD)
         return   rAB, rAC, rAD                                                                                                 \
         
-    def drawDataDrivenStack(self):
+    def drawDataDrivenStack(self): # draw MT
         stackTag = self.tag0+'_'+'stacker'+'_'+self.whichregion+'_'+self.channel+'_'+'regA'+'_'+'absDphi'
         outTag=self.outdir+'/'+stackTag
-                
+        xbins=[150,200,250,300,350,400,450,550,850]
+        nbins, xmin, xmax= len(xbins), min(xbins), max(xbins)#14, 150.0, 850.0
         ### ----- Execute (plotting):
-        self.plotter.Stack.drawStack(self.Mt['A'], self.cuts['regA'], str(self.lumi*1000), 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV",
+        self.plotter.Stack.drawStack(self.Mt['A'], self.cuts['regA'], str(self.lumi*1000), nbins, xmin, xmax, titlex = "M_{T}^{ZZ}", units = "GeV",
                                      output=stackTag, outDir=self.outdir, separateSignal=True,
-                                     drawtex=self.whichregion+' selection', channel=self.channel)
+                                     drawtex=self.whichregion+' selection', channel=self.channel, xbins=xbins) # if xbins not empty, binned drawn
         
-        #ha=self.plotter.ZJets.drawTH1('zjets', var, self.cuts['regA'], str(lumi*1000), 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV", drawStyle="HIST")
-        hb=self.plotter_dd.Data.drawTH1('regB', self.Mt['B'], self.cuts['regB'], '1', 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV", drawStyle="HIST") 
-        hc=self.plotter_dd.Data.drawTH1('regC', self.Mt['C'], self.cuts['regC'], '1', 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV", drawStyle="HIST") 
-        hd=self.plotter_dd.Data.drawTH1('regD', self.Mt['D'], self.cuts['regD'], '1', 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV", drawStyle="HIST") 
+        #ha=self.plotter.ZJets.drawTH1('zjets', var, self.cuts['regA'], str(lumi*1000), nbins, xmin, xmax, titlex = "M_{T}^{ZZ}", units = "GeV", drawStyle="HIST")
+        hb=self.plotter_dd.Data.drawTH1Binned('regB', self.Mt['B'], self.cuts['regB'],'1', xbins, titlex = "M_{T}^{ZZ}", unitsx = "GeV", drawStyle="HIST") 
+        hc=self.plotter_dd.Data.drawTH1Binned('regC', self.Mt['C'], self.cuts['regC'],'1', xbins, titlex = "M_{T}^{ZZ}", unitsx = "GeV", drawStyle="HIST") 
+        hd=self.plotter_dd.Data.drawTH1Binned('regD', self.Mt['D'], self.cuts['regD'],'1', xbins, titlex = "M_{T}^{ZZ}", unitsx = "GeV", drawStyle="HIST") 
 
-        subb=self.plotter_dd.NonZBG.drawTH1('subregB',self.Mt['B'],self.cuts['regB'],str(self.lumi*1000),70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units="GeV") 
-        subc=self.plotter_dd.NonZBG.drawTH1('subregC',self.Mt['C'],self.cuts['regC'],str(self.lumi*1000),70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units="GeV") 
-        subd=self.plotter_dd.NonZBG.drawTH1('subregD',self.Mt['D'],self.cuts['regD'],str(self.lumi*1000),70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units="GeV") 
+        subb=self.plotter_dd.NonZBG.drawTH1Binned('subregB',self.Mt['B'],self.cuts['regB'],str(self.lumi*1000),xbins,titlex = "M_{T}^{ZZ}", unitsx="GeV") 
+        subc=self.plotter_dd.NonZBG.drawTH1Binned('subregC',self.Mt['C'],self.cuts['regC'],str(self.lumi*1000),xbins,titlex = "M_{T}^{ZZ}", unitsx="GeV") 
+        subd=self.plotter_dd.NonZBG.drawTH1Binned('subregD',self.Mt['D'],self.cuts['regD'],str(self.lumi*1000),xbins,titlex = "M_{T}^{ZZ}", unitsx="GeV") 
+
         hb.Add(subb,-1)
         hc.Add(subc,-1)
         hd.Add(subd,-1)
@@ -161,7 +163,7 @@ class StackZjetsDD:
         drawStack_simple(hframe, hsnew, hdata, hratio, legend,
                          hstack_opt="A, HIST",
                          outDir=self.outdir, output=stackTag+"_datadriven", channel=ROOT.TString(self.channel),
-                         xmin=150, xmax=500, xtitle="M_{T}^{ZZ}" ,units="GeV",
+                         xmin=xmin, xmax=xmax, xtitle="M_{T}^{ZZ}" ,units="GeV",
                          lumi=self.lumi, notes=self.whichregion+" selection",
                          drawSig=True, hsig=[hsig1,hsig2,hsig3])
         return
