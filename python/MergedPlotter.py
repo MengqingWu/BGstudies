@@ -15,15 +15,15 @@ class MergedPlotter(PlotterBase):
             plotter.applySmoothing()
 
 
-    def drawTH1(self,name,var,cuts,lumi,bins,min,max,titlex = "", titley="", units = "",drawStyle = "HIST"):
+    def drawTH1(self,name,var,cuts,lumi,bins,mini,maxi,titlex = "", titley="", units = "",drawStyle = "HIST"):
         h=None
         plotterCount=0
         for plotter in self.plotters:
             hname=name+str(plotterCount)
             if h is None:
-                h=plotter.drawTH1(hname,var,cuts,lumi,bins,min,max,titlex,units,drawStyle)
+                h=plotter.drawTH1(hname,var,cuts,lumi,bins,mini,maxi,titlex,units,drawStyle)
             else:
-                h.Add(plotter.drawTH1(hname,var,cuts,lumi,bins,min,max,titlex,units,drawStyle))
+                h.Add(plotter.drawTH1(hname,var,cuts,lumi,bins,mini,maxi,titlex,units,drawStyle))
             plotterCount+=1
                 
         h.SetLineColor(self.linecolor)
@@ -132,14 +132,21 @@ class MergedPlotter(PlotterBase):
 
     def drawTH1Binned(self,name,var,cuts,lumi,binningx,titlex = "",unitsx = "",drawStyle = "COLZ"):
         h=None
+        plotterCount=0
         for plotter in self.plotters:
+            hname=name+str(plotterCount)
             if h is None:
-                h=plotter.drawTH1Binned(name,var,cuts,lumi,binningx,titlex,unitsx,drawStyle)
+                h=plotter.drawTH1Binned(hname,var,cuts,lumi,binningx,titlex,unitsx,drawStyle)
             else:
-                h.Add(plotter.drawTH1Binned(name,var,cuts,lumi,binningx,titlex,unitsx,drawStyle))
+                h.Add(plotter.drawTH1Binned(hname,var,cuts,lumi,binningx,titlex,unitsx,drawStyle))
+            plotterCount+=1
+
+        h.SetLineColor(self.linecolor)
+        h.SetLineWidth(self.linewidth)
         h.SetFillStyle(self.fillstyle)
         h.SetFillColor(self.fillcolor)
         h.SetMarkerStyle(self.markerstyle)
+        h.GetXaxis().SetTitle(titlex)
         if unitsx: titlex+=" ["+unitsx+"]"
         h.GetXaxis().SetTitle(titlex)
         return h
