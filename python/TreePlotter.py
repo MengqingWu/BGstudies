@@ -27,8 +27,8 @@ class TreePlotter(PlotterBase):
     def applySmoothing(self):
         self.smooth=True
 
-    def drawTH1(self,name,var,cuts,lumi,bins,min,max,titlex = "", titley = "",units = "",drawStyle = "HIST"):
-        h = ROOT.TH1D(name,name,bins,min,max)
+    def drawTH1(self,name,var,cuts,lumi,bins,mini,maxi,titlex = "", titley = "",units = "",drawStyle = "HIST"):
+        h = ROOT.TH1D(name,name,bins,mini,maxi)
         h.Sumw2()
         h.SetLineStyle(self.linestyle)
         h.SetLineColor(self.linecolor)
@@ -140,11 +140,15 @@ class TreePlotter(PlotterBase):
     def drawTH1Binned(self,name,var,cuts,lumi,binningx,titlex = "",unitsx = "", drawStyle = "COLZ"):
         h = ROOT.TH1D(name,name,len(binningx)-1,array('f',binningx))
         h.Sumw2()
+        h.SetLineStyle(self.linestyle)
+        h.SetLineColor(self.linecolor)
+        h.SetLineWidth(self.linewidth)
         h.SetFillStyle(self.fillstyle)
         h.SetFillColor(self.fillcolor)
+        h.SetMarkerStyle(self.markerstyle)
         if unitsx: titlex+=" ["+unitsx+"]"
         h.GetXaxis().SetTitle(titlex)
-
+        
         #Apply correction factors
         corrString='1'
         for corr in self.corrFactors:

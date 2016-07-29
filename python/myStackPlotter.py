@@ -186,13 +186,69 @@ class StackPlotter(object):
                 print label+" : %f\n" % hist.Integral()
 
         return  hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG
+    
+    def createStackBinned(self, stack, var, cut, lumi, xbins, titlex, units,
+                          separateSignal, output, blinding, blindingCut):
+        hists=[]
+        signal=0
+        background=0
+        backgroundErr=0
+        
+        signals = []       
+        signalHs = [] 
+        signalLabels = []
+
+        dataH=None
+        dataG=None
+        
+        cutL="("+self.defaultCut+")*("+cut+")"
+        for (plotter,typeP,label,name) in zip(self.plotters,self.types,self.labels,self.names):
+            error=ROOT.Double(0.0)
+            if (typeP =="background") or (not separateSignal and typeP == "signal"):
+                hist = plotter.drawTH1Binned(output+'_'+name,var,cutL,lumi,xbins,titlex,unitsx=units)
+                #hist.SetName(output+'_'+name)
+                stack.Add(hist)
+                hists.append(hist)
+                print label+" : %f\n" % hist.Integral()
+ 
+                if typeP == "signal" :
+                    signal+=hist.Integral()
+                if typeP == "background" :
+                    background+=hist.IntegralAndError(1,hist.GetNbinsX(),error)
+                    backgroundErr+=error*error
+
+            if separateSignal and typeP == "signal":
+                hist = plotter.drawTH1Binned(output+'_'+name,var,cutL,lumi,xbins,titlex,unitsx=units)
+                #hist.SetName(output+'_'+name)
+                hists.append(hist)
+                signalHs.append(hist)
+                signals.append(hist.Integral())
+                signalLabels.append(label)
+                print label+" : %f\n" % hist.Integral()
+
+            if typeP =="data":
+                hist = plotter.drawTH1Binned(output+'_'+typeP,var,cutL,"1",xbins,titlex,unitsx=units)
+                #hist.SetName(output+'_'+typeP)
+                hists.append(hist)
+                hist.SetMarkerStyle(20)
+                hist.SetLineWidth(1)
+                hist.SetMarkerSize(1.)
+                hist.SetMarkerColor(ROOT.kBlack)
+                hist.SetBinErrorOption(1)
+                dataH=hist
+                dataG=convertToPoisson(hist,blinding,blindingCut)
+                dataG.SetName(output+'_'+'dataG')
+                dataG.SetLineWidth(1)
+                print label+" : %f\n" % hist.Integral()
+
+        return  hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG
                                                                         
     
     def drawStack(self,var,cut,lumi,bins,mini,maxi, titlex = "", units = "",
                   output = 'out', outDir='.',
                   separateSignal=False,
                   drawtex="", channel="",
-                  blinding=False, blindingCut=100.0):
+                  blinding=False, blindingCut=100.0, xbins=[]):
 
         fout = ROOT.TFile(outDir+'/'+output+'.root', 'recreate')
 
@@ -215,9 +271,12 @@ class StackPlotter(object):
         p1.cd()
             
         stack = ROOT.THStack(output+'_'+"stack","")
-
-        hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG = self.createStack(stack, var, cut, lumi, bins, mini, maxi, titlex, units,
-                                                                                                                    separateSignal, output, blinding, blindingCut)
+        if xbins:
+            hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG = self.createStackBinned(stack, var, cut, lumi, xbins, titlex, units,
+                                                                                                                              separateSignal, output, blinding, blindingCut)
+        else:
+            hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG = self.createStack(stack, var, cut, lumi, bins, mini, maxi, titlex, units,
+                                                                                                                        separateSignal, output, blinding, blindingCut)
  
         #if data not found plot stack only
 
