@@ -11,7 +11,7 @@ from python.SimplePlot import *
 channel='inclusive'#raw_input("Please choose a channel (el or mu): \n")
 tag0='ZJstudy'
 outdir='./output/printer/'
-indir="./METSkim_v2"
+indir="./METSkim_v3"
 lumi=2.318278305
 whichregion='SR'
 zpt_cut, met_cut= '100', '50'
