@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import ROOT, os, copy
-#from array import *
 from math import *
 from python.SetCuts import SetCuts
 from python.InitializePlotter import InitializePlotter
@@ -19,7 +18,7 @@ outtxt = open(outdir+'num_out_2d.txt', 'a')
 whichregion='SR'
 zpt_cut, met_cut= '100', '50'
 whichbcd='ZJets' #whichbcd='allBG'
-onlyStats=False
+onlyStats=True
 
 xvar={'A': "fabs(llnunu_deltaPhi)",
      'AtoB': "fabs(llnunu_deltaPhi)-TMath::Pi()*3/4",
@@ -28,11 +27,18 @@ xvar={'A': "fabs(llnunu_deltaPhi)",
 nbinsx=4
 xmin=[0, ROOT.TMath.Pi()/4, ROOT.TMath.Pi()/2, 3*ROOT.TMath.Pi()/4]
 xmax=[ROOT.TMath.Pi()/4, ROOT.TMath.Pi()/2, 3*ROOT.TMath.Pi()/4, ROOT.TMath.Pi()]
-#yvar, ytitle="llnunu_l2_pt/llnunu_l1_pt","E_{T}^{miss}/p_{T}^{Z}"
-yvar, ytitle="llnunu_l2_pt","E_{T}^{miss}"
-#ybins=[0,0.1,0.2,0.4,0.6,3]
-ybins=[0,25,50,80,120,1000]
 
+which2d=raw_input("[Input] which 2D shape reweight: 1) met vs dphi; 2) met/zpt vs dphi. (reply 1 or 2, default 2) \n")
+if which2d=='1':
+    print "[info] met vs dphi"; toprint='met vs fabs(dphi)'
+    yvar, ytitle="llnunu_l2_pt","E_{T}^{miss}"
+    ybins=[0,25,50,80,120,1000]
+else:
+    print "[info] met/zpt vs dphi"; toprint='met/zpt vs fabs(dphi)'
+    yvar, ytitle="llnunu_l2_pt/llnunu_l1_pt","E_{T}^{miss}/p_{T}^{Z}"
+    ybins=[0,0.1,0.2,0.4,0.6,3]
+
+print yvar, ybins
 ### ----- Initialize (samples):
 plotter=InitializePlotter(indir=indir, addData=True, onlyStats=onlyStats)
 
@@ -55,7 +61,7 @@ elif whichbcd=='ZJets':
 else: print "[error] whichbcd = ", whichbcd, ", which is not 'allBG' nor 'ZJets', please check!"; exit(0)
 print "[info] I am using ",whichbcd," bcd for shape correction weighting factor."
 
-print "[info] I am drawing 'met vs fabs(dphi)' in region BCD shifted from A... (be patient)"
+print "[info] I am drawing '",toprint,"' in region BCD shifted from A... (be patient)"
 
 h2_AB_shape=plotter.ZJets.drawTH2Binnedv1(tag0+'_regA_shiftB', yvar+':'+xvar['AtoB'], cuts['regA'], str(lumi*1000), 
                                           nbinsx, xmin[0], xmax[0], ybins, titlex = "|#Delta#phi_{Z,MET}|", unitsx='', titley = ytitle, unitsy='')
@@ -64,7 +70,7 @@ h2_AD_shape=plotter.ZJets.drawTH2Binnedv1(tag0+'_regA_shiftD', yvar+':'+xvar['At
 h2_AC_shape=plotter.ZJets.drawTH2Binnedv1(tag0+'_regA_shiftC', yvar+':'+xvar['AtoC'], cuts['regA'], str(lumi*1000), 
                                           nbinsx, xmin[2], xmax[2], ybins, titlex = "|#Delta#phi_{Z,MET}|", unitsx='', titley = ytitle, unitsy='')
 
-print "[info] I am drawing 'met vs fabs(dphi)' in region BCD... (be patient)"
+print "[info] I am drawing '",toprint,"' in region BCD... (be patient)"
 
 h2_A_shape=plotter.ZJets.drawTH2Binnedv1(tag0+'_regA', yvar+':'+xvar['A'], cuts['regA'], str(lumi*1000), 
                                           nbinsx, xmin[3], xmax[3], ybins, titlex = "|#Delta#phi_{Z,MET}|", unitsx='', titley = ytitle, unitsy='')

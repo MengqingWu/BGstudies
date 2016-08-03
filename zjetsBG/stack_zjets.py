@@ -22,8 +22,8 @@ class StackZjetsDD:
         #channel='inclusive'#raw_input("Please choose a channel (el or mu): \n")
         self.tag0='ZJstudy'
                 
-        self.plotter_dd=InitializePlotter(indir=indir_dd, addSig=addSig, addData=addData, doRatio=doRatio, scaleDphi=scaleDphi)
-        self.plotter=InitializePlotter(indir=indir, addSig=addSig, addData=addData, doRatio=doRatio)
+        self.plotter_dd = InitializePlotter(indir=indir_dd, addSig=addSig, addData=addData, doRatio=doRatio, scaleDphi=scaleDphi)
+        self.plotter = InitializePlotter(indir=indir, addSig=addSig, addData=addData, doRatio=doRatio)
         self.plotter.Stack.rmPlotter(self.plotter.ZJets, "ZJets","Z+Jets", "background")
         
         setcuts = SetCuts()
@@ -38,6 +38,9 @@ class StackZjetsDD:
                  'B':newMtB,
                  'C':newMtC,
                  'D':newMtD}
+        self.mtxbins=[150,200,250,300,350,400,450,550,850]
+        self.mtnbins, self.mtxmin, self.mtxmax= len(self.mtxbins), min(self.mtxbins), max(self.mtxbins)#14, 150.0, 850.0
+                        
         self.fabsdPhi={'A': "fabs(llnunu_deltaPhi)",
                        'B': "fabs(llnunu_deltaPhi)+TMath::Pi()*3/4",
                        'D': "fabs(llnunu_deltaPhi)+TMath::Pi()/2",
@@ -50,30 +53,31 @@ class StackZjetsDD:
     def getAllmcRegA(self):
         stackTag = self.tag0+'_'+'stacker'+'_'+self.whichregion+'_'+self.channel+'_'+'regA'+'_'+'allMC'
         self.plotter.Stack.addPlotter(self.plotter.ZJets, "ZJets","Z+Jets", "background")
-        self.plotter.Stack.drawStack(self.Mt['A'], self.cuts['regA'], str(self.lumi*1000), 70, 150.0, 500.0, titlex = "M_{T}^{ZZ}", units = "GeV",
+        self.plotter.Stack.drawStack(self.Mt['A'], self.cuts['regA'], str(self.lumi*1000), self.mtnbins, self.mtxmin, self.mtxmax, titlex = "M_{T}^{ZZ}", units = "GeV",
                                      output=stackTag, outDir=self.outdir, separateSignal=True,
-                                     drawtex=self.whichregion+' selection', channel=self.channel)
+                                     drawtex=self.whichregion+' selection', channel=self.channel, xbins=self.mtxbins)
         self.plotter.Stack.rmPlotter(self.plotter.ZJets, "ZJets","Z+Jets", "background")
         return
     
-    def getYieldCorr(self):
+    def getYieldCorr(self, plotter=None):
+        if plotter==None: plotter=self.plotter
         var=self.fabsdPhi
         nbins, xmin, xmax, titlex, units =4, 3*ROOT.TMath.Pi()/4, ROOT.TMath.Pi(), "|#Delta#phi_{Z,MET}|", ""
         lumi_str = str(self.lumi*1000)
         
-        ha=self.plotter.ZJets.drawTH1('regA', var['A'], self.cuts['regA'], lumi_str, nbins, xmin, xmax, titlex = titlex, units = units)
-        hb=self.plotter.ZJets.drawTH1('regB_shift', var['B'], self.cuts['regB'], lumi_str, nbins, xmin, xmax,titlex = titlex,units = units)
-        hc=self.plotter.ZJets.drawTH1('regC_shift', var['C'], self.cuts['regC'], lumi_str, nbins, xmin, xmax,titlex = titlex,units = units)
-        hd=self.plotter.ZJets.drawTH1('regD_shift', var['D'], self.cuts['regD'], lumi_str, nbins, xmin, xmax,titlex = titlex,units = units)
+        ha=plotter.ZJets.drawTH1('regA', var['A'], self.cuts['regA'], lumi_str, nbins, xmin, xmax, titlex = titlex, units = units)
+        hb=plotter.ZJets.drawTH1('regB_shift', var['B'], self.cuts['regB'], lumi_str, nbins, xmin, xmax,titlex = titlex,units = units)
+        hc=plotter.ZJets.drawTH1('regC_shift', var['C'], self.cuts['regC'], lumi_str, nbins, xmin, xmax,titlex = titlex,units = units)
+        hd=plotter.ZJets.drawTH1('regD_shift', var['D'], self.cuts['regD'], lumi_str, nbins, xmin, xmax,titlex = titlex,units = units)
             
         iga=ha.Integral(0,1+ha.GetNbinsX())
         igb=hb.Integral(0,1+hb.GetNbinsX())
         igc=hc.Integral(0,1+hc.GetNbinsX())
         igd=hd.Integral(0,1+hd.GetNbinsX())
-        print 'regB: ', hb.GetSumOfWeights(),\
-            '\nregC: ', hc.GetSumOfWeights(),\
+        print 'regB: ', hb.GetSumOfWeights(), '; integral:', hb.Integral(0,1+hb.GetNbinsX()),\
+            '\nregC: ', hc.GetSumOfWeights(), '; integral:', hc.Integral(0,1+hc.GetNbinsX()),\
             '\nregD(sum of weight): ', hd.GetSumOfWeights(), '; integral:', hd.Integral(0,1+hd.GetNbinsX())
-
+        
         rAB=iga/igb
         rAC=iga/igc
         rAD=iga/igd
@@ -83,21 +87,20 @@ class StackZjetsDD:
     def drawDataDrivenStack(self): # draw MT
         stackTag = self.tag0+'_'+'stacker'+'_'+self.whichregion+'_'+self.channel+'_'+'regA'+'_'+'absDphi'
         outTag=self.outdir+'/'+stackTag
-        xbins=[150,200,250,300,350,400,450,550,850]
-        nbins, xmin, xmax= len(xbins), min(xbins), max(xbins)#14, 150.0, 850.0
+
         ### ----- Execute (plotting):
-        self.plotter.Stack.drawStack(self.Mt['A'], self.cuts['regA'], str(self.lumi*1000), nbins, xmin, xmax, titlex = "M_{T}^{ZZ}", units = "GeV",
+        self.plotter.Stack.drawStack(self.Mt['A'], self.cuts['regA'], str(self.lumi*1000), self.mtnbins, self.mtxmin, self.mtxmax, titlex = "M_{T}^{ZZ}", units = "GeV",
                                      output=stackTag, outDir=self.outdir, separateSignal=True,
-                                     drawtex=self.whichregion+' selection', channel=self.channel, xbins=xbins) # if xbins not empty, binned drawn
+                                     drawtex=self.whichregion+' selection', channel=self.channel, xbins=self.mtxbins) # if xbins not empty, binned drawn
         
         #ha=self.plotter.ZJets.drawTH1('zjets', var, self.cuts['regA'], str(lumi*1000), nbins, xmin, xmax, titlex = "M_{T}^{ZZ}", units = "GeV", drawStyle="HIST")
-        hb=self.plotter_dd.Data.drawTH1Binned('regB', self.Mt['B'], self.cuts['regB'],'1', xbins, titlex = "M_{T}^{ZZ}", unitsx = "GeV", drawStyle="HIST") 
-        hc=self.plotter_dd.Data.drawTH1Binned('regC', self.Mt['C'], self.cuts['regC'],'1', xbins, titlex = "M_{T}^{ZZ}", unitsx = "GeV", drawStyle="HIST") 
-        hd=self.plotter_dd.Data.drawTH1Binned('regD', self.Mt['D'], self.cuts['regD'],'1', xbins, titlex = "M_{T}^{ZZ}", unitsx = "GeV", drawStyle="HIST") 
+        hb=self.plotter_dd.Data.drawTH1Binned('regB', self.Mt['B'], self.cuts['regB'],'1', self.mtxbins, titlex = "M_{T}^{ZZ}", unitsx = "GeV", drawStyle="HIST") 
+        hc=self.plotter_dd.Data.drawTH1Binned('regC', self.Mt['C'], self.cuts['regC'],'1', self.mtxbins, titlex = "M_{T}^{ZZ}", unitsx = "GeV", drawStyle="HIST") 
+        hd=self.plotter_dd.Data.drawTH1Binned('regD', self.Mt['D'], self.cuts['regD'],'1', self.mtxbins, titlex = "M_{T}^{ZZ}", unitsx = "GeV", drawStyle="HIST") 
 
-        subb=self.plotter_dd.NonZBG.drawTH1Binned('subregB',self.Mt['B'],self.cuts['regB'],str(self.lumi*1000),xbins,titlex = "M_{T}^{ZZ}", unitsx="GeV") 
-        subc=self.plotter_dd.NonZBG.drawTH1Binned('subregC',self.Mt['C'],self.cuts['regC'],str(self.lumi*1000),xbins,titlex = "M_{T}^{ZZ}", unitsx="GeV") 
-        subd=self.plotter_dd.NonZBG.drawTH1Binned('subregD',self.Mt['D'],self.cuts['regD'],str(self.lumi*1000),xbins,titlex = "M_{T}^{ZZ}", unitsx="GeV") 
+        subb=self.plotter_dd.NonZBG.drawTH1Binned('subregB',self.Mt['B'],self.cuts['regB'],str(self.lumi*1000), self.mtxbins,titlex = "M_{T}^{ZZ}", unitsx="GeV") 
+        subc=self.plotter_dd.NonZBG.drawTH1Binned('subregC',self.Mt['C'],self.cuts['regC'],str(self.lumi*1000), self.mtxbins,titlex = "M_{T}^{ZZ}", unitsx="GeV") 
+        subd=self.plotter_dd.NonZBG.drawTH1Binned('subregD',self.Mt['D'],self.cuts['regD'],str(self.lumi*1000), self.mtxbins,titlex = "M_{T}^{ZZ}", unitsx="GeV") 
 
         hb.Add(subb,-1)
         hc.Add(subc,-1)
@@ -172,6 +175,7 @@ class StackZjetsDD:
         """ use shape correction that is derived from MC to apply to all the MC samples to validate the 'dphi_sf' algorithm 
         whichvar=(absDphi, mt, zpt, met)
         """
+        binnedPlots=['met', 'zpt', 'metzpt']
         if isNormalized: yieldCorr=False
         lumi_str='1' if isNormalized else str(self.lumi*1000)
         
@@ -196,8 +200,11 @@ class StackZjetsDD:
         elif whichvar=='mt':
             var=self.Mt
             if  int(self.zpt_cut)*int(self.met_cut) == 0: nbins, xmin, xmax, titlex, units =140, 100.0, 800.0, "M_{T}^{ZZ}", "GeV"
-            else: nbins, xmin, xmax, titlex, units =13, 150.0, 800.0, "M_{T}^{ZZ}", "GeV"
-
+            else:
+                binnedPlots.append(whichvar)
+                xbins, nbins, xmin, xmax = self.mtxbins, self.mtnbins, self.mtxmin, self.mtxmax
+                titlex, units = "M_{T}^{ZZ}", "GeV"
+                
         elif whichvar=='zpt':
             var=copy.deepcopy(self.Mt)
             for i in var: var[i]='llnunu_l1_pt'
@@ -238,7 +245,7 @@ class StackZjetsDD:
         else: print "[error] Please check the whichbcd = %s, is 'allBG' or 'ZJets'" % (whichbcd); exit(0)
                     
         ### ----- Execute (plotting):
-        if whichvar in ['met', 'zpt', 'metzpt']:
+        if whichvar in binnedPlots:
             ha=zjetsMC.ZJets.drawTH1Binned('regA', var['A'], self.cuts['regA'], lumi_str, xbins, titlex = titlex, unitsx = units)
             hb=bcdPlotter.drawTH1Binned('regB_shift', var['B'], self.cuts['regB'], lumi_str, xbins,titlex = titlex,unitsx = units)
             hc=bcdPlotter.drawTH1Binned('regC_shift', var['C'], self.cuts['regC'], lumi_str, xbins,titlex = titlex,unitsx = units)
@@ -253,8 +260,8 @@ class StackZjetsDD:
         igb=hb.GetSumOfWeights() #hb.Integral(0,1+hb.GetNbinsX())
         igc=hc.GetSumOfWeights() #hc.Integral(0,1+hc.GetNbinsX())
         igd=hd.GetSumOfWeights() #hd.Integral(0,1+hd.GetNbinsX())
-        print 'regB: ', hb.GetSumOfWeights(),\
-              '\nregC: ', hc.GetSumOfWeights(),\
+        print 'regB: ', hb.GetSumOfWeights(),  '; integral:', hb.Integral(0,1+hb.GetNbinsX()),\
+              '\nregC: ', hc.GetSumOfWeights(), '; integral:', hc.Integral(0,1+hc.GetNbinsX()),\
               '\nregD(sum of weight): ', hd.GetSumOfWeights(), '; integral:', hd.Integral(0,1+hd.GetNbinsX())
         if isNormalized:
             ha.Scale(1./iga)
@@ -267,6 +274,7 @@ class StackZjetsDD:
                 hb.Scale(iga/igb)
                 hc.Scale(iga/igc)
                 hd.Scale(iga/igd)
+                print "[info] yield ratios: A/B=%.2f, A/C=%.2f, A/D=%.2f" % (iga/igb,iga/igc,iga/igd)
             ytitle='events'
         
         drawCompareSimple(hb, ha, "reg.B"+' '+leg_suffix, "reg. A",
