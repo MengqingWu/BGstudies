@@ -31,7 +31,7 @@ print fchain.GetEntriesFast(),' entries to process:'
 
 for ientry in range(0, fchain.GetEntriesFast()):
     fchain.GetEntry(ientry)
-    if ientry%2000==0: print "Entry ",ientry
+    if ientry%50000==0: print "Entry ",ientry
     
     if fchain.nllnunu>0:
         nll+=1

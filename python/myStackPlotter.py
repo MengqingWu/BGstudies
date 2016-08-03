@@ -469,7 +469,8 @@ class StackPlotter(object):
         return plot
 
 
-    def drawComp(self,var,cut,bins,mini,maxi,titlex = "", units = "", output='out.eps'):
+
+    def drawComp(self,var,cut,bins,mini,maxi,titlex = "", titley = "", units = "",  output='out.eps'):
         canvas = ROOT.TCanvas("canvas","")
         ROOT.SetOwnership(canvas,False)
         canvas.cd()
@@ -509,7 +510,7 @@ class StackPlotter(object):
             stack.GetXaxis().SetTitle(titlex + " [" +units+"]")
         else:
             stack.GetXaxis().SetTitle(titlex)
-    
+        
         stack.GetYaxis().SetTitle("a.u")
         stack.GetYaxis().SetTitleOffset(1.2)
 
@@ -539,13 +540,7 @@ class StackPlotter(object):
 	text = pt.AddText(0.01,0.5,"CMS simulation")
 	pt.Draw()   
 
-
         canvas.Update()
 
         canvas.Print(output)
-        os.system('epstopdf '+output)
         return canvas
-
-        
-        
-
