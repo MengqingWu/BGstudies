@@ -21,8 +21,8 @@ class InitializePlotter:
             lepsf='llnunu_l1_l1_lepsf*llnunu_l1_l2_lepsf'
             triggersf='triggersf'
 
-        if scaleDphi:
-            print "[Info] plotters: 'dphi_sf' applied."
+        if onlyStats: print "[info] plotters: only statistics involved"
+        if scaleDphi: print "[Info] plotters: 'dphi_sf' applied."
         else: print "[Info] plotters: NO 'dphi_sf' applied."
         #######----------- Prepare samples to plot:
         zjetsPlotters=[]

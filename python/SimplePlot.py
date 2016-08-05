@@ -283,7 +283,7 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
 def drawCompare(hstack, hratio, legend,
                 hstack_opt="nostack",outdir="./",tag="test",
                 xmin=50., xmax=500., xtitle="" , ytitle="Events", units="",
-                lumi=2.169, notes="", setmax=0):
+                lumi=2.169, logy=True, notes="", setmax=0):
 
     fout = TFile(outdir+'/'+tag+'.root', 'recreate')
     
@@ -337,7 +337,7 @@ def drawCompare(hstack, hratio, legend,
     hratio.Draw('P,SAME')
     hratio.GetXaxis().SetRangeUser(xmin,xmax)
 
-    p1.SetLogy()
+    if logy:    p1.SetLogy()
     p1.RedrawAxis()
     p1.Update()
     p2.Update()
@@ -370,7 +370,7 @@ def drawCompare(hstack, hratio, legend,
 def drawCompareSimple(h1, h2, leg1, leg2,
                       xmin=50., xmax=500., xtitle="" , ytitle="", units="",
                       lumi=2.169, notes="",
-                      outdir="./", tag="test", setmax=0):
+                      outdir="./", tag="test", setmax=0, logy=True):
 
     h1.SetLineColor(kRed)
     h1.SetFillColor(kRed)
@@ -395,6 +395,6 @@ def drawCompareSimple(h1, h2, leg1, leg2,
                  outdir=outdir, tag=tag,
                  xmin=xmin, xmax=xmax,
                  xtitle=xtitle, ytitle=ytitle, units=units,
-                 lumi=lumi,
+                 lumi=lumi, logy=logy,
                  notes=notes, setmax=setmax)
     return

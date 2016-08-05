@@ -12,7 +12,7 @@ from python.SimplePlot import *
 class StackZjetsDD:
     def __init__(self, indir="./METSkim_v1", indir_dd="./METSkim_v4", outdir='./output/stacker/',
                  channel='inclusive',  whichregion='SR', zpt_cut='100', met_cut= '50',  lumi = 2.318278305,  
-                 sepSig=True,   LogY=True,      doRatio=True,    addSig=True, addData=True, scaleDphi=True):
+                 sepSig=True,   LogY=True,      doRatio=True,    addSig=True, addData=True, scaleDphi=True, onlyStats=False):
         self.outdir=outdir
         self.channel=channel
         self.whichregion=whichregion
@@ -22,8 +22,8 @@ class StackZjetsDD:
         #channel='inclusive'#raw_input("Please choose a channel (el or mu): \n")
         self.tag0='ZJstudy'
                 
-        self.plotter_dd = InitializePlotter(indir=indir_dd, addSig=addSig, addData=addData, doRatio=doRatio, scaleDphi=scaleDphi)
-        self.plotter = InitializePlotter(indir=indir, addSig=addSig, addData=addData, doRatio=doRatio)
+        self.plotter_dd = InitializePlotter(indir=indir_dd, addSig=addSig, addData=addData, doRatio=doRatio, scaleDphi=scaleDphi, onlyStats=onlyStats)
+        self.plotter = InitializePlotter(indir=indir, addSig=addSig, addData=addData, doRatio=doRatio, onlyStats=onlyStats)
         self.plotter.Stack.rmPlotter(self.plotter.ZJets, "ZJets","Z+Jets", "background")
         
         setcuts = SetCuts()
@@ -171,7 +171,8 @@ class StackZjetsDD:
                          drawSig=True, hsig=[hsig1,hsig2,hsig3])
         return
 
-    def ValidateDphiShapeCorr(self, indir, whichvar='fabsDphi', isNormalized=True, yieldCorr=False, whichbcd='allBG', scaleDphi=True, onlyStats=False, suffix=''):
+    def ValidateDphiShapeCorr(self, indir, whichvar='fabsDphi', isNormalized=True, yieldCorr=False, whichbcd='allBG',
+                              scaleDphi=True, onlyStats=False, logy=True,suffix=''):
         """ use shape correction that is derived from MC to apply to all the MC samples to validate the 'dphi_sf' algorithm 
         whichvar=(absDphi, mt, zpt, met)
         """
@@ -180,7 +181,7 @@ class StackZjetsDD:
         lumi_str='1' if isNormalized else str(self.lumi*1000)
         
         validatorMC=InitializePlotter(indir=indir, addSig=False, addData=False, doRatio=False, scaleDphi=scaleDphi,onlyStats=onlyStats)
-        zjetsMC=InitializePlotter(indir=indir, addSig=False, addData=False, doRatio=False, scaleDphi=False,onlyStats=onlyStats)
+        zjetsMC    =InitializePlotter(indir=indir, addSig=False, addData=False, doRatio=False, scaleDphi=False,    onlyStats=onlyStats)
         
         nom_suffix='normalized' if isNormalized else 'yield'
         leg_suffix='corr.' if scaleDphi else ''
@@ -188,7 +189,7 @@ class StackZjetsDD:
         compareTagseq=[self.tag0, 'closureTest',self.whichregion,self.channel, whichvar, nom_suffix]
         nameseq=[whichvar, self.tag0, 'closureTest', self.whichregion, self.channel, 'met'+self.met_cut,'zpt'+self.zpt_cut,
                  leg_suffix+'bcd'+whichbcd, nom_suffix, suffix]
-        nameseq.remove('')
+        if '' in nameseq: nameseq.remove('')
         compareTag='_'.join(nameseq)
         #compareTag = self.tag0+'_'+'closureTest'+'_'+self.whichregion+'_'+self.channel+'_'+'regA'+'_'+whichvar
         outTag=self.outdir+'/'+compareTag
@@ -278,16 +279,16 @@ class StackZjetsDD:
             ytitle='events'
         
         drawCompareSimple(hb, ha, "reg.B"+' '+leg_suffix, "reg. A",
-                          xmin=xmin, xmax=xmax, outdir=self.outdir, notes=notes,lumi=self.lumi,
-                          tag=compareTag+'BA', units='', ytitle=ytitle, setmax=2)
+                          xmin=xmin, xmax=xmax, outdir=self.outdir, notes=notes,lumi=self.lumi,logy=logy,
+                          tag=compareTag+'BA', units='', ytitle=ytitle, setmax=1)
 
         drawCompareSimple(hc, ha, "reg.C"+' '+leg_suffix, "reg. A",
-                          xmin=xmin, xmax=xmax, outdir=self.outdir, notes=notes,lumi=self.lumi,
-                          tag=compareTag+'CA', units='', ytitle=ytitle, setmax=2)
+                          xmin=xmin, xmax=xmax, outdir=self.outdir, notes=notes,lumi=self.lumi,logy=logy,
+                          tag=compareTag+'CA', units='', ytitle=ytitle, setmax=1)
 
         drawCompareSimple(hd, ha, "reg.D"+' '+leg_suffix, "reg. A",
-                          xmin=xmin, xmax=xmax, outdir=self.outdir, notes=notes,lumi=self.lumi,
-                          tag=compareTag+'DA', units='', ytitle=ytitle, setmax=2)
+                          xmin=xmin, xmax=xmax, outdir=self.outdir, notes=notes,lumi=self.lumi,logy=logy,
+                          tag=compareTag+'DA', units='', ytitle=ytitle, setmax=1)
 
         ha.SetLineColor(ROOT.kRed)
         hb.SetLineColor(ROOT.kBlue)
