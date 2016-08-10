@@ -11,7 +11,7 @@ from python.SimplePlot import *
 channel='inclusive'#raw_input("Please choose a channel (el or mu): \n")
 tag0='ZJstudy'
 outdir='./output/printer/'
-indir="./METSkim_v3"
+indir="./METSkim_v1.1"
 lumi=2.318278305
 whichregion='SR'
 zpt_cut, met_cut= '100', '50'
@@ -31,7 +31,7 @@ outtxt = open(outdir+'/num_out.txt', 'a')
 plotter=InitializePlotter(indir=indir, addData=True)
 
 setcuts = SetCuts()
-cuts=setcuts.abcdCuts(channel=channel, whichRegion=whichregion, zpt_cut=zpt_cut, met_cut=met_cut)
+cuts=setcuts.abcdCuts(channel=channel, whichRegion=whichregion, zpt_cut=zpt_cut, met_cut=met_cut,extra_cut='dPhi_jetMet_min_b>0.5')
 
 outtxt.write( '\n'+ '*'*20+'\n')
 outtxt.write( '\n'+ whichregion+'\n')

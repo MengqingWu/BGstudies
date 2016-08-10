@@ -9,10 +9,13 @@ from python.SimplePlot import *
 from python.SetCuts import SetCuts
 
 ##--- Setup: inputs
-newvar="dPhi_jetMet_min_b"
+newvar="dPhi_jetMet_min"
 indir="/dataf/mewu/METSkim_v1.1/"; outdir="output/newcut/"
 CheckDir(outdir) # if not, this will create it
-onlyStats=False;scaleDphi=False;LogY=True;doRatio=False;
+onlyStats=False;
+scaleDphi=False;
+LogY=True;
+doRatio=False;# no data, please set doRatio to false
 sigk=1000; lumi=2.318278305;
 lepsf='llnunu_l1_l1_lepsf*llnunu_l1_l2_lepsf'
 triggersf='triggersf'
@@ -41,7 +44,8 @@ sigPoints=[600, 800, 1000, 1200, 1400, 1600, 1800,
            2000, 2500, 3000, 3500, 4000, 4500]
 sigPlotters=[]
 sigSamples = [ 'BulkGravToZZToZlepZinv_narrow_'+str(point) for point in sigPoints ]
-sigSampleNames = [ str(sigk) + ' x BulkG-' + str(mass) for mass in sigPoints]
+#sigSampleNames = [ str(sigk) + ' x BulkG-' + str(mass) for mass in sigPoints]
+sigSampleNames = [ ' BulkG-' + str(mass) for mass in sigPoints]
 
 # sigXsec = {
 #     'BulkGravToZZToZlepZinv_narrow_800'  : 4.42472e-04*sigk,
@@ -70,6 +74,6 @@ Stack.doRatio(doRatio)
 
 ##--- Execute: plotting
 ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
-Stack.drawComp(newvar, cuts, 20, 0, 4.0,
+Stack.drawComp(newvar, cuts, 20, -0.2, 3.8,
                titlex = "#Delta#phi(jet, E_{T}^{miss})", units = "GeV",
-               output=outdir+'/'+newvar+"_newcut.pdf")
+               output=outdir+'/'+newvar+"_newcut.pdf",getcumulative=True, forward=False)

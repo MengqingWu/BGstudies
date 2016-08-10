@@ -1,6 +1,7 @@
 import ROOT
-import math, os
+import math, os, copy
 from TreePlotter import TreePlotter
+import SimplePlot 
 
 def convertToPoisson(h,blinding=False,blindingCut=100):
     graph = ROOT.TGraphAsymmErrors()
@@ -470,7 +471,7 @@ class StackPlotter(object):
 
 
 
-    def drawComp(self,var,cut,bins,mini,maxi,titlex = "", titley = "", units = "",  output='out.eps'):
+    def drawComp(self,var,cut,bins,mini,maxi,titlex = "", titley = "", units = "",  output='out.eps', getcumulative=False, forward=True):
         canvas = ROOT.TCanvas("canvas","")
         ROOT.SetOwnership(canvas,False)
         canvas.cd()
@@ -499,8 +500,12 @@ class StackPlotter(object):
             #hist.SetFillStyle(0)
             #hist.SetName(hist.GetName()+label)
             hist.Scale(1./hist.Integral())
-            stack.Add(hist)
-            hists.append(hist)
+            if getcumulative: 
+                hist_toadd = SimplePlot.GetCumulativeAndError(hist,forward=forward,suffix='cumulated')
+            else: 
+                hist_toadd = copy.deepcopy(hist)
+            stack.Add(hist_toadd)
+            hists.append(hist_toadd)
 
 
         stack.Draw("HIST,NOSTACK")
@@ -510,10 +515,10 @@ class StackPlotter(object):
             stack.GetXaxis().SetTitle(titlex + " [" +units+"]")
         else:
             stack.GetXaxis().SetTitle(titlex)
-        
-        stack.GetYaxis().SetTitle("a.u")
-        stack.GetYaxis().SetTitleOffset(1.2)
 
+        ytitle=titley if titley else "a.u" 
+        stack.GetYaxis().SetTitle(ytitle)
+        stack.GetYaxis().SetTitleOffset(1.2)
 
         legend = ROOT.TLegend(0.6,0.6,0.9,0.9)
         legend.SetName(output+'_'+'legend')
@@ -537,7 +542,7 @@ class StackPlotter(object):
 	pt.SetFillStyle(0)
 	pt.SetTextFont(42)
 	pt.SetTextSize(0.03)
-	text = pt.AddText(0.01,0.5,"CMS simulation")
+	text = pt.AddText(0.01,0.5,"CMS Simulation")
 	pt.Draw()   
 
         canvas.Update()

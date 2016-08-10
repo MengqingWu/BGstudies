@@ -81,7 +81,7 @@ class SetCuts ():
         #print cuts
         return cuts
     
-    def abcdCuts(self, channel="", whichRegion="", isPreSelect=False, zpt_cut='', met_cut=''):
+    def abcdCuts(self, channel="", whichRegion="", isPreSelect=False, zpt_cut='', met_cut='', extra_cut=''):
         if channel in ['el', 'mu', 'inclusive'] : Channel=channel
         else:
             Channel='inclusive'
@@ -98,6 +98,7 @@ class SetCuts ():
         #preSelection='nllnunu>0&&(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)&&llnunu_l1_pt>'
         prestr = "({0}&&{1}&&{6})"
         preSelection = prestr.format(*self.cutflow)
+        if extra_cut: preSelection+='&&('+extra_cut+')'
                         
         if whichRegion=="": whichRegion=raw_input("[info]' abcdCuts' -> Please choose a benchmarck Region (SR or VR): \n")
         if whichRegion=='SR':
