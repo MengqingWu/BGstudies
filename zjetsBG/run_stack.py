@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from stack_zjets import *
 
-t=StackZjetsDD(indir="./METSkim_v1", channel='inclusive', whichregion='VR',zpt_cut='100', met_cut= '200')
+t=StackZjetsDD(indir="./METSkim_v1", channel='inclusive', whichregion='SR',zpt_cut='100', met_cut= '100')
 #t.GetYieldCorr()
 #t.drawDataDrivenStack()
 t.GetAllmcRegA()

@@ -16,13 +16,13 @@ tag0='nonResBkg'
 outdir='closureTest'
 indir="./nonResSkim_v2"
 lumi=2.318278305
-zpt_cut, met_cut= '0', '0'
+zpt_cut, met_cut= '100', '0'
 if not os.path.exists(outdir): os.system('mkdir '+outdir)
 
 tag = tag0+'_'+'test'
 outTag=outdir+'/'+tag
 
-bkg='ttbar' #'nonRes'
+bkg='nonRes' #'ttbar' 
 
 #  ll in Z | ll out Z
 # --------------------  M_out (35,65) U (115,180)
@@ -32,9 +32,14 @@ bkg='ttbar' #'nonRes'
 ### ----- Initialize (samples):
 plotter_ll=InitializePlotter(indir, addSig=False, addData=True,doRatio=False)
 plotter_eu=InitializePlotter(indir, addSig=False, addData=True,doRatio=False, doElMu=True)
-bkg_ll, bkg_eu = plotter_ll.TT, plotter_eu.TT
-#bkg_ll, bkg_eu = plotter_ll.NonResBG, plotter_eu.NonResBG
-
+if bkg=='ttbar':
+    bkg_ll, bkg_eu = plotter_ll.TT, plotter_eu.TT
+elif bkg=='nonRes':
+    bkg_ll, bkg_eu = plotter_ll.NonResBG, plotter_eu.NonResBG
+else:
+    print "wrong bkg choice, exit!"
+    exit(0)
+    
 setcuts = SetCuts()
 cuts=setcuts.GetAlphaCuts(zpt_cut=zpt_cut, met_cut=met_cut)
 
@@ -103,7 +108,7 @@ h_Mll_shape_mc.Rebin(2)
 h_Meu_shape_mc.Rebin(2)
 drawCompareSimple(h_Mll_shape_mc, h_Meu_shape_mc, "ll inclusive", "e#mu inclusive",
                   xmin=0.0, xmax=200.0, outdir=outdir, notes='from '+bkg+' MC',
-                  tag=tag+'_zmass_mc_norm', units='GeV', lumi=lumi, ytitle='normalized')
+                  tag=tag+'_zmass_mc_norm', units='GeV', lumi=lumi, ytitle='normalized', setmax=3)
 
 print Integral_Meu_yield_mc
 ROOT.gStyle.SetPadBottomMargin(0.2)
@@ -154,7 +159,7 @@ h_Meu_yield_mc_corr.Scale(eval(sf))
 h_Mll_yield_mc.Rebin(2)
 drawCompareSimple(h_Mll_yield_mc, h_Meu_yield_mc_corr, "ll expect", "ll predict",
                   xmin=70.0, xmax=110.0, outdir=outdir, notes='from '+bkg+' MC',
-                  tag=tag+'_zmass_mc_final', units='GeV', lumi=lumi, ytitle='')
+                  tag=tag+'_zmass_mc_final', units='GeV', lumi=lumi, ytitle='', setmax=10)
 
 
 os.system('cat '+outtxt.name)

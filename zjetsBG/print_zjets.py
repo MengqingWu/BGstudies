@@ -13,7 +13,7 @@ tag0='ZJstudy'
 outdir='./output/printer/'
 indir="./METSkim_v1"
 lumi=2.318278305
-whichregion='SR'
+whichregion='VR'
 zpt_cut, met_cut= '100', '200'
 var="fabs(llnunu_deltaPhi)"
 

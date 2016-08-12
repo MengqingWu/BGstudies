@@ -59,9 +59,9 @@ class SetCuts ():
         cuts_tmp+='&&'+zpt+'&&'+met
 
         if Zmass=='inclusive': pass
-        elif Zmass=='out': cuts_tmp+="&&((llnunu_l1_mass>35.0&&llnunu_l1_mass<65.0)||(llnunu_l1_mass>115.0&&llnunu_l1_mass<200.0))"
+        elif Zmass=='out': cuts_tmp+="&&((llnunu_l1_mass>35.0&&llnunu_l1_mass<65.0)||(llnunu_l1_mass>115.0&&llnunu_l1_mass<180.0))"
         elif Zmass=='in': cuts_tmp+="&&(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)"
-        else: raise RuntimeError, "ERROR! I do not understand the Zmass value you put in alphaCuts(self, isll, Zmass) from SetCuts.py"
+        else: raise RuntimeError, "[ERROR]! I do not understand the Zmass region you asked in alphaCuts(isll, Zmass) from SetCuts.py"
 
         if not isll:
             cuts_tmp = ROOT.TString(cuts_tmp)
@@ -76,7 +76,7 @@ class SetCuts ():
         """cuts[<reg>][<zmass>]  """
         cuts = {'ll' : { 'in': self.alphaCuts(isll=True, Zmass='in', zpt_cut=zpt_cut, met_cut=met_cut),
                          'out': self.alphaCuts(isll=True, Zmass='out', zpt_cut=zpt_cut, met_cut=met_cut),
-                         'inclusive': self.alphaCuts(Zmass='inclusive', zpt_cut=zpt_cut, met_cut=met_cut)
+                         'inclusive': self.alphaCuts(isll=True, Zmass='inclusive', zpt_cut=zpt_cut, met_cut=met_cut)
                      },
                 'emu':{ 'in' : self.alphaCuts(isll=False, Zmass='in', zpt_cut=zpt_cut, met_cut=met_cut),
                         'out': self.alphaCuts(isll=False, Zmass='out', zpt_cut=zpt_cut, met_cut=met_cut),
