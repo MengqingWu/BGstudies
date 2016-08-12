@@ -14,7 +14,7 @@ outdir='./output/printer/'
 indir="./METSkim_v1"
 lumi=2.318278305
 whichregion='VR'
-zpt_cut, met_cut= '100', '100'
+zpt_cut, met_cut= '100', '200'
 var="fabs(llnunu_deltaPhi)"
 
 doSub=True
@@ -28,10 +28,13 @@ CheckDir(outdir)
 outtxt = open(outdir+'/num_out.txt', 'a')
 
 ### ----- Initialize (samples):
-plotter=InitializePlotter(indir=indir, addData=True)
+plotter=InitializePlotter(indir=indir)
 
 setcuts = SetCuts()
-cuts=setcuts.abcdCuts(channel=channel, whichRegion=whichregion, zpt_cut=zpt_cut, met_cut=met_cut)
+#cuts=setcuts.abcdCuts(channel=channel, whichRegion=whichregion, zpt_cut=zpt_cut, met_cut=met_cut)
+#preselect=setcuts.abcdCuts(channel=channel, whichRegion=whichregion, zpt_cut=zpt_cut, met_cut=met_cut,isPreSelect=True)
+zjcuts=setcuts.GetZjetsCuts(whichRegion=whichregion, zpt_cut=zpt_cut, met_cut=met_cut)
+cuts=zjcuts[channel]
 
 outtxt.write( '\n'+ '*'*20+'\n')
 outtxt.write( '\n'+ whichregion+'\n')
@@ -50,12 +53,14 @@ ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
 ROOT.gStyle.SetPadBottomMargin(0.2)
 ROOT.gStyle.SetPadLeftMargin(0.15)
 
-textodraw=setcuts.Tex_dic
+textodraw=setcuts.ZjetsTex
+
 ### ----- Execute (plotting):
 for reg in cuts:
-    plotter.Stack.drawStack(var, cuts[reg], str(lumi*1000), 30, 0.0, 3.0, titlex = "|#Delta#phi_{Z, MET}|", units = "",
+    plotter.Stack.drawStack(var, cuts[reg], str(lumi*1000), nbins, xmin, xmax,
+                            titlex = "|#Delta#phi_{Z, MET}|", units = "",
                             output=tag+'_'+whichregion+'_'+channel+'_'+reg+'_absDphi',outDir=outdir,
-                            separateSignal=True, drawtex = textodraw[reg], channel="inclusive")
+                            separateSignal=True, drawtex = whichregion+' '+textodraw[reg], channel="inclusive")
     histo[reg]=OrderedDict()
     yields[reg]=OrderedDict()
     err[reg]=OrderedDict()
@@ -129,7 +134,7 @@ for key in yields:
         
 err_product=lambda A, B, a, b: sqrt((a*B)**2+(b*A)**2) # A*B
 err_division=lambda A, B, a, b: sqrt((a/B)**2+(b*A/B**2)**2) # A/B
-    
+
 #ratioAB=yields['regA']['zjets']/yields['regB'][whichbcd]
 #ratioAC=yields['regA']['zjets']/yields['regC'][whichbcd]
 #ratioAD=yields['regA']['zjets']/yields['regD'][whichbcd]
@@ -138,31 +143,32 @@ err_division=lambda A, B, a, b: sqrt((a/B)**2+(b*A/B**2)**2) # A/B
 #err_ratioAC=err_division(yields['regA']['zjets'], yields['regC'][whichbcd], err['regA']['zjets'],err['regC'][whichbcd])
 #err_ratioAD=err_division(yields['regA']['zjets'], yields['regD'][whichbcd], err['regA']['zjets'],err['regD'][whichbcd])
 
-sumofbcd_mc = yields['regB'][whichbcd]+yields['regB'][whichbcd]+yields['regB'][whichbcd]
-err_sumofbcd_mc = sqrt(err['regB'][whichbcd]**2+err['regC'][whichbcd]**2+err['regD'][whichbcd]**2)
-ratio_mc=yields['regA']['zjets']/sumofbcd_mc
-err_ratio_mc=err_division(yields['regA']['zjets'], sumofbcd_mc, err['regA']['zjets'], err_sumofbcd_mc)
+regCtrl_mc = yields['regCtrl'][whichbcd]
+err_regCtrl_mc = err['regCtrl'][whichbcd]
+zjets_exp = yields['regTrg']['zjets']
+err_zjets_exp = err['regTrg']['zjets']
+
+ratio_mc=zjets_exp/regCtrl_mc
+err_ratio_mc=err_division(zjets_exp, regCtrl_mc, err_zjets_exp, err_regCtrl_mc)
 
 #regA_pred=(ratioAB*yields['regB'][whichdt]\
 #          +ratioAC*yields['regC'][whichdt]\
 #          +ratioAD*yields['regD'][whichdt])/3
-sumofbcd_dt = yields['regB'][whichdt]+yields['regC'][whichdt]+yields['regD'][whichdt]
-err_sumofbcd_dt = sqrt(err['regB'][whichdt]**2+err['regC'][whichdt]**2+err['regD'][whichdt]**2)
-regA_pred = ratio_mc*sumofbcd_dt                                                       
-err_regA_pred = err_product(ratio_mc, sumofbcd_dt, err_ratio_mc, err_sumofbcd_dt)
+regCtrl_dt = yields['regCtrl'][whichdt]
+err_regCtrl_dt = err['regCtrl'][whichdt]
+regTrg_pred = ratio_mc*regCtrl_dt                                                       
+err_regTrg_pred = err_product(ratio_mc, regCtrl_dt, err_ratio_mc, err_regCtrl_dt)
 
-zjets_exp = yields['regA']['zjets']
-err_zjets_exp = err['regA']['zjets']
 
-closure_pred = ratio_mc*sumofbcd_mc
-err_closure_pred = err_product(ratio_mc, sumofbcd_mc, err_ratio_mc, err_sumofbcd_mc)
+closure_pred = ratio_mc*regCtrl_mc
+err_closure_pred = err_product(ratio_mc, regCtrl_mc, err_ratio_mc, err_regCtrl_mc)
 
 outtxt.write('\n'+'*'*20+'\n')
-outtxt.write("result:\n predict = %.2f +- %.2f,\n expectation = %.2f +- %.2f, closure = %.2f +- %.2f\n" \
-             % (regA_pred, err_regA_pred, zjets_exp, err_zjets_exp, closure_pred, err_closure_pred))
+outtxt.write("Result:\n predict = %.2f +- %.2f,\n expectation = %.2f +- %.2f,\n closure = %.2f +- %.2f\n" \
+             % (regTrg_pred, err_regTrg_pred, zjets_exp, err_zjets_exp, closure_pred, err_closure_pred))
 #outtxt.write(" A/B = %.2f +- %.2f\n A/C = %.2f +- %.2f\n A/D = %.2f +- %.2f\n" \
 #             % ( ratioAB,err_ratioAB, ratioAC, err_ratioAC, ratioAD, err_ratioAD ))
-outtxt.write("A/(B+C+D) = %.2f +- %.2f\n" % (ratio_mc, err_ratio_mc) )
+outtxt.write(" N_tr/N_cr = %.2f +- %.2f\n" % (ratio_mc, err_ratio_mc) )
 
 outtxt.close()
 os.system('cat '+outtxt.name)

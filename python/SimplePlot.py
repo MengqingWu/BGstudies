@@ -319,7 +319,7 @@ def drawCompare(hstack, hratio, legend,
     
     if len(units)>0:
         hstack.GetHistogram().GetXaxis().SetTitle(xtitle + " (" +units+")")
-        hstack.GetHistogram().GetYaxis().SetTitle(ytitle +" / "+"{:.2}".format((maxi-mini)/bins)+ " "+units)
+        hstack.GetHistogram().GetYaxis().SetTitle(ytitle +" / "+"{:.1f}".format((maxi-mini)/bins)+ " "+units)
     else:
         hstack.GetHistogram().GetXaxis().SetTitle(xtitle)
         hstack.GetHistogram().GetYaxis().SetTitle(ytitle)
