@@ -9,7 +9,8 @@ class SetCuts ():
     def __init__(self):
          
         self.Tex_dic = {'regA': 'Region A', 'regB': 'Region B','regC': 'Region C','regD': 'Region D'}
-        
+        self.ZjetsTex = {'regTrg': 'Target Region', 'regCtrl': 'Control Region',
+                         'basecut': 'Pre-selected Region'}
         self.met_pt_in=raw_input("[info] 'SetCuts' -> please give the MET cut: (enter to use default MET>100GeV)\n")
         self.met_pt='100' if self.met_pt_in=='' else self.met_pt_in
 
@@ -82,6 +83,39 @@ class SetCuts ():
                         'inclusive': self.alphaCuts(isll=False, Zmass='inclusive', zpt_cut=zpt_cut, met_cut=met_cut)}
             }
         #print cuts
+        return cuts
+    
+    def GetZjetsCuts(self, whichRegion="", zpt_cut='', met_cut='', extra_cut=''):
+        channelCut={'el':'abs(llnunu_l1_l1_pdgId)==11',
+                    'mu':'abs(llnunu_l1_l1_pdgId)==13',
+                    'inclusive': '(1)'}
+                
+        zpt='llnunu_l1_pt>'
+        if whichRegion=="":
+            whichRegion=raw_input("[info]' abcdCuts' -> Please choose a benchmarck Region (SR or VR): \n")
+            if whichRegion not in ['SR','VR']: whichRegion='SR'; print "[Warning] invalid 'whichRegion' input, choose default = 'SR'."
+            
+        if whichRegion=='SR': met='llnunu_l2_pt>'
+        elif whichRegion=='VR': met='llnunu_l2_pt>50.0&&llnunu_l2_pt<'
+        else:
+            print "I do not understand your benchmark Region, should be either 'SR' for MET>"+met+"GeV or 'VR' for 50.0<MET<"+met+"GeV\n"
+            sys.exit(0)
+
+        zpt=zpt+zpt_cut if zpt_cut!='' else zpt+'100.0'
+        met=met+met_cut if met_cut!='' else met+self.met_pt
+        
+        basecut_str = "{0}&&{1}&&{4}".format(*self.cutflow)
+        basecut_ls = [basecut_str, zpt, met ]
+        if extra_cut: basecut_ls.append(extra_cut)
+        
+        cuts=OrderedDict()
+        for channel in channelCut:
+            basecut= basecut_ls+ [channelCut[channel]]
+            regTrgcut = basecut + [self.zj_var + '>' + self.cut_zj_var[3]]
+            regCtrlcut = basecut + [self.zj_var + '>' + self.cut_zj_var[0], self.zj_var + '<=' + self.cut_zj_var[3]]
+            cuts[channel]={'basecut': '('+'&&'.join(basecut)+')',
+                           'regTrg':  '('+'&&'.join(regTrgcut)+')',
+                           'regCtrl': '('+'&&'.join(regCtrlcut)+')'}
         return cuts
     
     def abcdCuts(self, channel="", whichRegion="", isPreSelect=False, zpt_cut='', met_cut='', extra_cut=''):
