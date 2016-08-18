@@ -35,6 +35,7 @@ def convertToPoisson(h,blinding=False,blindingCut=100):
     graph.SetLineWidth(2)
     graph.SetMarkerSize(1.)
     graph.SetMarkerColor(ROOT.kBlack)
+    
 
     return graph    
 
@@ -45,7 +46,7 @@ def GetRatioHist(h1, hstack,blinding=False,blindingCut=100):
     for hist in hstack.GetHists():
         h2.Add(hist)
 
-    for i in xrange(h1.GetXaxis().GetNbins()+1):
+    for i in xrange(h1.GetXaxis().GetNbins()):
         N1 = h1.GetBinContent(i)
         N2 = h2.GetBinContent(i)
         E1 = h1.GetBinError(i)
@@ -265,10 +266,9 @@ class StackPlotter(object):
         p2.SetFillStyle(0)
         p2.Draw()
 
-        ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
         ROOT.gStyle.SetOptStat(0)
         ROOT.gStyle.SetOptTitle(0)
-       
+        
         p1.cd()
             
         stack = ROOT.THStack(output+'_'+"stack","")
@@ -322,7 +322,7 @@ class StackPlotter(object):
         frame.Draw()
         stack.Draw("A,HIST,SAME")
         if dataH !=None:
-            dataG.Draw("P, same")              
+            dataG.Draw("Psame")              
         if separateSignal and len(signalHs)>0:
             for sigH in signalHs:
                 sigH.Draw("HIST,SAME")

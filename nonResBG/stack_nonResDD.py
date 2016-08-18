@@ -15,7 +15,7 @@ from python.SimplePlot import *
 #  eu in Z | eu out Z
 #  M_in (70,110)
 class StackDataDriven:
-    def __init__(self, indir="./nonResSkim_v3", outdir='stack_test',
+    def __init__(self, indir="./nonResSkim_v3.0", outdir='stack_test',
                  lumi = 2.318278305,  sepSig=True,
                  LogY=True,   doRatio=True,
                  addSig=True, addData=True):
@@ -31,7 +31,7 @@ class StackDataDriven:
         
         self.setcuts=SetCuts()
         ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
-        self.zpt_cut, self.met_cut= '0', '0'
+        self.zpt_cut, self.met_cut= '100', '0'
         self.cuts=self.setcuts.GetAlphaCuts(zpt_cut=self.zpt_cut, met_cut=self.met_cut)
         
     def drawDataDrivenMC(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax):
@@ -68,7 +68,7 @@ class StackDataDriven:
             if self.logy: hframe.SetMaximum(hframe.GetMaximum()*100)
             else: hframe.SetMaximum(hframe.GetMaximum()*1.2)
         
-        hdata=fstack.Get(stackTag+'_data')
+        hdata=fstack.Get(stackTag+'_data0')
         legend=fstack.Get(stackTag+'_legend')
         
         hsig1=fstack.Get(stackTag+'_BulkGravToZZToZlepZinv_narrow_800')
@@ -83,7 +83,7 @@ class StackDataDriven:
         hsnew=ROOT.THStack(stackTag+"_stack_new","")
         hsnew.Add(h_nonRes_dd)
         
-        nonresTag=[stackTag+'_'+sample for sample in ['WJets','TT','WW'] ]
+        nonresTag=[stackTag+'_'+sample for sample in ['WJets0','TT0','WW0'] ]
         for ihist in hs.GetHists():
             if ihist.GetName() in nonresTag: print '[Removing...] I am a nonres bkg : ',ihist.GetName()
             else:  hsnew.Add(ihist)

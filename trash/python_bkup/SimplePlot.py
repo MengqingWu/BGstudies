@@ -2,14 +2,6 @@
 from ROOT import *
 import math, os, sys, copy
 
-def CheckDir(outdir):
-    dirlist=outdir.split('/')
-    dirTest=''
-    for idir in range(0,len(dirlist)):
-        if dirlist[idir]=='': continue
-        dirTest+=dirlist[idir]+'/'
-        if not os.path.exists(dirTest):os.system('mkdir '+dirTest)
-                
 def GetCorrelationFactorError(corr, num):
     se=math.sqrt((1-corr**2)/(num-2))
     return se
@@ -22,48 +14,7 @@ def GetError(A, B, a=0., b=0.):
     error=math.sqrt((a/B)**2+(b*A/B**2)**2)
     return error
 
-def myIntegralAndError(h1, x1, x2, error):
-    '''h1 is TH1, x1 x2 refers to the bin content, error is ROOT.Double(0.0),
-    NB: bin is filled as [x1,x2), please choose correctly the x2'''
-    binx1 = h1.GetXaxis().FindBin(x1)
-    binx2 = h1.GetXaxis().FindBin(x2)
-    return h1.IntegralAndError(binx1, binx2, error)
-
-def ShiftXaxisTH1(inputHist, Shift, suffix):
-    nbinsx=inputHist.GetNbinsX()
-    hshift = copy.deepcopy(inputHist)
-    hshift.SetName(inputHist.GetName() + suffix)
-    hshift.Reset()
-    
-    for binx in range(0, nbinsx+1):
-        Bin = hshift.GetBin(binx)
-        if inputHist.GetBinContent(Bin):
-            ix = inputHist.GetBinContent(Bin)
-            errx = inputHist.GetBinError(Bin)
-            
-            shiftx = Shift + inputHist.GetBinCenter(Bin)
-            shiftBin = hshift.FindBin(shiftx)
-            
-            hshift.SetBinContent(shiftBin, ix)
-            hshift.SetBinError(shiftBin, errx)
-        else: continue
-    #hshift.Print("all")
-    return hshift
-
-def addOverflowTH2(h2):
-    """ add overflow bins to the last bin of th2"""
-    nbinsx, nbinsy = h2.GetNbinsX(), h2.GetNbinsY()
-    for binx in range(0,nbinsx):
-        lastBin=h2.GetBin(binx, nbinsy)
-        offBin=h2.GetBin(binx, nbinsy+1)
-        Content = h2.GetBinContent(lastBin)
-        Content += h2.GetBinContent(offBin)
-        err2 = h2.GetBinError(lastBin)*h2.GetBinError(lastBin)
-        err2 += h2.GetBinError(offBin)*h2.GetBinError(offBin)
-        h2.SetBinContent(lastBin, Content)
-        h2.SetBinContent(lastBin, TMath.Sqrt(err2))
-        
-def GetCumulativeAndError(inputHist,forward=True, suffix=''):
+def GetCumulative_dev(inputHist,forward=True, suffix=''):
     """ Derived from the root TH1::GetCumulative() function
     taking into consider of underflow and overflow bins;
     adding errorbar tranfer.
@@ -93,14 +44,14 @@ def GetCumulativeAndError(inputHist,forward=True, suffix=''):
         igerr2 = 0.
         #for binz in reversed(range(0, nbinsz+1)):
         #for biny in reversed(range(0, nbinsy+1)):
-        for binx in reversed(range(0, nbinsx+2)):
+        for binx in reversed(range(0, nbinsx+1)):
             #bin = hintegrated.GetBin(binx, biny, binz)
             Bin = hintegrated.GetBin(binx)
             Sum += inputHist.GetBinContent(Bin)
             igerr2 += inputHist.GetBinError(Bin)*inputHist.GetBinError(Bin)
             hintegrated.SetBinContent(Bin, Sum)
             hintegrated.SetBinError(Bin, TMath.Sqrt(igerr2))
-            #print binx, Bin, Sum, TMath.Sqrt(igerr2)
+            print binx, Bin, Sum, TMath.Sqrt(igerr2)
             
     return hintegrated
     
@@ -108,7 +59,6 @@ def GetCumulativeAndError(inputHist,forward=True, suffix=''):
 def GetRatio_TH1(h1, h2, h2_isStack=False):
     ''' h1/h2 '''
     hratio = h1.Clone("hRatio")
-    h2.Draw()
     if h2_isStack:
         h2_new = h2.GetHistogram()
         h2_new.SetName('hstackmerge')
@@ -117,7 +67,7 @@ def GetRatio_TH1(h1, h2, h2_isStack=False):
     else:
         h2_new=h2.Clone("single h2 as denominator")
             
-    for i in xrange(h1.GetXaxis().GetNbins()+1):
+    for i in xrange(h1.GetXaxis().GetNbins()):
         N1 = h1.GetBinContent(i)
         N2 = h2_new.GetBinContent(i)
         E1 = h1.GetBinError(i)
@@ -158,23 +108,6 @@ def GetRatio_TH1(h1, h2, h2_isStack=False):
 
     return hratio
 
-def GetLegendv1(xmin, ymin, xmax,  ymax, hist, label, opt=[]):
-    """ hist, label and opt are in type of list """
-    legend=TLegend(xmin, ymin, xmax, ymax,"","brNDC");
-    legend.SetFillStyle(0); #set legend box transparent
-    legend.SetBorderSize(0);
-    legend.SetTextSize(0.05);
-    legend.SetTextFont(42);
-#    legend.SetNColumns(2);
-    legend.SetLineColor(0);
-    if len(hist)!=len(label): print "[Error] GetLegendv1(): %d hists and %d labels, please check accordingly! " % (len(hist), len(label)); exit(0)
-    if len(opt)!=0 and len(opt)!=len(hist):  print "[Error] GetLegendv1(): %d hists and %d labels, please check accordingly! "; exit(0)
-
-    for ih, ilabel,iopt in zip(hist, label, opt):
-        legend.AddEntry(ih,ilabel,iopt);
-
-    return legend
-
 def GetLegend(h1,label1,opt1,h2,label2,opt2):
     legend=TLegend(0.65,0.75,0.85,0.90,"","brNDC");
     legend.SetFillStyle(0); #set legend box transparent
@@ -191,7 +124,7 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
                      hstack_opt="nostack",
                      outDir="./", output="output", channel="",
                      xmin=50., xmax=500., xtitle="" ,units="",
-                     lumi=2.169, notes="", drawSig=False, hsig=[]):
+                     lumi=2.169, notes=""):
     
     fout = TFile(outDir+'/'+output+'_'+channel.Data()+'.root', 'recreate')
         
@@ -215,8 +148,6 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
     frame.Draw()
     hstack.Draw(hstack_opt+", same")
     hdata.Draw("Psame")
-    if drawSig and len(hsig)!=0:
-        for ihsig in hsig: ihsig.Draw("HIST, same")
     legend.Draw("same")
     hstack.SetMinimum(0.01)
     hstack.GetHistogram().GetXaxis().SetRangeUser(xmin,xmax)
@@ -266,9 +197,7 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
     p1.Update()
 
     if channel!="":
-        if channel.Contains("el"): channel_tex="ee"
-        elif channel.Contains("mu"): channel_tex="#mu#mu"
-        else: channel_tex=channel.Data()
+        channel_tex="ee" if channel.Contains("el") else "#mu#mu"
         pt.DrawLatex(0.25,0.82, channel_tex+" channel")
             
     fout.cd()
@@ -277,13 +206,14 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
     hstack.Write()
     fout.Close()
 
-    c1.SaveAs(outDir+'/'+output+'_'+channel.Data()+'.eps')
+    c1.Print(outDir+'/'+output+'_'+channel.Data()+'.eps')
+    
     return
 
 def drawCompare(hstack, hratio, legend,
                 hstack_opt="nostack",outdir="./",tag="test",
                 xmin=50., xmax=500., xtitle="" , ytitle="Events", units="",
-                lumi=2.169, logy=True, notes="", setmax=0):
+                lumi=2.169, notes=""):
 
     fout = TFile(outdir+'/'+tag+'.root', 'recreate')
     
@@ -305,9 +235,6 @@ def drawCompare(hstack, hratio, legend,
     
     p1.cd()
     hstack.Draw(hstack_opt)
-    if setmax!=0:
-        print 'I am setting maximum*', setmax
-        hstack.SetMaximum(hstack.GetMaximum()*setmax)
     legend.Draw("same")
         
     hstack.SetMinimum(0.01)
@@ -319,7 +246,7 @@ def drawCompare(hstack, hratio, legend,
     
     if len(units)>0:
         hstack.GetHistogram().GetXaxis().SetTitle(xtitle + " (" +units+")")
-        hstack.GetHistogram().GetYaxis().SetTitle(ytitle +" / "+"{:.1f}".format((maxi-mini)/bins)+ " "+units)
+        hstack.GetHistogram().GetYaxis().SetTitle(ytitle +" / "+str((maxi-mini)/bins)+ " "+units)
     else:
         hstack.GetHistogram().GetXaxis().SetTitle(xtitle)
         hstack.GetHistogram().GetYaxis().SetTitle(ytitle)
@@ -337,7 +264,7 @@ def drawCompare(hstack, hratio, legend,
     hratio.Draw('P,SAME')
     hratio.GetXaxis().SetRangeUser(xmin,xmax)
 
-    if logy:    p1.SetLogy()
+    p1.SetLogy()
     p1.RedrawAxis()
     p1.Update()
     p2.Update()
@@ -370,20 +297,15 @@ def drawCompare(hstack, hratio, legend,
 def drawCompareSimple(h1, h2, leg1, leg2,
                       xmin=50., xmax=500., xtitle="" , ytitle="", units="",
                       lumi=2.169, notes="",
-                      outdir="./", tag="test", setmax=0, logy=True):
+                      outdir="./", tag="test"):
 
     h1.SetLineColor(kRed)
     h1.SetFillColor(kRed)
     h2.SetMarkerStyle(20)
     h2.SetMarkerSize(1.0)
-    herror=copy.deepcopy(h1)
-    herror.SetFillColor(kBlue)
-    herror.SetFillStyle(3345)
-    herror.SetMarkerSize(0)
     
     hstack=THStack("h_stack","stack histograms")
     hstack.Add(h1,"hist,0")
-    hstack.Add(herror,"e2,0")
     hstack.Add(h2,"p,0")
 
     if xtitle=="": xtitle=h1.GetXaxis().GetTitle()
@@ -395,6 +317,6 @@ def drawCompareSimple(h1, h2, leg1, leg2,
                  outdir=outdir, tag=tag,
                  xmin=xmin, xmax=xmax,
                  xtitle=xtitle, ytitle=ytitle, units=units,
-                 lumi=lumi, logy=logy,
-                 notes=notes, setmax=setmax)
+                 lumi=lumi,
+                 notes=notes)
     return

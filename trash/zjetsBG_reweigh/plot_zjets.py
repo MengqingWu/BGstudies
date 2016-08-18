@@ -91,7 +91,7 @@ for pair in plotters:
                                      drawStyle = "COLZ")
         if pcut=='preSelect':
             hmet_preselect=plotter.drawTH1('llnunu_l2_pt'+'_'+pcut,'llnunu_l2_pt',preCuts[pcut],str(lumi*1000),25,0,500,titlex='E_{T}^{miss}',units='[GeV]',drawStyle="HIST")
-            hzpt_preselect=plotter.drawTH1('llnunu_l1_pt'+'_'+pcut,'llnunu_l1_pt',preCuts[pcut],str(lumi*1000),25,0,500,titlex='p_{T}^{Z_{ll}}',units='[GeV]',drawStyle="HIST")
+            hzpt_preselect=plotter.drawTH1('llnunu_l1_pt'+'_'+pcut,'llnunu_l1_pt',preCuts[pcut],str(lumi*1000),25,0,500,titlex='p_{T}^{Z}',units='[GeV]',drawStyle="HIST")
             histo[pcut]=(preCuts[pcut],hmet_preselect, hzpt_preselect, hdPhiZmmMet, h2_var1_var2)
         else:
             histo[pcut]=(preCuts[pcut],hdPhiZmmMet, h2_var1_var2)

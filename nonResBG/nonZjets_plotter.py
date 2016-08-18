@@ -18,10 +18,10 @@ whichdt+='_corr' if doshapeCorr else ''
 #Channel=raw_input("Please choose a channel (el or mu): \n")
 tag0='nonResBkg'
 outdir='test'
-indir="./nonResSkim_v3"
+indir="./nonResSkim_v3.0"
 lumi=2.318278305
 logy=True
-zpt_cut, met_cut= '0', '0'
+zpt_cut, met_cut= '100', '0'
 if not os.path.exists(outdir): os.system('mkdir '+outdir)
 
 tag = tag0+'_'+'test'
@@ -54,7 +54,7 @@ plotter_eu.Stack.drawStack('elmununu_l1_mass', cuts['emu']['inclusive'], str(lum
                            output=tag+'_melmu',outDir=outdir, separateSignal=True,
                            drawtex="", channel="")
 
-exit(0)
+#exit(0)
 # Make numbers:
 histo=OrderedDict() # will have histo[<reg>][<member>]=h1
 yields=OrderedDict() # will have yields[<reg><zmass>][<member>]=yield
@@ -176,13 +176,13 @@ fstack=ROOT.TFile(outdir+'/'+stackTag+'.root')
 hs=fstack.Get(stackTag+"_stack")
 hframe=fstack.Get(stackTag+'_frame')
 hframe.GetXaxis().SetRangeUser(70, 100)
-hdata=fstack.Get(stackTag+'_data')
+hdata=fstack.Get(stackTag+'_data0')
 legend=fstack.Get(stackTag+'_legend')
 
 hsnew=ROOT.THStack(stackTag+"_stack_new","")
 hsnew.Add(h_mll_nonres_dd)
 
-nonresTag=[stackTag+'_'+sample for sample in ['WJets','TT','WW'] ]
+nonresTag=[stackTag+'_'+sample for sample in ['WJets0','TT0','WW0'] ]
 
 for ihist in hs.GetHists():
     if ihist.GetName() in nonresTag: print 'I am a nonres bkg: ',ihist.GetName()

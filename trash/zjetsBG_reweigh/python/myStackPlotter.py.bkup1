@@ -1,7 +1,6 @@
 import ROOT
-import math, os, copy
+import math, os
 from TreePlotter import TreePlotter
-import SimplePlot 
 
 def convertToPoisson(h,blinding=False,blindingCut=100):
     graph = ROOT.TGraphAsymmErrors()
@@ -35,6 +34,7 @@ def convertToPoisson(h,blinding=False,blindingCut=100):
     graph.SetLineWidth(2)
     graph.SetMarkerSize(1.)
     graph.SetMarkerColor(ROOT.kBlack)
+    
 
     return graph    
 
@@ -45,7 +45,7 @@ def GetRatioHist(h1, hstack,blinding=False,blindingCut=100):
     for hist in hstack.GetHists():
         h2.Add(hist)
 
-    for i in xrange(h1.GetXaxis().GetNbins()+1):
+    for i in xrange(h1.GetXaxis().GetNbins()):
         N1 = h1.GetBinContent(i)
         N2 = h2.GetBinContent(i)
         E1 = h1.GetBinError(i)
@@ -186,69 +186,13 @@ class StackPlotter(object):
                 print label+" : %f\n" % hist.Integral()
 
         return  hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG
-    
-    def createStackBinned(self, stack, var, cut, lumi, xbins, titlex, units,
-                          separateSignal, output, blinding, blindingCut):
-        hists=[]
-        signal=0
-        background=0
-        backgroundErr=0
-        
-        signals = []       
-        signalHs = [] 
-        signalLabels = []
-
-        dataH=None
-        dataG=None
-        
-        cutL="("+self.defaultCut+")*("+cut+")"
-        for (plotter,typeP,label,name) in zip(self.plotters,self.types,self.labels,self.names):
-            error=ROOT.Double(0.0)
-            if (typeP =="background") or (not separateSignal and typeP == "signal"):
-                hist = plotter.drawTH1Binned(output+'_'+name,var,cutL,lumi,xbins,titlex,unitsx=units)
-                #hist.SetName(output+'_'+name)
-                stack.Add(hist)
-                hists.append(hist)
-                print label+" : %f\n" % hist.Integral()
- 
-                if typeP == "signal" :
-                    signal+=hist.Integral()
-                if typeP == "background" :
-                    background+=hist.IntegralAndError(1,hist.GetNbinsX(),error)
-                    backgroundErr+=error*error
-
-            if separateSignal and typeP == "signal":
-                hist = plotter.drawTH1Binned(output+'_'+name,var,cutL,lumi,xbins,titlex,unitsx=units)
-                #hist.SetName(output+'_'+name)
-                hists.append(hist)
-                signalHs.append(hist)
-                signals.append(hist.Integral())
-                signalLabels.append(label)
-                print label+" : %f\n" % hist.Integral()
-
-            if typeP =="data":
-                hist = plotter.drawTH1Binned(output+'_'+typeP,var,cutL,"1",xbins,titlex,unitsx=units)
-                #hist.SetName(output+'_'+typeP)
-                hists.append(hist)
-                hist.SetMarkerStyle(20)
-                hist.SetLineWidth(1)
-                hist.SetMarkerSize(1.)
-                hist.SetMarkerColor(ROOT.kBlack)
-                hist.SetBinErrorOption(1)
-                dataH=hist
-                dataG=convertToPoisson(hist,blinding,blindingCut)
-                dataG.SetName(output+'_'+'dataG')
-                dataG.SetLineWidth(1)
-                print label+" : %f\n" % hist.Integral()
-
-        return  hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG
                                                                         
     
     def drawStack(self,var,cut,lumi,bins,mini,maxi, titlex = "", units = "",
                   output = 'out', outDir='.',
                   separateSignal=False,
                   drawtex="", channel="",
-                  blinding=False, blindingCut=100.0, xbins=[]):
+                  blinding=False, blindingCut=100.0):
 
         fout = ROOT.TFile(outDir+'/'+output+'.root', 'recreate')
 
@@ -265,19 +209,15 @@ class StackPlotter(object):
         p2.SetFillStyle(0)
         p2.Draw()
 
-        ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
         ROOT.gStyle.SetOptStat(0)
         ROOT.gStyle.SetOptTitle(0)
-       
+        
         p1.cd()
             
         stack = ROOT.THStack(output+'_'+"stack","")
-        if xbins:
-            hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG = self.createStackBinned(stack, var, cut, lumi, xbins, titlex, units,
-                                                                                                                              separateSignal, output, blinding, blindingCut)
-        else:
-            hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG = self.createStack(stack, var, cut, lumi, bins, mini, maxi, titlex, units,
-                                                                                                                        separateSignal, output, blinding, blindingCut)
+
+        hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG = self.createStack(stack, var, cut, lumi, bins, mini, maxi, titlex, units,
+                                                                                                                    separateSignal, output, blinding, blindingCut)
  
         #if data not found plot stack only
 
@@ -322,7 +262,7 @@ class StackPlotter(object):
         frame.Draw()
         stack.Draw("A,HIST,SAME")
         if dataH !=None:
-            dataG.Draw("P, same")              
+            dataG.Draw("Psame")              
         if separateSignal and len(signalHs)>0:
             for sigH in signalHs:
                 sigH.Draw("HIST,SAME")
@@ -470,8 +410,7 @@ class StackPlotter(object):
         return plot
 
 
-
-    def drawComp(self,var,cut,bins,mini,maxi,titlex = "", titley = "", units = "",  output='out.eps', getcumulative=False, forward=True):
+    def drawComp(self,var,cut,bins,mini,maxi,titlex = "", units = "", output='out.eps'):
         canvas = ROOT.TCanvas("canvas","")
         ROOT.SetOwnership(canvas,False)
         canvas.cd()
@@ -500,12 +439,8 @@ class StackPlotter(object):
             #hist.SetFillStyle(0)
             #hist.SetName(hist.GetName()+label)
             hist.Scale(1./hist.Integral())
-            if getcumulative: 
-                hist_toadd = SimplePlot.GetCumulativeAndError(hist,forward=forward,suffix='cumulated')
-            else: 
-                hist_toadd = copy.deepcopy(hist)
-            stack.Add(hist_toadd)
-            hists.append(hist_toadd)
+            stack.Add(hist)
+            hists.append(hist)
 
 
         stack.Draw("HIST,NOSTACK")
@@ -515,10 +450,10 @@ class StackPlotter(object):
             stack.GetXaxis().SetTitle(titlex + " [" +units+"]")
         else:
             stack.GetXaxis().SetTitle(titlex)
-
-        ytitle=titley if titley else "a.u" 
-        stack.GetYaxis().SetTitle(ytitle)
+    
+        stack.GetYaxis().SetTitle("a.u")
         stack.GetYaxis().SetTitleOffset(1.2)
+
 
         legend = ROOT.TLegend(0.6,0.6,0.9,0.9)
         legend.SetName(output+'_'+'legend')
@@ -542,10 +477,16 @@ class StackPlotter(object):
 	pt.SetFillStyle(0)
 	pt.SetTextFont(42)
 	pt.SetTextSize(0.03)
-	text = pt.AddText(0.01,0.5,"CMS Simulation")
+	text = pt.AddText(0.01,0.5,"CMS simulation")
 	pt.Draw()   
+
 
         canvas.Update()
 
         canvas.Print(output)
+        os.system('epstopdf '+output)
         return canvas
+
+        
+        
+

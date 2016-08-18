@@ -1,7 +1,6 @@
 import ROOT
-import math, os, copy
+import math, os
 from TreePlotter import TreePlotter
-import SimplePlot 
 
 def convertToPoisson(h,blinding=False,blindingCut=100):
     graph = ROOT.TGraphAsymmErrors()
@@ -35,6 +34,7 @@ def convertToPoisson(h,blinding=False,blindingCut=100):
     graph.SetLineWidth(2)
     graph.SetMarkerSize(1.)
     graph.SetMarkerColor(ROOT.kBlack)
+    
 
     return graph    
 
@@ -45,7 +45,7 @@ def GetRatioHist(h1, hstack,blinding=False,blindingCut=100):
     for hist in hstack.GetHists():
         h2.Add(hist)
 
-    for i in xrange(h1.GetXaxis().GetNbins()+1):
+    for i in xrange(h1.GetXaxis().GetNbins()):
         N1 = h1.GetBinContent(i)
         N2 = h2.GetBinContent(i)
         E1 = h1.GetBinError(i)
@@ -86,24 +86,6 @@ def GetRatioHist(h1, hstack,blinding=False,blindingCut=100):
 
     return hratio
 
-def DrawTex(input_tex="", channel=""):
-    #-------- draw pave tex
-    pt =ROOT.TLatex() #(0.1577181,0.9562937,0.9580537,0.9947552,"brNDC")
-    pt.SetNDC()
-    pt.SetTextAlign(12)
-    pt.SetTextFont(42)
-    pt.SetTextSize(0.03)
-
-    pt.DrawLatex(0.25,0.85,input_tex)
-
-    if channel and not channel.isspace():
-        if ROOT.TString(channel).Contains("el"):  channel_tex="ee"
-        elif ROOT.TString(channel).Contains("mu"): channel_tex="#mu#mu"
-        else: channel_tex=channel
-        pt.DrawLatex(0.25,0.82, channel_tex+" channel")
-
-    return
-    
 class StackPlotter(object):
     def __init__(self,defaultCut="1"):
         self.plotters = []
@@ -113,142 +95,20 @@ class StackPlotter(object):
         self.log=False
         self.defaultCut=defaultCut
         self.doRatioPlot=False
-        
+
     def setLog(self,doLog):
         self.log=doLog
+        
     def addPlotter(self,plotter,name="",label = "label",typeP = "background"):
         self.plotters.append(plotter)
         self.types.append(typeP)
         self.labels.append(label)
         self.names.append(name)
 
-    def rmPlotter(self, plotter, name="",label = "label", typeP = "background"):
-        self.plotters.remove(plotter)
-        self.types.remove(typeP)
-        self.labels.remove(label)
-        self.names.remove(name)
-                                        
     def doRatio(self,doRatio):
         self.doRatioPlot = doRatio
-        
-    def createStack(self, stack, var, cut, lumi, bins, mini, maxi, titlex, units,
-                    separateSignal, output, blinding, blindingCut):
-        hists=[]
-        signal=0
-        background=0
-        backgroundErr=0
-        
-        signals = []       
-        signalHs = [] 
-        signalLabels = []
 
-        dataH=None
-        dataG=None
-        
-        cutL="("+self.defaultCut+")*("+cut+")"
-        for (plotter,typeP,label,name) in zip(self.plotters,self.types,self.labels,self.names):
-            error=ROOT.Double(0.0)
-            if (typeP =="background") or (not separateSignal and typeP == "signal"):
-                hist = plotter.drawTH1(output+'_'+name,var,cutL,lumi,bins,mini,maxi,titlex,units)
-                #hist.SetName(output+'_'+name)
-                stack.Add(hist)
-                hists.append(hist)
-                print label+" : %f\n" % hist.Integral()
- 
-                if typeP == "signal" :
-                    signal+=hist.Integral()
-                if typeP == "background" :
-                    background+=hist.IntegralAndError(1,hist.GetNbinsX(),error)
-                    backgroundErr+=error*error
-
-            if separateSignal and typeP == "signal":
-                hist = plotter.drawTH1(output+'_'+name,var,cutL,lumi,bins,mini,maxi,titlex,units)
-                #hist.SetName(output+'_'+name)
-                hists.append(hist)
-                signalHs.append(hist)
-                signals.append(hist.Integral())
-                signalLabels.append(label)
-                print label+" : %f\n" % hist.Integral()
-
-            if typeP =="data":
-                hist = plotter.drawTH1(output+'_'+typeP,var,cutL,"1",bins,mini,maxi,titlex,units)
-                #hist.SetName(output+'_'+typeP)
-                hists.append(hist)
-                hist.SetMarkerStyle(20)
-                hist.SetLineWidth(1)
-                hist.SetMarkerSize(1.)
-                hist.SetMarkerColor(ROOT.kBlack)
-                hist.SetBinErrorOption(1)
-                dataH=hist
-                dataG=convertToPoisson(hist,blinding,blindingCut)
-                dataG.SetName(output+'_'+'dataG')
-                dataG.SetLineWidth(1)
-                print label+" : %f\n" % hist.Integral()
-
-        return  hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG
-    
-    def createStackBinned(self, stack, var, cut, lumi, xbins, titlex, units,
-                          separateSignal, output, blinding, blindingCut):
-        hists=[]
-        signal=0
-        background=0
-        backgroundErr=0
-        
-        signals = []       
-        signalHs = [] 
-        signalLabels = []
-
-        dataH=None
-        dataG=None
-        
-        cutL="("+self.defaultCut+")*("+cut+")"
-        for (plotter,typeP,label,name) in zip(self.plotters,self.types,self.labels,self.names):
-            error=ROOT.Double(0.0)
-            if (typeP =="background") or (not separateSignal and typeP == "signal"):
-                hist = plotter.drawTH1Binned(output+'_'+name,var,cutL,lumi,xbins,titlex,unitsx=units)
-                #hist.SetName(output+'_'+name)
-                stack.Add(hist)
-                hists.append(hist)
-                print label+" : %f\n" % hist.Integral()
- 
-                if typeP == "signal" :
-                    signal+=hist.Integral()
-                if typeP == "background" :
-                    background+=hist.IntegralAndError(1,hist.GetNbinsX(),error)
-                    backgroundErr+=error*error
-
-            if separateSignal and typeP == "signal":
-                hist = plotter.drawTH1Binned(output+'_'+name,var,cutL,lumi,xbins,titlex,unitsx=units)
-                #hist.SetName(output+'_'+name)
-                hists.append(hist)
-                signalHs.append(hist)
-                signals.append(hist.Integral())
-                signalLabels.append(label)
-                print label+" : %f\n" % hist.Integral()
-
-            if typeP =="data":
-                hist = plotter.drawTH1Binned(output+'_'+typeP,var,cutL,"1",xbins,titlex,unitsx=units)
-                #hist.SetName(output+'_'+typeP)
-                hists.append(hist)
-                hist.SetMarkerStyle(20)
-                hist.SetLineWidth(1)
-                hist.SetMarkerSize(1.)
-                hist.SetMarkerColor(ROOT.kBlack)
-                hist.SetBinErrorOption(1)
-                dataH=hist
-                dataG=convertToPoisson(hist,blinding,blindingCut)
-                dataG.SetName(output+'_'+'dataG')
-                dataG.SetLineWidth(1)
-                print label+" : %f\n" % hist.Integral()
-
-        return  hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG
-                                                                        
-    
-    def drawStack(self,var,cut,lumi,bins,mini,maxi, titlex = "", units = "",
-                  output = 'out', outDir='.',
-                  separateSignal=False,
-                  drawtex="", channel="",
-                  blinding=False, blindingCut=100.0, xbins=[]):
+    def drawStack(self,var,cut,lumi,bins,mini,maxi,titlex = "", units = "", output = 'out', outDir='.', separateSignal=False, blinding=False, blindingCut=100.0):
 
         fout = ROOT.TFile(outDir+'/'+output+'.root', 'recreate')
 
@@ -265,19 +125,66 @@ class StackPlotter(object):
         p2.SetFillStyle(0)
         p2.Draw()
 
-        ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
         ROOT.gStyle.SetOptStat(0)
         ROOT.gStyle.SetOptTitle(0)
-       
+        
         p1.cd()
             
+        hists=[]
         stack = ROOT.THStack(output+'_'+"stack","")
-        if xbins:
-            hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG = self.createStackBinned(stack, var, cut, lumi, xbins, titlex, units,
-                                                                                                                              separateSignal, output, blinding, blindingCut)
-        else:
-            hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG = self.createStack(stack, var, cut, lumi, bins, mini, maxi, titlex, units,
-                                                                                                                        separateSignal, output, blinding, blindingCut)
+        
+        signal=0
+        background=0
+        backgroundErr=0
+        
+        signals = []       
+        signalHs = [] 
+        signalLabels = []
+
+        dataH=None
+        dataG=None
+        error=ROOT.Double(0.0)
+
+        cutL="("+self.defaultCut+")*("+cut+")"
+
+        for (plotter,typeP,label,name) in zip(self.plotters,self.types,self.labels,self.names):
+            if (typeP =="background") or (not separateSignal and typeP == "signal"):
+                hist = plotter.drawTH1(var,cutL,lumi,bins,mini,maxi,titlex,units)
+                hist.SetName(output+'_'+name)
+                stack.Add(hist)
+                hists.append(hist)
+                print label+" : %f\n" % hist.Integral()
+ 
+                if typeP == "signal" :
+                    signal+=hist.Integral()
+                if typeP == "background" :
+                    background+=hist.IntegralAndError(1,hist.GetNbinsX(),error)
+                    backgroundErr+=error*error
+
+            if separateSignal and typeP == "signal":
+                hist = plotter.drawTH1(var,cutL,lumi,bins,mini,maxi,titlex,units)
+                hist.SetName(output+'_'+name)
+                hists.append(hist)
+                signalHs.append(hist)
+                signals.append(hist.Integral())
+                signalLabels.append(label)
+                print label+" : %f\n" % hist.Integral()
+
+            if typeP =="data":
+                hist = plotter.drawTH1(var,cutL,"1",bins,mini,maxi,titlex,units)
+                hist.SetName(output+'_'+typeP)
+                hists.append(hist)
+                hist.SetMarkerStyle(20)
+                hist.SetLineWidth(1)
+                hist.SetMarkerSize(1.)
+                hist.SetMarkerColor(ROOT.kBlack)
+                hist.SetBinErrorOption(1)
+                dataH=hist
+                dataG=convertToPoisson(hist,blinding,blindingCut)
+                dataG.SetName(output+'_'+'dataG')
+                dataG.SetLineWidth(1)
+                print label+" : %f\n" % hist.Integral()
+                
  
         #if data not found plot stack only
 
@@ -322,7 +229,7 @@ class StackPlotter(object):
         frame.Draw()
         stack.Draw("A,HIST,SAME")
         if dataH !=None:
-            dataG.Draw("P, same")              
+            dataG.Draw("Psame")              
         if separateSignal and len(signalHs)>0:
             for sigH in signalHs:
                 sigH.Draw("HIST,SAME")
@@ -360,11 +267,7 @@ class StackPlotter(object):
         c1.Update()
 
 
-        if drawtex and not drawtex.isspace():
-            p1.cd()
-            print "I am drawing extra tex ;)"
-            DrawTex(drawtex, channel)
-            p1.Update()
+
 
         print"---------------------------"
         if not separateSignal:
@@ -374,7 +277,6 @@ class StackPlotter(object):
                 print "Signal "+sigLab+" = "+str(sig)
         print "Bkg    = %f" %(background)
         if dataH is not None:
-            error=ROOT.Double(0.0)
             print "Observed = %f"%(dataH.Integral())
             integral = dataH.IntegralAndError(1,dataH.GetNbinsX(),error)
             if background>0.0:
@@ -440,14 +342,16 @@ class StackPlotter(object):
             p2.cd()
             hmask_ratio.Draw("HIST,SAME")
 
+
+        p1.RedrawAxis()
+        p1.Update()
+        c1.Update()
+
         plot={'canvas':c1,'stack':stack,'legend':legend,'data':dataH,'dataG':dataG,'latex1':pt}
         if separateSignal and len(signalHs)>0:
             for (sigH,sigLab) in reversed(zip(signalHs,signalLabels)):
                 plot['signal_'+sigLab] = sigH
 
-        p1.RedrawAxis()
-        p1.Update()
-        c1.Update()
 
         c1.Print(outDir+'/'+output+'.eps')
         os.system('epstopdf '+outDir+'/'+output+'.eps')
@@ -455,14 +359,13 @@ class StackPlotter(object):
         fout.cd()
         c1.Write() 
         stack.Write()
-        if dataH is not None:
-            dataH.Write()
-            dataG.Write()
+        dataH.Write()
+        dataG.Write()
         pt.Write()
         legend.Write()
         p1.Write()
         p2.Write()
-        if self.doRatioPlot: hratio.Write()
+        hratio.Write()
         frame.Write()
         for hist in hists: hist.Write()  
         fout.Close()
@@ -471,7 +374,7 @@ class StackPlotter(object):
 
 
 
-    def drawComp(self,var,cut,bins,mini,maxi,titlex = "", titley = "", units = "",  output='out.eps', getcumulative=False, forward=True):
+    def drawComp(self,var,cut,bins,mini,maxi,titlex = "", units = "", output='out.eps'):
         canvas = ROOT.TCanvas("canvas","")
         ROOT.SetOwnership(canvas,False)
         canvas.cd()
@@ -495,17 +398,13 @@ class StackPlotter(object):
         canvas.SetFrameBorderMode(0)
 
 
-        for (plotter,typeP,label,name) in zip(self.plotters,self.types,self.labels, self.names):
-            hist = plotter.drawTH1(name,var,cut,"1",bins,mini,maxi,titlex,units)
-            #hist.SetFillStyle(0)
-            #hist.SetName(hist.GetName()+label)
-            hist.Scale(1./hist.Integral())
-            if getcumulative: 
-                hist_toadd = SimplePlot.GetCumulativeAndError(hist,forward=forward,suffix='cumulated')
-            else: 
-                hist_toadd = copy.deepcopy(hist)
-            stack.Add(hist_toadd)
-            hists.append(hist_toadd)
+        for (plotter,typeP,label) in zip(self.plotters,self.types,self.labels):
+                hist = plotter.drawTH1(var,cut,"1",bins,mini,maxi,titlex,units)
+#                hist.SetFillStyle(0)
+                hist.SetName(hist.GetName()+label)
+                hist.Scale(1./hist.Integral())
+                stack.Add(hist)
+                hists.append(hist)
 
 
         stack.Draw("HIST,NOSTACK")
@@ -515,21 +414,13 @@ class StackPlotter(object):
             stack.GetXaxis().SetTitle(titlex + " [" +units+"]")
         else:
             stack.GetXaxis().SetTitle(titlex)
-
-        ytitle=titley if titley else "a.u" 
-        stack.GetYaxis().SetTitle(ytitle)
+    
+        stack.GetYaxis().SetTitle("a.u")
         stack.GetYaxis().SetTitleOffset(1.2)
 
+
         legend = ROOT.TLegend(0.6,0.6,0.9,0.9)
-        legend.SetName(output+'_'+'legend')
-        legend.SetBorderSize(0)
-        legend.SetLineColor(1)
-        legend.SetLineStyle(1)
-        legend.SetLineWidth(1)
-        legend.SetFillColor(0)
-        legend.SetFillStyle(0)
-        legend.SetTextFont(42)
-                        
+        legend.SetFillColor(ROOT.kWhite)
         for (histo,label,typeP) in zip(hists,self.labels,self.types):
                 legend.AddEntry(histo,label,"lf")
         ROOT.SetOwnership(legend,False)
@@ -542,10 +433,16 @@ class StackPlotter(object):
 	pt.SetFillStyle(0)
 	pt.SetTextFont(42)
 	pt.SetTextSize(0.03)
-	text = pt.AddText(0.01,0.5,"CMS Simulation")
+	text = pt.AddText(0.01,0.5,"CMS simulation")
 	pt.Draw()   
+
 
         canvas.Update()
 
         canvas.Print(output)
+        os.system('epstopdf '+output)
         return canvas
+
+        
+        
+
