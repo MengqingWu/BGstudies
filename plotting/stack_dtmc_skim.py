@@ -27,7 +27,7 @@ cutChain='tight'
 #cutChain='tightzpt100met200'
 
 channel='el' # can be el or mu or both
-LogY=False
+LogY=True
 test=False
 DrawLeptons=True
 doRhoScale=True
@@ -50,8 +50,9 @@ if doRhoScale:
     #lepsf=lepsf+"*(0.122360+0.180976*rho+-0.010879*pow(rho,2)+0.000226*pow(rho,3)-0.000002*pow(rho,4))"
 
 outdir='plots'
+indir='./80X_20160825_light_Skim'
 
-indir='/home/heli/XZZ/80X_20160818_light_Skim_EffSkim'
+#indir='/home/heli/XZZ/80X_20160818_light_Skim_EffSkim'
 #indir='root://eoscms//store/caf/user/heli/XZZ/80X_20160721_EffSkim_v2'
 #indir='/home/heli/XZZ/80X_20160721_SkimV2_EffSkim'
 #indir='/home/heli/XZZ/80X_20160721_SkimV2_EffSkim'
@@ -247,8 +248,8 @@ zjetsPlotters=[]
 #zjetsSamples = ['DYJetsToLL_M50_MGMLM_Ext1'] # M50
 #zjetsSamples = ['DYJetsToLL_M50_BIG'] # M50_BIG = M50 + M50_Ext
 #zjetsSamples = ['DYJetsToLL_M50_BIG_ZPt'] 
-zjetsSamples = ['DYJetsToLL_M50_BIG_RecoilGraph'] # M50
-
+#zjetsSamples = ['DYJetsToLL_M50_BIG_RecoilGraph'] # M50
+zjetsSamples = ['DYJetsToLL_M50', 'DYJetsToLL_M50_MGMLM_Ext1']
 
 for sample in zjetsSamples:
     zjetsPlotters.append(TreePlotter(sample, indir+'/'+sample+'.root','tree'))
