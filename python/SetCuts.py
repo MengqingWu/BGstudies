@@ -4,34 +4,32 @@ import ROOT
 import os
 from collections import OrderedDict
 
-### Please keep the keys same in tex_dic={}  and cuts={}
+### Please keep the keys same in ZjetsTex={}  and cuts={}
 class SetCuts ():
     def __init__(self):
          
-        self.Tex_dic = {'regA': 'Region A', 'regB': 'Region B','regC': 'Region C','regD': 'Region D'}
+        #self.Tex_dic = {'regA': 'Region A', 'regB': 'Region B','regC': 'Region C','regD': 'Region D'}
         self.ZjetsTex = {'regTrg': 'Target Region', 'regCtrl': 'Control Region',
                          'basecut': 'Pre-selected Region'}
         self.met_pt_in=raw_input("[info] 'SetCuts' -> please give the MET cut: (enter to use default MET>100GeV)\n")
         self.met_pt='100' if self.met_pt_in=='' else self.met_pt_in
 
-        #self.var1='fabs(fabs(llnunu_deltaPhi)-TMath::Pi()/2)'
-        #self.var2='cos(llnunu_deltaPhi)/fabs(cos(llnunu_deltaPhi))'
         self.zj_var = 'fabs(llnunu_deltaPhi)'
-        
-        #self.cut_var1 ='TMath::Pi()/4'
-        #self.cut_var2 ='0' 
         self.cut_zj_var = ['0', 'TMath::Pi()/4', 'TMath::Pi()/2','3*TMath::Pi()/4']
         
         # define a cutflow for signal region
-        self.cutflow=("(nllnunu>0)", #0
-                      "(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)", #1
-                      "llnunu_l1_pt>100.0", #2
-                      "llnunu_l2_pt>"+self.met_pt, #3
-                      "nlep<3", #4
-                      self.zj_var+'>'+self.cut_zj_var[3], #5
-                      #self.var1+'>'+self.cut_var1, #4
-                      #self.var2+'<'+self.cut_var2, #5
-                      ) 
+        metfilter='(Flag_EcalDeadCellTriggerPrimitiveFilter&&Flag_HBHENoiseIsoFilter&&Flag_goodVertices&&Flag_HBHENoiseFilter&&Flag_CSCTightHalo2015Filter&&Flag_eeBadScFilter)'
+        cuts_lepaccept="((abs(llnunu_l1_l1_pdgId)==13&&abs(llnunu_l1_l2_pdgId)==13&&llnunu_l1_l1_pt>50&&abs(llnunu_l1_l1_eta)<2.4&&llnunu_l1_l2_pt>20&&abs(llnunu_l1_l2_eta)<2.4&&(llnunu_l1_l1_highPtID==1||llnunu_l1_l2_highPtID==1))"
+        cuts_lepaccept+="||(abs(llnunu_l1_l1_pdgId)==11&&abs(llnunu_l1_l2_pdgId)==11&&llnunu_l1_l1_pt>115&&abs(llnunu_l1_l1_eta)<2.5&&llnunu_l1_l2_pt>35&&abs(llnunu_l1_l2_eta)<2.5))"
+        cut_loose = [metfilter, cuts_lepaccept, "nllnunu>0"] 
+        self.cutflow = (
+            "("+'&&'.join(cut_loose)+")", #0 loose cut
+            "(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)", #1 Zmass
+            "llnunu_l1_pt>100.0", #2 ZpT
+            "llnunu_l2_pt>"+self.met_pt, #3 MET
+            "nlep<3", #4 3rd lep veto
+            self.zj_var+'>'+self.cut_zj_var[3], #5 
+        ) 
 
     def GetSRCut(self, N_minus_1=''):
         """ N_minus_1 (from 1 to 5) is to choose which cut to loose to get the N-1 plots  """

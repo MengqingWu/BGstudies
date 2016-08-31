@@ -105,14 +105,32 @@ def DrawTex(input_tex="", channel=""):
     return
     
 class StackPlotter(object):
-    def __init__(self,defaultCut="1"):
+    def __init__(self,defaultCut="1",outDir='.', outTag="stack_plotter"):
         self.plotters = []
         self.types    = []
         self.labels   = []
         self.names    = []
         self.log=False
         self.defaultCut=defaultCut
+        self.outTag=outTag
+        self.outDir=outDir
+        self.outFileName=outDir+'/'+outTag
         self.doRatioPlot=False
+        self.paveText="#sqrt{s} = 13 TeV 2016 L = "+"{:.3}".format(float(12.9))+" fb^{-1}" # default one to be changed by setPaveText
+
+        self.fout = ROOT.TFile.Open(self.outFileName+'.root', 'recreate')
+        c1 = ROOT.TCanvas(self.outTag, self.outTag, 800, 1040);
+        c1.Print(self.outFileName+'.ps[')
+        c1.Print(self.outFileName+'.pdf[')
+
+    def setPaveText(self, paveText):
+        self.paveText = paveText
+
+    def closePSFile(self):
+        c1 = ROOT.TCanvas(self.outTag, self.outTag);
+        c1.Print(self.outFileName+'.ps]')
+        c1.Print(self.outFileName+'.pdf]')
+        #ROOT.gROOT.ProcessLine('.! ps2pdf '+self.outFileName+'.ps '+self.outFileName+'.pdf')
         
     def setLog(self,doLog):
         self.log=doLog
@@ -130,9 +148,9 @@ class StackPlotter(object):
                                         
     def doRatio(self,doRatio):
         self.doRatioPlot = doRatio
+
+    def createStack(self, stack, var, cut, lumi, bins, mini, maxi, titlex, units, separateSignal, output, blinding, blindingCut):
         
-    def createStack(self, stack, var, cut, lumi, bins, mini, maxi, titlex, units,
-                    separateSignal, output, blinding, blindingCut):
         hists=[]
         signal=0
         background=0
@@ -187,8 +205,7 @@ class StackPlotter(object):
 
         return  hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG
     
-    def createStackBinned(self, stack, var, cut, lumi, xbins, titlex, units,
-                          separateSignal, output, blinding, blindingCut):
+    def createStackBinned(self, stack, var, cut, lumi, xbins, titlex, units, separateSignal, output, blinding, blindingCut):
         hists=[]
         signal=0
         background=0
@@ -247,13 +264,15 @@ class StackPlotter(object):
     def drawStack(self,var,cut,lumi,bins,mini,maxi, titlex = "", units = "",
                   output = 'out', outDir='.',
                   separateSignal=False,
-                  drawtex="", channel="",
-                  blinding=False, blindingCut=100.0, xbins=[]):
+                  blinding=False, blindingCut=100.0, fakeData=False,
+                  drawtex="", channel="", xbins=[]):
 
-        fout = ROOT.TFile(outDir+'/'+output+'.root', 'recreate')
+        #fout = ROOT.TFile(outDir+'/'+output+'.root', 'recreate')
 
-        c1 = ROOT.TCanvas(output+'_'+"c1", "c1", 600, 750); c1.Draw()
-        c1.SetWindowSize(600 + (600 - c1.GetWw()), (750 + (750 - c1.GetWh())))
+        self.fout.cd()
+
+        c1 = ROOT.TCanvas(output+'_'+"c1", "c1", 800, 1040); c1.Draw()
+        #c1.SetWindowSize(700 + (700 - c1.GetWw()), (910 + (910 - c1.GetWh())))
         p1 = ROOT.TPad(output+'_'+"pad1","pad1",0,0.25,1,0.99)
         p1.SetBottomMargin(0.15)
         p1.SetLeftMargin(0.15)
@@ -273,11 +292,9 @@ class StackPlotter(object):
             
         stack = ROOT.THStack(output+'_'+"stack","")
         if xbins:
-            hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG = self.createStackBinned(stack, var, cut, lumi, xbins, titlex, units,
-                                                                                                                              separateSignal, output, blinding, blindingCut)
+            hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG = self.createStackBinned(stack, var, cut, lumi, xbins, titlex, units,separateSignal, output, blinding, blindingCut)
         else:
-            hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG = self.createStack(stack, var, cut, lumi, bins, mini, maxi, titlex, units,
-                                                                                                                        separateSignal, output, blinding, blindingCut)
+            hists, signal, background,  backgroundErr, signals, signalHs, signalLabels, dataH, dataG = self.createStack(stack, var, cut, lumi, bins, mini, maxi, titlex, units, separateSignal, output, blinding, blindingCut)
  
         #if data not found plot stack only
 
@@ -351,7 +368,7 @@ class StackPlotter(object):
 
  #       ROOT.SetOwnership(legend,False)
 
-        legend.Draw()
+        #legend.Draw()
         if self.log:
             p1.SetLogy()
         #p1.SetLeftMargin(p1.GetLeftMargin()*1.15)
@@ -387,9 +404,12 @@ class StackPlotter(object):
 	pt.SetFillStyle(0)
 	pt.SetTextFont(42)
 	pt.SetTextSize(0.03)
-	text = pt.AddText(0.15,0.3,"CMS Preliminary")
+	#text = pt.AddText(0.15,0.3,"CMS Preliminary")
+	text = pt.AddText(0.15,0.3,"CMS Work in progress")
 #	text = pt.AddText(0.25,0.3,"#sqrt{s} = 7 TeV, L = 5.1 fb^{-1}  #sqrt{s} = 8 TeV, L = 19.7 fb^{-1}")
-	text = pt.AddText(0.55,0.3,"#sqrt{s} = 13 TeV, L = "+"{:.3}".format(float(lumi)/1000)+" fb^{-1}")
+	#text = pt.AddText(0.55,0.3,"#sqrt{s} = 13 TeV 2015 L = "+"{:.3}".format(float(lumi)/1000)+" fb^{-1}")
+	#text = pt.AddText(0.55,0.3,"#sqrt{s} = 13 TeV 2016 L = "+"{:.3}".format(float(lumi)/1000)+" fb^{-1}")
+	text = pt.AddText(0.55,0.3,self.paveText) 
 	pt.Draw()   
         
 
@@ -418,28 +438,31 @@ class StackPlotter(object):
                 else:
                     hmask_data.SetBinContent(ibb,1e100)
                     hmask_data.SetBinError(ibb,0)
-            hmask_data.SetFillStyle(3002)
+            hmask_data.SetFillStyle(3003)
             hmask_data.SetFillColor(36)
             hmask_data.SetLineStyle(6)
             hmask_data.SetLineColor(16)
             p1.cd()
             hmask_data.Draw("HIST,SAME")
 
-            hmask_ratio = hratio.Clone(output+'_'+"hmask_ratio")
-            for ibb in range(hmask_ratio.GetNbinsX()+1):
-                if hmask_ratio.GetBinCenter(ibb)<=blindingCut:
-                    hmask_ratio.SetBinContent(ibb,-100)
-                    hmask_ratio.SetBinError(ibb,0)
-                else:
-                    hmask_ratio.SetBinContent(ibb,1e100)
-                    hmask_ratio.SetBinError(ibb,0)
-            hmask_ratio.SetFillStyle(3002)
-            hmask_ratio.SetFillColor(36)
-            hmask_ratio.SetLineStyle(6)
-            hmask_ratio.SetLineColor(16)
-            p2.cd()
-            hmask_ratio.Draw("HIST,SAME")
-
+            if self.doRatioPlot:
+                hmask_ratio = hratio.Clone(output+'_'+"hmask_ratio")
+                for ibb in range(hmask_ratio.GetNbinsX()+1):
+                    if hmask_ratio.GetBinCenter(ibb)<=blindingCut:
+                        hmask_ratio.SetBinContent(ibb,-100)
+                        hmask_ratio.SetBinError(ibb,0)
+                    else:
+                        hmask_ratio.SetBinContent(ibb,1e100)
+                        hmask_ratio.SetBinError(ibb,0)
+                hmask_ratio.SetFillStyle(3003)
+                hmask_ratio.SetFillColor(36)
+                hmask_ratio.SetLineStyle(6)
+                hmask_ratio.SetLineColor(16)
+                p2.cd()
+                hmask_ratio.Draw("HIST,SAME")
+        p1.cd()
+        legend.Draw()
+        
         plot={'canvas':c1,'stack':stack,'legend':legend,'data':dataH,'dataG':dataG,'latex1':pt}
         if separateSignal and len(signalHs)>0:
             for (sigH,sigLab) in reversed(zip(signalHs,signalLabels)):
@@ -449,15 +472,16 @@ class StackPlotter(object):
         p1.Update()
         c1.Update()
 
-        c1.Print(outDir+'/'+output+'.eps')
-        os.system('epstopdf '+outDir+'/'+output+'.eps')
-       
-        fout.cd()
+        #c1.Print(outDir+'/'+self.outputTag+'_'+output+'.eps')
+        #os.system('epstopdf '+outDir+'/'+output+'.eps')
+        c1.Print(self.outFileName+'.ps')
+        c1.Print(self.outFileName+'.pdf')
+
+        self.fout.cd()
         c1.Write() 
         stack.Write()
-        if dataH is not None:
-            dataH.Write()
-            dataG.Write()
+        #if dataH: dataH.Write()
+        if dataG: dataG.Write()
         pt.Write()
         legend.Write()
         p1.Write()
@@ -465,7 +489,11 @@ class StackPlotter(object):
         if self.doRatioPlot: hratio.Write()
         frame.Write()
         for hist in hists: hist.Write()  
-        fout.Close()
+        #fout.Close()
+
+        #c1.Delete()
+        #p1.Delete()
+        #p2.Delete()
 
         return plot
 
@@ -547,5 +575,10 @@ class StackPlotter(object):
 
         canvas.Update()
 
-        canvas.Print(output)
+        #canvas.Print(output)
+        #os.system('epstopdf '+output)
+        canvas.Print(self.outFileName+'.ps')
+        canvas.Print(self.outFileName+'.pdf')
         return canvas
+
+ 
