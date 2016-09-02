@@ -59,7 +59,7 @@ class SetCuts ():
         cuts_tmp+='&&'+zpt+'&&'+met
 
         if Zmass=='inclusive': pass
-        elif Zmass=='out': cuts_tmp+="&&((llnunu_l1_mass>35.0&&llnunu_l1_mass<65.0)||(llnunu_l1_mass>115.0&&llnunu_l1_mass<180.0))"
+        elif Zmass=='out': cuts_tmp+="&&((llnunu_l1_mass>50.0&&llnunu_l1_mass<65.0)||(llnunu_l1_mass>115.0&&llnunu_l1_mass<180.0))"
         elif Zmass=='in': cuts_tmp+="&&(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)"
         else: raise RuntimeError, "[ERROR]! I do not understand the Zmass region you asked in alphaCuts(isll, Zmass) from SetCuts.py"
 
