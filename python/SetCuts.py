@@ -6,15 +6,16 @@ from collections import OrderedDict
 
 ### Please keep the keys same in ZjetsTex={}  and cuts={}
 class SetCuts ():
-    def __init__(self):
+    def __init__(self, met_pt=100):
          
         #self.Tex_dic = {'regA': 'Region A', 'regB': 'Region B','regC': 'Region C','regD': 'Region D'}
         self.ZjetsTex = {'regTrg': 'Target Region', 'regCtrl': 'Control Region',
                          'basecut': 'Pre-selected Region'}
-        self.met_pt_in=raw_input("[info] 'SetCuts' -> please give the MET cut: (enter to use default MET>100GeV)\n")
-        self.met_pt='100' if self.met_pt_in=='' else self.met_pt_in
 
-        self.zj_var = 'fabs(llnunu_deltaPhi)'
+        #self.met_pt_in = raw_input("[info] 'SetCuts' -> please give the MET cut: (enter to use default MET>100GeV)\n")
+        self.met_pt = str(met_pt)
+
+        self.zj_var = 'fabs(TVector2::Phi_mpi_pi(llnunu_l2_phi-llnunu_l1_phi))' #'fabs(llnunu_deltaPhi)'
         self.cut_zj_var = ['0', 'TMath::Pi()/4', 'TMath::Pi()/2','3*TMath::Pi()/4']
         
         # define a cutflow for signal region
@@ -27,7 +28,7 @@ class SetCuts ():
             "(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)", #1 Zmass
             "llnunu_l1_pt>100.0", #2 ZpT
             "llnunu_l2_pt>"+self.met_pt, #3 MET
-            "nlep<3", #4 3rd lep veto
+            "(1)",#"nlep<3", #4 3rd lep veto
             self.zj_var+'>'+self.cut_zj_var[3], #5 
         ) 
 
@@ -57,7 +58,7 @@ class SetCuts ():
         cuts_tmp+='&&'+zpt+'&&'+met
 
         if Zmass=='inclusive': pass
-        elif Zmass=='out': cuts_tmp+="&&((llnunu_l1_mass>35.0&&llnunu_l1_mass<65.0)||(llnunu_l1_mass>115.0&&llnunu_l1_mass<180.0))"
+        elif Zmass=='out': cuts_tmp+="&&((llnunu_l1_mass>50.0&&llnunu_l1_mass<65.0)||(llnunu_l1_mass>115.0&&llnunu_l1_mass<180.0))"
         elif Zmass=='in': cuts_tmp+="&&(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)"
         else: raise RuntimeError, "[ERROR]! I do not understand the Zmass region you asked in alphaCuts(isll, Zmass) from SetCuts.py"
 

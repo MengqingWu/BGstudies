@@ -15,13 +15,16 @@ class InitializePlotter:
                  sigK=1000):
 
         #--> Coefficiency:
-        elmuWt=1.51 # number from 76X
         puWeight='puWeight68075'
         DataHLT=True
         doRhoScale=True
         ZJetsZPtWeight=True
         SignalAll1pb=True
         sigk=sigK if sigK else 1000
+        self.addData=addData
+        self.addSig=addSig
+        self.LogY=LogY
+        self.doRatio=doRatio
 
         if doElMu: # FIXME
             lepsf='elmununu_l1_l1_lepsf*elmununu_l1_l2_lepsf'
@@ -185,7 +188,7 @@ class InitializePlotter:
             #'BulkGravToZZToZlepZinv_narrow_4500', 
         ]
 
-        sigSampleNames = {
+        self.sigSampleNames = {
             'BulkGravToZZToZlepZinv_narrow_600': str(sigk)+' x BulkG-600',
             'BulkGravToZZToZlepZinv_narrow_800': str(sigk)+' x BulkG-800',
             'BulkGravToZZToZlepZinv_narrow_1000':str(sigk)+' x BulkG-1000',
@@ -234,9 +237,9 @@ class InitializePlotter:
         if SignalAll1pb:
             for sig in self.sigSamples:
                 sigXsec[sig] = 1.0
-                sigSampleNames[sig] = string.replace(sigSampleNames[sig], str(sigk)+' x', '1 pb')
+                self.sigSampleNames[sig] = string.replace(self.sigSampleNames[sig], str(sigk)+' x', '1 pb')
         
-        if addSig:
+        if self.addSig:
             for sample in self.sigSamples:
                 self.sigPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
                 if not onlyStats:
@@ -266,10 +269,10 @@ class InitializePlotter:
                 'SingleEMU_Run2016BCD_PromptReco',
             ]
             
-        if addData:
+        if self.addData:
             for sample in self.dataSamples:
                 if doElMu and scaleElMu:
-                    dataPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree', elmuWt))
+                    dataPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
                     dataPlotters[-1].addCorrectionFactor('Melmu_sf','tree')
                 else:
                     dataPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
@@ -282,24 +285,26 @@ class InitializePlotter:
             self.Data = None
             print "[Info] NO Data samples added to plot "
 
-        #--> stack plotter prepared:
-        self.Stack = StackPlotter()
-        if addData: self.Stack.addPlotter(self.Data, "data_obs", "Data", "data")
-        #self.Stack.addPlotter(self.WJets, "WJets","W+Jets", "background")
-        self.Stack.addPlotter(self.WW, "VVNonReso","WW/WZ non-reson.", "background")
-        self.Stack.addPlotter(self.TT, "TT","TT", "background")
-        self.Stack.addPlotter(self.VV, "VVZReso","ZZ/WZ reson.", "background")
-        #Stack.addPlotter(self.ggZZ, "ggZZ","ggZZ", "background")
-        self.Stack.addPlotter(self.ZJets, "ZJets","Z+Jets", "background")
         
-        if addSig:
+    def GetStack(self, outdir='.', outtag="stack_plotter",lumi=12.9):
+
+        #--> stack plotter prepared:
+        Stack = StackPlotter(outDir=outdir, outTag=outtag, lumi=lumi)
+        if self.addData: Stack.addPlotter(self.Data, "data_obs", "Data", "data")
+        #Stack.addPlotter(self.WJets, "WJets","W+Jets", "background")
+        Stack.addPlotter(self.WW, "VVNonReso","WW/WZ non-reson.", "background")
+        Stack.addPlotter(self.TT, "TT","TT", "background")
+        Stack.addPlotter(self.VV, "VVZReso","ZZ/WZ reson.", "background")
+        #Stack.addPlotter(self.ggZZ, "ggZZ","ggZZ", "background")
+        Stack.addPlotter(self.ZJets, "ZJets","Z+Jets", "background")
+        
+        if self.addSig:
             for i in range(len(self.sigSamples)):
                 self.sigPlotters[i].setLineProperties(2,ROOT.kRed+i,2)
-                self.Stack.addPlotter(self.sigPlotters[i],self.sigSamples[i],sigSampleNames[self.sigSamples[i]],'signal')  
+                Stack.addPlotter(self.sigPlotters[i],self.sigSamples[i],self.sigSampleNames[self.sigSamples[i]],'signal')  
 
-        self.Stack.setLog(LogY)
-        self.Stack.doRatio(doRatio)
-        
-    def GetStack(self):
-        return self.Stack
+        Stack.setLog(self.LogY)
+        Stack.doRatio(self.doRatio)
+
+        return Stack
 
