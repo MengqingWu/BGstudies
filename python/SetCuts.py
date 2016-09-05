@@ -6,13 +6,13 @@ from collections import OrderedDict
 
 ### Please keep the keys same in tex_dic={}  and cuts={}
 class SetCuts ():
-    def __init__(self):
+    def __init__(self, met_pt=100):
          
         self.Tex_dic = {'regA': 'Region A', 'regB': 'Region B','regC': 'Region C','regD': 'Region D'}
         self.ZjetsTex = {'regTrg': 'Target Region', 'regCtrl': 'Control Region',
                          'basecut': 'Pre-selected Region'}
-        self.met_pt_in=raw_input("[info] 'SetCuts' -> please give the MET cut: (enter to use default MET>100GeV)\n")
-        self.met_pt='100' if self.met_pt_in=='' else self.met_pt_in
+        #self.met_pt_in=raw_input("[info] 'SetCuts' -> please give the MET cut: (enter to use default MET>100GeV)\n")
+        self.met_pt=str(met_pt) #if self.met_pt_in=='' else self.met_pt_in
 
         #self.var1='fabs(fabs(llnunu_deltaPhi)-TMath::Pi()/2)'
         #self.var2='cos(llnunu_deltaPhi)/fabs(cos(llnunu_deltaPhi))'

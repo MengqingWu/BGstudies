@@ -190,7 +190,7 @@ class InitializePlotter:
         if addData:
             for sample in self.dataSamples:
                 if doElMu and scaleElMu:
-                    dataPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree', weight='1.51'))
+                    dataPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree')) #, weight='1.51'
                     dataPlotters[-1].addCorrectionFactor('Melmu_sf','tree')
                 else:
                     dataPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))

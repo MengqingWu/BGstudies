@@ -248,7 +248,8 @@ class StackPlotter(object):
                   output = 'out', outDir='.',
                   separateSignal=False,
                   drawtex="", channel="",
-                  blinding=False, blindingCut=100.0, xbins=[]):
+                  blinding=False, blindingCut=100.0, xbins=[],
+                  doErrorBand=True):
 
         fout = ROOT.TFile(outDir+'/'+output+'.root', 'recreate')
 
@@ -407,7 +408,17 @@ class StackPlotter(object):
             hline.Draw('HIST,SAME')
             hratio.Draw('P,SAME')
                 
-
+        if doErrorBand: # draw error band for the stack
+            herror=copy.deepcopy(stack.GetHists().At(0))
+            herror.Clear()
+            for ihist in stack.GetHists():
+                herror.Add(ihist)
+            herror.SetFillColor(ROOT.kBlue)
+            herror.SetFillStyle(3345)
+            herror.SetMarkerSize(0)
+            p1.cd()
+            herror.Draw("e2,0,same")
+            
         # blinding mask 
         if blinding : 
             hmask_data = dataH.Clone(output+'_'+"hmask_data")
