@@ -28,12 +28,13 @@ tag = tag0+'_'+'test'
 outTag=outdir+'/'+tag
 
 #  ll in Z | ll out Z
-# --------------------  M_out [35,65] U [115,120]
+# --------------------  M_out [50,65] U [115,120]
 #  eu in Z | eu out Z
 #  M_in (70,110)
 
 ### ----- Initialize (samples):
 plotter_ll=InitializePlotter(indir, addSig=False, addData=True,doRatio=True, LogY=logy)
+# scaleElMu switched off because shape scaled to give numbers in this code:
 plotter_eu=InitializePlotter(indir, addSig=False, addData=True,doRatio=True, doElMu=True, scaleElMu=False, LogY=logy)
 setcuts=SetCuts()
 cuts=setcuts.GetAlphaCuts(zpt_cut=zpt_cut, met_cut=met_cut)
@@ -47,10 +48,10 @@ ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
 ### ----- Execute (plotting):
 
 #Inclusive stack plot:
-plotter_ll.Stack.drawStack('llnunu_l1_mass', cuts['ll']['inclusive'], str(lumi*1000), 20, 0.0, 200.0, titlex = "M_{Z}^{ll}", units = "GeV",
+plotter_ll.Stack.drawStack('llnunu_l1_mass', cuts['ll']['inclusive'], str(lumi*1000), 13, 50.0, 180.0, titlex = "M_{Z}^{ll}", units = "GeV",
                            output=tag+'_mll',outDir=outdir, separateSignal=True,
                            drawtex="", channel="")
-plotter_eu.Stack.drawStack('elmununu_l1_mass', cuts['emu']['inclusive'], str(lumi*1000), 20, 0.0, 200.0, titlex = "M_{Z}^{e#mu}", units = "GeV",
+plotter_eu.Stack.drawStack('elmununu_l1_mass', cuts['emu']['inclusive'], str(lumi*1000), 13, 50.0, 180.0, titlex = "M_{Z}^{e#mu}", units = "GeV",
                            output=tag+'_melmu',outDir=outdir, separateSignal=True,
                            drawtex="", channel="")
 
@@ -59,8 +60,8 @@ plotter_eu.Stack.drawStack('elmununu_l1_mass', cuts['emu']['inclusive'], str(lum
 histo=OrderedDict() # will have histo[<reg>][<member>]=h1
 yields=OrderedDict() # will have yields[<reg><zmass>][<member>]=yield
 err=OrderedDict() # will have yields[<reg><zmass>][<member>]=err
-var_dic=OrderedDict({'emu': ['elmununu_l1_mass', (40, 0.0, 200.0)],
-                     'll': ['llnunu_l1_mass', (40, 0.0, 200.0)]}) # in format: var_dic[<reg>]=[<var>, (nbins, xmin, xmax)]
+var_dic=OrderedDict({'emu': ['elmununu_l1_mass', (26, 50.0, 180.0)],
+                     'll': ['llnunu_l1_mass', (26, 50.0, 180.0)]}) # in format: var_dic[<reg>]=[<var>, (nbins, xmin, xmax)]
 members={'ll': {'nonres': plotter_ll.NonResBG,
                 'res': plotter_ll.ResBG,
                 'dt': plotter_ll.Data},
@@ -110,7 +111,7 @@ sfFile.Close()
 
 
 # compute yields/err for the in/out regions:
-xRange={'out':(35,65,115,180), 'in':(70,110)}
+xRange={'out':(50,65,115,180), 'in':(70,110)}
 for Reg in histo:
     for zmass in xRange:
         yields[Reg+zmass]=OrderedDict()
@@ -165,7 +166,8 @@ outtxt.close()
 
 os.system('cat '+outtxt.name)
 
-# Draw the m_ll in z window with data-driven non-res bkg
+exit(0)
+#--> Draw the m_ll in z window with data-driven non-res bkg
 h_mll_nonres_dd=copy.deepcopy(histo['emu'][whichdt])
 h_mll_nonres_dd.Scale(eval(sf))
 #h_mll_nonres_dd.Rebin(2)
