@@ -10,9 +10,9 @@ from python.SimplePlot import *
 
 
 class StackZjetsDD:
-    def __init__(self, indir="./METSkim_v1", outdir='./output/stacker/',
-                 channel='inclusive',  whichregion='SR', zpt_cut='100', met_cut= '100',  lumi = 2.318278305,  
-                 sepSig=True, LogY=True, doRatio=True, addSig=True, addData=True, scaleDphi=False, onlyStats=False):
+    def __init__(self, indir="./inds", outdir='./output/stacker/',
+                 channel='inclusive',  whichregion='SR', zpt_cut='100', met_cut= '100',  lumi = 12.9,  
+                 sepSig=True, LogY=True, doRatio=True, addSig=True, addData=True, onlyStats=False):
         self.outdir=outdir
         self.channel=channel
         self.whichregion=whichregion
@@ -22,21 +22,22 @@ class StackZjetsDD:
         #channel='inclusive'#raw_input("Please choose a channel (el or mu): \n")
         self.tag0='ZJstudy'
                 
-        self.plotter_dd = InitializePlotter(indir=indir, addSig=addSig, addData=addData, doRatio=doRatio, scaleDphi=scaleDphi, onlyStats=onlyStats)
+        #self.plotter_dd = InitializePlotter(indir=indir, addSig=addSig, addData=addData, doRatio=doRatio, onlyStats=onlyStats)
 
         self.plotter = InitializePlotter(indir=indir, addSig=addSig, addData=addData, doRatio=doRatio, onlyStats=onlyStats)
-        self.plotter.Stack.rmPlotter(self.plotter.ZJets, "ZJets","Z+Jets", "background")
+        #self.Stack = self.plotter.GetStack(outdir=outdir, outtag=tag+'_'+whichregion+'_'+channel+'_absDphi')
+        #self.plotter.Stack.rmPlotter(self.plotter.ZJets, "ZJets","Z+Jets", "background")
         
         setcuts = SetCuts()
         self.cuts_eld = setcuts.abcdCuts(channel=self.channel, whichRegion=whichregion, zpt_cut=zpt_cut, met_cut=met_cut)
-        zjcuts = setcuts.GetZjetsCuts(whichRegion=whichregion, zpt_cut=zpt_cut, met_cut=met_cut)
-        self.cuts = zjcuts[self.channel]
+        self.zjcuts = setcuts.GetZjetsCuts(whichRegion=whichregion, zpt_cut=zpt_cut, met_cut=met_cut)
+        self.cuts = self.zjcuts[self.channel]
         
         # self.fabsDphi={'A': "fabs(llnunu_deltaPhi)",
         #                'B': "fabs(llnunu_deltaPhi)+TMath::Pi()/4",
         #                'C': "fabs(llnunu_deltaPhi)+TMath::Pi()/2",
         #                'D': "fabs(llnunu_deltaPhi)+TMath::Pi()*3/4"}
-        self.fabsDphi="fabs(llnunu_deltaPhi)"
+        self.fabsDphi="fabs(TVector2::Phi_mpi_pi(llnunu_l2_phi-llnunu_l1_phi))" 
         
         # et1="TMath::Sqrt(llnunu_l1_pt*llnunu_l1_pt+llnunu_l1_mass*llnunu_l1_mass)"
         # et2="TMath::Sqrt(llnunu_l2_pt*llnunu_l2_pt+llnunu_l1_mass*llnunu_l1_mass)"
@@ -58,12 +59,15 @@ class StackZjetsDD:
         ROOT.gStyle.SetPadLeftMargin(0.15)
 
     def GetAllmcRegA(self):
-        stackTag = self.tag0+'_'+'stacker'+'_'+self.whichregion+'_'+self.channel+'_'+'regTrg'+'_'+'allMC'
-        self.plotter.Stack.addPlotter(self.plotter.ZJets, "ZJets","Z+Jets", "background")
-        self.plotter.Stack.drawStack(self.Mt, self.cuts['regTrg'], str(self.lumi*1000), self.mtnbins, self.mtxmin, self.mtxmax, titlex = "M_{T}^{ZZ}", units = "GeV",
-                                     output=stackTag, outDir=self.outdir, separateSignal=True,
-                                     drawtex=self.whichregion+' selection', channel=self.channel, xbins=self.mtxbins)
-        self.plotter.Stack.rmPlotter(self.plotter.ZJets, "ZJets","Z+Jets", "background")
+        #stackTag = self.tag0+'_'+'stacker'+'_'+self.whichregion+'_'+self.channel+'_'+'regTrg'+'_'+'allMC'
+        stackTag = '_'.join([self.tag0,'stacker',self.whichregion,'met'+self.met_cut,'3channels','regTrg','allMC'])
+        
+        Stack = self.plotter.GetStack(outdir=self.outdir, outtag=stackTag, lumi=self.lumi)
+        for lepChan in ['mu','el','inclusive']:
+            Stack.drawStack(self.Mt, self.zjcuts[lepChan]['regTrg'], str(self.lumi*1000), self.mtnbins, self.mtxmin, self.mtxmax, titlex = "M_{T}^{ZZ}", units = "GeV",
+                            output=stackTag, outDir=self.outdir, separateSignal=True,
+                            drawtex=self.whichregion+' selection', channel=lepChan, xbins=self.mtxbins)
+        Stack.closePSFile()
         return
     
     def GetYieldCorr(self, plotter=None):
@@ -90,14 +94,17 @@ class StackZjetsDD:
         return  ratio                                                                                                 \
         
     def drawDataDrivenStack(self): # draw MT
-        stackTag = self.tag0+'_'+'stacker'+'_'+self.whichregion+'_'+self.channel+'_'+'regTrg'+'_'+'absDphi'
+        stackTag = '_'.join([self.tag0, 'stacker', self.whichregion, self.channel, 'regTrg', 'absDphi'])
+        
         outTag=self.outdir+'/'+stackTag
+        Stack = self.plotter.GetStack(outdir=self.outdir, outtag=stackTag, lumi=self.lumi)
+        Stack.rmPlotter(self.plotter.ZJets, "ZJets","Z+Jets", "background")
 
         ### ----- Execute (plotting):
-        self.plotter.Stack.drawStack(self.Mt, self.cuts['regTrg'], str(self.lumi*1000), self.mtnbins, self.mtxmin, self.mtxmax, titlex = "M_{T}^{ZZ}", units = "GeV",
-                                     output=stackTag, outDir=self.outdir, separateSignal=True,
-                                     drawtex=self.whichregion+' selection', channel=self.channel, xbins=self.mtxbins) # if xbins not empty, binned drawn
-
+        Stack.drawStack(self.Mt, self.cuts['regTrg'], str(self.lumi*1000), self.mtnbins, self.mtxmin, self.mtxmax, titlex = "M_{T}^{ZZ}", units = "GeV",
+                        output=stackTag, outDir=self.outdir, separateSignal=True,
+                        drawtex=self.whichregion+' selection', channel=self.channel, xbins=self.mtxbins) # if xbins not empty, binned drawn
+        Stack.closePSFile()
         #-> Use the CR data yield scaled by MC ratio 
         hcr=self.plotter.Data.drawTH1Binned('regCtrl', self.Mt, self.cuts['regCtrl'],'1', self.mtxbins, titlex = "M_{T}^{ZZ}", unitsx = "GeV") 
         subCtrl=self.plotter.NonZBG.drawTH1Binned('subregCtrl',self.Mt,self.cuts['regCtrl'],str(self.lumi*1000), self.mtxbins,titlex = "M_{T}^{ZZ}", unitsx="GeV") 
@@ -127,7 +134,7 @@ class StackZjetsDD:
         hdata=fstack.Get(stackTag+'_data0')
         legend=fstack.Get(stackTag+'_legend')
             
-        hsig1=fstack.Get(stackTag+'_BulkGravToZZToZlepZinv_narrow_800')
+        hsig1=fstack.Get(stackTag+'_BulkGravToZZToZlepZinv_narrow_600')
         hsig2=fstack.Get(stackTag+'_BulkGravToZZToZlepZinv_narrow_1000')
         hsig3=fstack.Get(stackTag+'_BulkGravToZZToZlepZinv_narrow_1200')
         fstack.Close()
@@ -163,11 +170,11 @@ class StackZjetsDD:
                          outDir=self.outdir, output=stackTag+"_datadriven", channel=ROOT.TString(self.channel),
                          xmin= self.mtxmin, xmax= self.mtxmax, xtitle="M_{T}^{ZZ}" ,units="GeV",
                          lumi=self.lumi, notes=self.whichregion+" selection",
-                         drawSig=True, hsig=[hsig1,hsig2,hsig3])
+                         drawSig=False, hsig=[hsig1,hsig2,hsig3])
         return
 
     def ValidateDphiShapeCorr(self, indir, whichvar='fabsDphi', isNormalized=True, yieldCorr=False, whichbcd='ZJets',
-                              scaleDphi=True, onlyStats=False, logy=True,suffix=''):
+                              onlyStats=False, logy=True,suffix=''):
         """ use shape correction that is derived from MC to apply to all the MC samples to validate the 'dphi_sf' algorithm 
         whichvar=(absDphi, mt, zpt, met)
         """
@@ -175,12 +182,13 @@ class StackZjetsDD:
         if isNormalized: yieldCorr=False
         lumi_str='1' if isNormalized else str(self.lumi*1000)
         
-        validatorMC=InitializePlotter(indir=indir, addSig=False, addData=False, doRatio=False, scaleDphi=scaleDphi,onlyStats=onlyStats)
-        zjetsMC    =InitializePlotter(indir=indir, addSig=False, addData=False, doRatio=False, scaleDphi=False,    onlyStats=onlyStats)
+        validatorMC=InitializePlotter(indir=indir, addSig=False, addData=False, doRatio=False, onlyStats=onlyStats)
+        zjetsMC    =InitializePlotter(indir=indir, addSig=False, addData=False, doRatio=False, onlyStats=onlyStats)
         
         nom_suffix='normalized' if isNormalized else 'yield'
-        leg_suffix='corr.' if scaleDphi else ''
-
+        #leg_suffix='corr.' if scaleDphi else ''
+        leg_suffix=''
+        
         compareTagseq=[self.tag0, 'closureTest',self.whichregion,self.channel, whichvar, nom_suffix]
         nameseq=[whichvar, self.tag0, 'closureTest', self.whichregion, self.channel, 'met'+self.met_cut,'zpt'+self.zpt_cut,
                  leg_suffix+'bcd'+whichbcd, nom_suffix, suffix]

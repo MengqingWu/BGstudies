@@ -12,14 +12,16 @@ printfile = open('num_out.txt', 'a')
 
 Channel=raw_input("Please choose a channel (el or mu): \n")
 lsChannel=[]
-if Channel=="": lsChannel=['el', 'mu']
+if Channel=="": 
+    print "[info] default to use inclusive (el+mu)"
+    lsChannel=['el', 'mu']
 else: lsChannel.append(Channel)
 
 mycuts=SetCuts()
 
 tag0='ZJstudy'
 outdir='test'
-indir="./METSkim/"
+indir="./inds/"
 lumi=2.318278305
 doprint=True
 

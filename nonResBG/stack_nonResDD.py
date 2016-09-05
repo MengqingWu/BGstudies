@@ -18,12 +18,13 @@ class StackDataDriven:
     def __init__(self, indir="./nonResSkim_v3.0", outdir='stack_test',
                  lumi = 2.318278305,  sepSig=True,
                  LogY=True,   doRatio=True,
-                 addSig=True, addData=True):
+                 addSig=True, addData=True,
+                 zpt=100, met=0):
         if not os.path.exists(outdir): os.system('mkdir '+outdir)
         self.logy=LogY
         self.outdir = outdir
         self.lumi = lumi
-        self.plotter_eu=InitializePlotter(indir, addSig=False, addData=True, doRatio=doRatio, doElMu=True, LogY=LogY)
+        self.plotter_eu=InitializePlotter(indir, addSig=False, addData=True, doRatio=doRatio, doElMu=True, scaleElMu=True, LogY=LogY)
         self.plotter_ll=InitializePlotter(indir, addSig=addSig, addData=True, doRatio=doRatio, LogY=LogY)
         self.plotter_ll.Stack.rmPlotter(self.plotter_ll.TT, "TT","TT", "background")
         self.plotter_ll.Stack.rmPlotter(self.plotter_ll.WW, "WW","WW, WZ non-reson.", "background")
@@ -31,23 +32,40 @@ class StackDataDriven:
         
         self.setcuts=SetCuts()
         ROOT.gROOT.ProcessLine('.x ../src/tdrstyle.C')
-        self.zpt_cut, self.met_cut= '100', '0'
+        self.zpt_cut, self.met_cut= str(zpt), str(met)
         self.cuts=self.setcuts.GetAlphaCuts(zpt_cut=self.zpt_cut, met_cut=self.met_cut)
+
+    def getAlpha(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax):
+        h_ll_out_dt = self.plotter_ll.Data.drawTH1(var_ll+'_dt', var_ll, self.cuts['ll']['out'], '1',
+                                                   nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
+        h_res_out_mc = self.plotter_ll.ResBG.drawTH1(var_ll+'_mc', var_ll, self.cuts['ll']['out'], str(self.lumi*1000),
+                                                    nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
+        h_ll_out_dt.Add(h_res_out_mc, -1)
         
+        h_eu_out_dt = self.plotter_eu.Data.drawTH1(var_emu+'_dt', var_emu, self.cuts['emu']['out'], '1',
+                                                   nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
+        ig_ll_out_dt = h_ll_out_dt.Integral()
+        ig_eu_out_dt = h_eu_out_dt.Integral()
+        alpha = ig_ll_out_dt/ig_eu_out_dt
+        print "[info] alpha (N_llout/N_euout) = ", alpha
+        return alpha
+
     def drawDataDrivenMC(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax):
         
         h_nonRes_dd = self.plotter_eu.Data.drawTH1(var_emu, var_emu, self.cuts['emu']['in'], '1',
                                                    nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
         h_nonRes_mc = self.plotter_ll.NonResBG.drawTH1(var_ll, var_ll, self.cuts['ll']['in'], str(self.lumi*1000),
                                                        nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
-        
+        alpha = self.getAlpha(var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax)
+        h_nonRes_dd.Scale(alpha)
+
         drawCompareSimple(h_nonRes_dd, h_nonRes_mc, "non-reson. data-driven", "non-reson. MC",
                           xmin=xcutmin, xmax=xcutmax, outdir=self.outdir, notes="",
-                          tag='compare_dataDriven_MC'+'_'+var_ll, units=units, lumi=self.lumi, ytitle='events')
+                          tag='compare_dataDriven_MC'+'_'+var_ll, units=units, lumi=self.lumi, ytitle='events', setmax=10)
         return
     
     def drawDataDrivenStack(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax):
-        tag = 'stack_nonResDD'+'_'+'test'
+        tag = '_'.join(['stack_nonResDD','met'+self.met_cut,'test'])
         outTag = self.outdir+'/'+tag
         stackTag=tag+'_'+var_ll
                 
@@ -55,6 +73,10 @@ class StackDataDriven:
                                         output=stackTag, outDir=self.outdir, separateSignal=True, drawtex="", channel="")
         h_nonRes_dd = self.plotter_eu.Data.drawTH1(var_emu, var_emu, self.cuts['emu']['in'], '1',
                                                    nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
+
+        alpha = self.getAlpha(var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax)
+        h_nonRes_dd.Scale(alpha)
+
         h_nonRes_dd.SetFillColor(ROOT.kAzure-9)
         
         # Draw the m_ll in z window with data-driven non-res bkg

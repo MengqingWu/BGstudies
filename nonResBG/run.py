@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 from stack_nonResDD import *
 
-t=StackDataDriven()
+#t=StackDataDriven(indir="./nonResSkim_v3.1")
+t=StackDataDriven(indir="./nonResSkim_v3.2", met=100)
+#t=StackDataDriven(indir="./nonResSkim_v3.3", met=200)
 
 toplot={('llnunu_l1_mass', 'elmununu_l1_mass'): (40, 0.0, 200.0, "M_{Z}^{ll}", "GeV", 70.0, 110.0)}
 #toplot={('llnunu_l2_pt', 'elmununu_l2_pt'): (50, 0.0, 500.0, "E_{T}^{miss}", "GeV", 0.0, 500.0)}

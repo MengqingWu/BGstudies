@@ -105,7 +105,7 @@ def DrawTex(input_tex="", channel=""):
     return
     
 class StackPlotter(object):
-    def __init__(self,defaultCut="1",outDir='.', outTag="stack_plotter"):
+    def __init__(self,defaultCut="1",outDir='.', outTag="stack_plotter",lumi=12.9):
         self.plotters = []
         self.types    = []
         self.labels   = []
@@ -116,7 +116,7 @@ class StackPlotter(object):
         self.outDir=outDir
         self.outFileName=outDir+'/'+outTag
         self.doRatioPlot=False
-        self.paveText="#sqrt{s} = 13 TeV 2016 L = "+"{:.3}".format(float(12.9))+" fb^{-1}" # default one to be changed by setPaveText
+        self.paveText="#sqrt{s} = 13 TeV 2016 L = "+"{:.3}".format(float(lumi))+" fb^{-1}" # default one to be changed by setPaveText
 
         self.fout = ROOT.TFile.Open(self.outFileName+'.root', 'recreate')
         c1 = ROOT.TCanvas(self.outTag, self.outTag, 800, 1040);
@@ -130,6 +130,7 @@ class StackPlotter(object):
         c1 = ROOT.TCanvas(self.outTag, self.outTag);
         c1.Print(self.outFileName+'.ps]')
         c1.Print(self.outFileName+'.pdf]')
+        self.fout.Close()
         #ROOT.gROOT.ProcessLine('.! ps2pdf '+self.outFileName+'.ps '+self.outFileName+'.pdf')
         
     def setLog(self,doLog):
@@ -265,7 +266,8 @@ class StackPlotter(object):
                   output = 'out', outDir='.',
                   separateSignal=False,
                   blinding=False, blindingCut=100.0, fakeData=False,
-                  drawtex="", channel="", xbins=[]):
+                  drawtex="", channel="", xbins=[],
+                  doErrorBand=True):
 
         #fout = ROOT.TFile(outDir+'/'+output+'.root', 'recreate')
 
@@ -427,7 +429,19 @@ class StackPlotter(object):
             hline.Draw('HIST,SAME')
             hratio.Draw('P,SAME')
                 
-
+        if doErrorBand: # draw error band for the stack
+            herror=copy.deepcopy(stack.GetHists().At(0))
+            herror.Clear()
+            herror.SetName(output+'_'+'StackErrorband')
+            for ihist in stack.GetHists():
+                herror.Add(ihist)
+            herror.SetFillColor(ROOT.kBlue)
+            herror.SetFillStyle(3345)
+            herror.SetMarkerSize(0)
+            p1.cd()
+            herror.Draw("e2,0,same")
+            hists.append(herror)
+            
         # blinding mask 
         if blinding : 
             hmask_data = dataH.Clone(output+'_'+"hmask_data")
