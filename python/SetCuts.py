@@ -55,20 +55,22 @@ class SetCuts ():
         met+=met_cut if met_cut!='' else self.met_pt
                  
         astr = "({0}&&{4}&&{5})"
-        cuts_tmp = astr.format(*self.cutflow)
-        cuts_tmp+='&&'+zpt+'&&'+met
+        cuts_tmp = [astr.format(*self.cutflow)]
+        cuts_tmp += [zpt, met]
 
-        if Zmass=='inclusive': pass
-        elif Zmass=='out': cuts_tmp+="&&((llnunu_l1_mass>50.0&&llnunu_l1_mass<65.0)||(llnunu_l1_mass>115.0&&llnunu_l1_mass<180.0))"
-        elif Zmass=='in': cuts_tmp+="&&(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)"
+        zmass_sb ="((llnunu_l1_mass>50.0&&llnunu_l1_mass<65.0)||(llnunu_l1_mass>115.0&&llnunu_l1_mass<180.0))"
+        zmass_in = "(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)"
+        if Zmass == 'inclusive': pass
+        elif Zmass == 'out': cuts_tmp+=[zmass_sb]
+        elif Zmass == 'in':  cuts_tmp+=[zmass_in]
         else: raise RuntimeError, "[ERROR]! I do not understand the Zmass region you asked in alphaCuts(isll, Zmass) from SetCuts.py"
 
+        cuts = '&&'.join(cuts_tmp)
         if not isll:
-            cuts_tmp = ROOT.TString(cuts_tmp)
-            cuts_tmp.ReplaceAll("llnunu","elmununu")
-            cuts=cuts_tmp.Data()
-        else:  cuts=cuts_tmp
-        
+            cuts_trans = ROOT.TString(cuts)
+            cuts_trans.ReplaceAll("llnunu","elmununu")
+            cuts = cuts_trans.Data()
+         
         #print cuts
         return cuts
 

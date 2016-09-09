@@ -11,9 +11,21 @@ from python.SimplePlot import *
 
 
 #  ll in Z | ll out Z
-# --------------------  M_out [35,65] U [115,120]
+# --------------------  M_out [50,65] U [115,180]
 #  eu in Z | eu out Z
 #  M_in (70,110)
+
+""" 
+the M_ll shape reweight is done as:
+   f(non_res, data_ll) =  f(res+non_res, data_eu) * f(non_res, mc_ll)/f(res+non_res, mc_eu)
+to account for selection efficiency differed bin by bin in M_ll distribution.
+
+   alpha = N(non_res, data, ll_out) / N(non_res, data, eu_out)
+where:
+N(non_res, data, ll_out) substracts the res-bkg using MC
+N(non_res, data, eu_out) refers to the data(non_res+res) reweighted to f(non_res, data_ll).
+"""
+
 class StackDataDriven:
     def __init__(self, indir="./nonResSkim_v3.0", outdir='stack_test',
                  lumi = 2.318278305,  sepSig=True,
@@ -24,7 +36,10 @@ class StackDataDriven:
         self.logy=LogY
         self.outdir = outdir
         self.lumi = lumi
+
+        # plotter_eu: the MuonEG data has the weight (scaleElMu) which reweights Meu as Mll distribution using MC
         self.plotter_eu=InitializePlotter(indir, addSig=False, addData=True, doRatio=doRatio, doElMu=True, scaleElMu=True, LogY=LogY)
+
         self.plotter_ll=InitializePlotter(indir, addSig=addSig, addData=True, doRatio=doRatio, LogY=LogY)
         self.plotter_ll.Stack.rmPlotter(self.plotter_ll.TT, "TT","TT", "background")
         self.plotter_ll.Stack.rmPlotter(self.plotter_ll.WW, "WW","WW, WZ non-reson.", "background")
@@ -35,32 +50,45 @@ class StackDataDriven:
         self.zpt_cut, self.met_cut= str(zpt), str(met)
         self.cuts=self.setcuts.GetAlphaCuts(zpt_cut=self.zpt_cut, met_cut=self.met_cut)
 
-    def getAlpha(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax):
-        h_ll_out_dt = self.plotter_ll.Data.drawTH1(var_ll+'_dt', var_ll, self.cuts['ll']['out'], '1',
-                                                   nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
+    def GetAlpha(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax, isTest=False):
+        
+        data_ll = self.plotter_ll.allBG if isTest else self.plotter_ll.Data
+        data_eu = self.plotter_eu.allBG if isTest else self.plotter_eu.Data
+        lumi_str = str(self.lumi*1000) if isTest else '1'
+        
+        h_ll_out_dt = data_ll.drawTH1(var_ll+'_dt', var_ll, self.cuts['ll']['out'], lumi_str,
+                                      nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
         h_res_out_mc = self.plotter_ll.ResBG.drawTH1(var_ll+'_mc', var_ll, self.cuts['ll']['out'], str(self.lumi*1000),
                                                     nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
         h_ll_out_dt.Add(h_res_out_mc, -1)
         
-        h_eu_out_dt = self.plotter_eu.Data.drawTH1(var_emu+'_dt', var_emu, self.cuts['emu']['out'], '1',
-                                                   nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
+        h_eu_out_dt = data_eu.drawTH1(var_emu+'_dt', var_emu, self.cuts['emu']['out'], lumi_str,
+                                      nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
+        
         ig_ll_out_dt = h_ll_out_dt.Integral()
         ig_eu_out_dt = h_eu_out_dt.Integral()
         alpha = ig_ll_out_dt/ig_eu_out_dt
-        print "[info] alpha (N_llout/N_euout) = ", alpha
+        print "\n[info] alpha (N_llout/N_euout) = ", alpha
+
         return alpha
         
-    def drawDataDrivenMC(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax):
+    def compareDataDrivenMC(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax, isTest=False):
+
+        data_eu = self.plotter_eu.allBG if isTest else self.plotter_eu.Data
+        lumi_str = str(self.lumi*1000) if isTest else '1'
+        compareTag = 'compare_dataDriven_MC'+'_'+var_ll
+        if isTest: compareTag += '_closureTest'
         
-        h_nonRes_dd = self.plotter_eu.Data.drawTH1(var_emu, var_emu, self.cuts['emu']['in'], '1',
-                                                   nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
+        h_nonRes_dd = data_eu.drawTH1(var_emu, var_emu, self.cuts['emu']['in'], lumi_str,
+                                      nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
         h_nonRes_mc = self.plotter_ll.NonResBG.drawTH1(var_ll, var_ll, self.cuts['ll']['in'], str(self.lumi*1000),
                                                        nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
-        alpha = self.getAlpha(var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax)
+        alpha = self.GetAlpha(var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax, isTest=isTest)
         h_nonRes_dd.Scale(alpha)
+        
         drawCompareSimple(h_nonRes_dd, h_nonRes_mc, "non-reson. data-driven", "non-reson. MC",
                           xmin=xcutmin, xmax=xcutmax, outdir=self.outdir, notes="",
-                          tag='compare_dataDriven_MC'+'_'+var_ll, units=units, lumi=self.lumi, ytitle='events', setmax=10)
+                          tag = compareTag, units='', lumi=self.lumi, ytitle='events', setmax=10)
         return
     
     def drawDataDrivenStack(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax):
@@ -73,7 +101,7 @@ class StackDataDriven:
         h_nonRes_dd = self.plotter_eu.Data.drawTH1(var_emu, var_emu, self.cuts['emu']['in'], '1',
                                                    nbinsx, xmin, xmax, titlex = titlex, units = units, drawStyle="HIST")
 
-        alpha = self.getAlpha(var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax)
+        alpha = self.GetAlpha(var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax)
         h_nonRes_dd.Scale(alpha)
         
         h_nonRes_dd.SetFillColor(ROOT.kAzure-9)
@@ -131,4 +159,15 @@ class StackDataDriven:
                          xmin=xcutmin, xmax=xcutmax, xtitle=titlex ,units=units,
                          lumi=self.lumi, notes="no E_{T}^{miss}/P_{T}^{Z} cuts",
                          drawSig=True, hsig=[hsig1, hsig2, hsig3])
+        return
+
+    def doClosureTest(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax):
+        """ taking all MC samples as if they are the data to inject to:
+        f(non_res, data_ll) =  f(res+non_res, data_eu) * f(non_res, mc_ll)/f(res+non_res, mc_eu)
+        target: compare the data-driven technique predicted non-res in data_ll, with the MC_ll expectation.
+        """
+        print "\n[info] A closure TEST will be performed: take ALL MC as the data to inject to the estimate technique :D"
+        print "[Processing] I am comparing data-driven result w.r.t. MC expectation"
+        self.compareDataDrivenMC(var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax, isTest=True)
+        
         return

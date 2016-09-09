@@ -20,9 +20,8 @@ tag0='nonResBkg'
 outdir='test'
 lumi=2.318278305
 logy=True
-zpt_cut, met_cut= '100', '100'
+zpt_cut, met_cut= '100', '200'
 
-doPrediction=True
 indir="./nonResSkim_v2"
 # v2 used for producing shape_correction.root
 # v3.1 is the new Zjets cut applied (with left SB starting from 50GeV)
@@ -34,13 +33,14 @@ tag = tag0+'_'+'test'
 outTag=outdir+'/'+tag
 
 #  ll in Z | ll out Z
-# --------------------  M_out [50,65] U [115,120]
+# --------------------  M_out [50,65] U [115,180]
 #  eu in Z | eu out Z
 #  M_in (70,110)
 
 ### ----- Initialize (samples):
-plotter_ll=InitializePlotter(indir, addSig=False, addData=True,doRatio=True, LogY=logy)
-plotter_eu=InitializePlotter(indir, addSig=False, addData=True,doRatio=True, doElMu=True, LogY=logy)
+plotter_ll=InitializePlotter(indir, addSig=True, addData=True,doRatio=True, LogY=logy)
+# scaleElMu switched off because shape scaled to give numbers in this code:
+plotter_eu=InitializePlotter(indir, addSig=False, addData=True,doRatio=True, doElMu=True, scaleElMu=False, LogY=logy)
 setcuts=SetCuts()
 cuts=setcuts.GetAlphaCuts(zpt_cut=zpt_cut, met_cut=met_cut)
 
@@ -60,7 +60,6 @@ plotter_eu.Stack.drawStack('elmununu_l1_mass', cuts['emu']['inclusive'], str(lum
                            output=tag+'_melmu',outDir=outdir, separateSignal=True,
                            drawtex="", channel="")
 
-#exit(0)
 # Make numbers:
 histo=OrderedDict() # will have histo[<reg>][<member>]=h1
 yields=OrderedDict() # will have yields[<reg><zmass>][<member>]=yield

@@ -9,11 +9,9 @@ from python.InitializePlotter import InitializePlotter
 from python.HistPrinter import mergePrinter
 from python.SimplePlot import *
 
-outtxt = open('closure_test.txt', 'a')
-
 #Channel=raw_input("Please choose a channel (el or mu): \n")
 tag0='nonResBkg'
-outdir='closureTest'
+outdir='./closureTest'
 indir="./nonResSkim_v2"
 lumi=2.318278305
 zpt_cut, met_cut= '100', '0'
@@ -21,6 +19,9 @@ if not os.path.exists(outdir): os.system('mkdir '+outdir)
 
 tag = tag0+'_'+'test'
 outTag=outdir+'/'+tag
+
+outtxt = open(outdir+'/closure_test.txt', 'a')
+
 
 bkg='nonRes' #'ttbar' 
 
@@ -81,7 +82,7 @@ h_Meu_shape_mc.Scale(1./Integral_Meu_yield_mc)
 h_Meu_yield_mc_corr=copy.deepcopy(h_Mll_shape_mc)
 h_Meu_yield_mc_corr.Scale(Integral_Meu_yield_mc)
 
-ftest=ROOT.TFile(outdir+"test.root","recreate")
+ftest=ROOT.TFile(outdir+"/test.root","recreate")
 ROOT.TH1.AddDirectory(ROOT.kFALSE)
 h_Mll_shape_mc.Write()
 h_Meu_yield_mc.Write()

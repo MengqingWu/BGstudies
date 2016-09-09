@@ -82,7 +82,7 @@ class StackZjetsDD:
         rAC=iga/igc
         rAD=iga/igd
         print "[info] yield ratios: A/B=%.2f, A/C=%.2f, A/D=%.2f" % (rAB, rAC, rAD)
-        return   rAB, rAC, rAD                                                                                                 \
+        return   rAB, rAC, rAD                                                                                                 
         
     def drawDataDrivenStack(self): # draw MT
         stackTag = self.tag0+'_'+'stacker'+'_'+self.whichregion+'_'+self.channel+'_'+'regA'+'_'+'absDphi'

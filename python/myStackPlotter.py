@@ -460,8 +460,9 @@ class StackPlotter(object):
         p1.Update()
         c1.Update()
 
-        c1.Print(outDir+'/'+output+'.eps')
-        os.system('epstopdf '+outDir+'/'+output+'.eps')
+        c1.SaveAs(outDir+'/'+output+'.eps')
+        c1.SaveAs(outDir+'/'+output+'.pdf')
+        #os.system('epstopdf '+outDir+'/'+output+'.eps')
        
         fout.cd()
         c1.Write() 
