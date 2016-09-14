@@ -192,7 +192,9 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
                      outDir="./", output="output", channel="",
                      xmin=50., xmax=500., xtitle="" ,units="",
                      lumi=2.169, notes="", drawSig=False, hsig=[]):
-    
+    TH1.SetDefaultSumw2()
+    gROOT.ProcessLine('.x ../src/tdrstyle.C')
+            
     fout = TFile(outDir+'/'+output+'_'+channel.Data()+'.root', 'recreate')
         
     c1 = TCanvas(output+'_'+"c1", "c1", 600, 750); c1.Draw()
@@ -214,7 +216,7 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
     p1.cd()
     frame.Draw()
     hstack.Draw(hstack_opt+", same")
-    hdata.Draw("Psame")
+    hdata.Draw("P,E1,same")
     if drawSig and len(hsig)!=0:
         for ihsig in hsig: ihsig.Draw("HIST, same")
     legend.Draw("same")
@@ -241,7 +243,7 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
     p2.cd()
     hratio.Draw('AXIS')
     hline.Draw('HIST,SAME')
-    hratio.Draw('P,SAME')
+    hratio.Draw('P,E1,SAME')
     hratio.GetXaxis().SetRangeUser(xmin,xmax)
     hline.GetXaxis().SetRangeUser(xmin,xmax)
     
@@ -284,7 +286,7 @@ def drawCompare(hstack, hratio, legend,
                 hstack_opt="nostack",outdir="./",tag="test",
                 xmin=50., xmax=500., xtitle="" , ytitle="Events", units="",
                 lumi=2.169, logy=True, notes="", setmax=0):
-
+    TH1.SetDefaultSumw2()
     fout = TFile(outdir+'/'+tag+'.root', 'recreate')
     
     c1 = TCanvas(tag+"_c1", "c1", 600, 750); c1.Draw()
@@ -334,7 +336,7 @@ def drawCompare(hstack, hratio, legend,
     p2.cd()
     hratio.Draw('AXIS')
     hline.Draw('HIST,SAME')
-    hratio.Draw('P,SAME')
+    hratio.Draw('P,E1,SAME')
     hratio.GetXaxis().SetRangeUser(xmin,xmax)
 
     if logy:    p1.SetLogy()

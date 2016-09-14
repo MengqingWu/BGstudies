@@ -25,11 +25,14 @@ def convertToPoisson(h,blinding=False,blindingCut=100):
         graph.SetPoint(igrbin,x,y)
         graph.SetPointEYlow(igrbin,yLow)
         graph.SetPointEYhigh(igrbin,yHigh)
-        graph.SetPointEXlow(igrbin,0.0)
-        graph.SetPointEXhigh(igrbin,0.0)
+
+        #print "[debug]: bin",i,",x=",x,", range in (",xLow, ",",xHigh,")",", Y range in (",yLow, ",",yHigh,")"
+                                    
+        graph.SetPointEXlow(igrbin,x-xLow) 
+        graph.SetPointEXhigh(igrbin,xHigh-x) 
+        #graph.SetPointEXlow(igrbin,0.0)
+        #graph.SetPointEXhigh(igrbin,0.0)
         igrbin += 1
-
-
 
     graph.SetMarkerStyle(20)
     graph.SetLineWidth(2)
@@ -133,6 +136,7 @@ class StackPlotter(object):
         
     def createStack(self, stack, var, cut, lumi, bins, mini, maxi, titlex, units,
                     separateSignal, output, blinding, blindingCut):
+        
         hists=[]
         signal=0
         background=0
@@ -343,7 +347,7 @@ class StackPlotter(object):
             if typeP != "data" and typeP !='signal':
                 legend.AddEntry(histo,label,"f")
             elif typeP == 'data':
-                legend.AddEntry(histo,label,"p")
+                legend.AddEntry(histo,label,"lpe")
 
         for (histo,label,typeP) in reversed(zip(hists,self.labels,self.types)):
             if typeP == "signal":
@@ -406,7 +410,7 @@ class StackPlotter(object):
             p2.cd()
             hratio.Draw('AXIS')
             hline.Draw('HIST,SAME')
-            hratio.Draw('P,SAME')
+            hratio.Draw('P,E1,SAME')
                 
         if doErrorBand: # draw error band for the stack
             herror=copy.deepcopy(stack.GetHists().At(0))
