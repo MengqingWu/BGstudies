@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+"""
+code used to update these code with CMGTools/XZZ2l2nu/tools/plotting/
+"""
+
 from InitializePlotter import *
 from SetCuts import *
 
