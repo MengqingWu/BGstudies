@@ -13,10 +13,16 @@ class InitializePlotter:
                  doElMu=False, scaleElMu=False,
                  scaleDphi=False, onlyStats=False,
                  sigK=1000):
+
+        self.addData=addData
+	self.addSig=addSig
+        self.LogY=LogY
+        self.doRatio=doRatio
         
         if doElMu:
             lepsf='elmununu_l1_l1_lepsf*elmununu_l1_l2_lepsf'
             triggersf='triggersf_elmu'
+            #triggersf='1'
         else:
             lepsf='llnunu_l1_l1_lepsf*llnunu_l1_l2_lepsf'
             triggersf='triggersf'
@@ -164,7 +170,7 @@ class InitializePlotter:
             'BulkGravToZZToZlepZinv_narrow_1200' : 4.76544e-05*sigk,
         }
         
-        if addSig:
+        if self.addSig:
             for sample in self.sigSamples:
                 self.sigPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
                 if not onlyStats:
@@ -188,7 +194,7 @@ class InitializePlotter:
                                 'SingleElectron_Run2015D_16Dec',
                                 'SingleMuon_Run2015C_25ns_16Dec',
                                 'SingleMuon_Run2015D_16Dec']
-        if addData:
+        if self.addData:
             for sample in self.dataSamples:
                 if doElMu and scaleElMu:
                     dataPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree')) #, weight='1.51'
@@ -205,22 +211,25 @@ class InitializePlotter:
             self.Data = None
             print "[Info] I do not add Data samples to plot "
             
-        self.Stack = StackPlotter()
-        if addData: self.Stack.addPlotter(self.Data, "data_obs", "Data", "data")
-        self.Stack.addPlotter(self.WJets, "WJets","W+Jets", "background")
-        self.Stack.addPlotter(self.WW, "WW","WW, WZ non-reson.", "background")
-        self.Stack.addPlotter(self.TT, "TT","TT", "background")
-        self.Stack.addPlotter(self.VV, "ZZ","ZZ, WZ reson.", "background")
-        self.Stack.addPlotter(self.ZJets, "ZJets","Z+Jets", "background")
+ 
         
-        if addSig:
+    def GetStack(self, customize=[]):
+        """ customize is to have list of plotters for an output Stack (TBD) """
+        Stack = StackPlotter()
+        if self.addData: Stack.addPlotter(self.Data, "data_obs", "Data", "data")
+        Stack.addPlotter(self.WJets, "WJets","W+Jets", "background")
+        Stack.addPlotter(self.WW, "WW","WW, WZ non-reson.", "background")
+        Stack.addPlotter(self.TT, "TT","TT", "background")
+        Stack.addPlotter(self.VV, "ZZ","ZZ, WZ reson.", "background")
+        Stack.addPlotter(self.ZJets, "ZJets","Z+Jets", "background")
+        
+        if self.addSig:
             for i in range(len(self.sigSamples)):
                 self.sigPlotters[i].setLineProperties(2,ROOT.kRed+i,2)
-                self.Stack.addPlotter(self.sigPlotters[i],self.sigSamples[i],self.sigSampleNames[i],'signal')  
+                Stack.addPlotter(self.sigPlotters[i],self.sigSamples[i],self.sigSampleNames[i],'signal')  
 
-        self.Stack.setLog(LogY)
-        self.Stack.doRatio(doRatio)
+        Stack.setLog(self.LogY)
+        Stack.doRatio(self.doRatio)
         
-    def GetStack(self):
-        return self.Stack
+        return Stack
 

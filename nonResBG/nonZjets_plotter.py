@@ -20,10 +20,10 @@ tag0='nonResBkg'
 outdir='test'
 lumi=2.318278305
 logy=True
-zpt_cut, met_cut= '100', '200'
+zpt_cut, met_cut= '100', '0'
 
-indir="./nonResSkim_v2"
-# v2 used for producing shape_correction.root
+indir="./nonResSkim"
+# no tag used for producing shape_correction.root
 # v3.1 is the new Zjets cut applied (with left SB starting from 50GeV)
 # v3.0 is the new Zjets cut applied, shape corrected dir
 # correct prediction needs shape corrected samples as input

@@ -49,7 +49,10 @@ class SetCuts ():
         return srCuts
     
     # Cuts used for alpha-method to estimate non-resonant bkgs
-    def alphaCuts(self, isll=True, Zmass='inclusive', zpt_cut='', met_cut=''):
+    def alphaCuts(self, isll=True, Zmass='inclusive', zpt_cut='', met_cut='', side='both'):
+        """
+        side to choose 'both', 'left' or 'right'
+        """
         zpt, met = 'llnunu_l1_pt>','llnunu_l2_pt>'
         zpt+=zpt_cut if zpt_cut!='' else '100.0'
         met+=met_cut if met_cut!='' else self.met_pt
@@ -58,12 +61,18 @@ class SetCuts ():
         cuts_tmp = [astr.format(*self.cutflow)]
         cuts_tmp += [zpt, met]
 
-        zmass_sb ="((llnunu_l1_mass>50.0&&llnunu_l1_mass<65.0)||(llnunu_l1_mass>115.0&&llnunu_l1_mass<180.0))"
+        left_sb  = "(llnunu_l1_mass>50.0&&llnunu_l1_mass<65.0)"
+        right_sb = "(llnunu_l1_mass>115.0&&llnunu_l1_mass<180.0)"
+        if side=='left':     zmass_sb = left_sb
+        elif side=='right':  zmass_sb = right_sb
+        elif side=='both':   zmass_sb ="(" + left_sb + "||" + right_sb + ")"
+        else: raise RuntimeError, "[ERROR]! I do not understand the Sideband = ["+side+"] you want for non-reso. bkg CR! (from SetCuts.py)"
+        
         zmass_in = "(llnunu_l1_mass>70.0&&llnunu_l1_mass<110.0)"
         if Zmass == 'inclusive': pass
         elif Zmass == 'out': cuts_tmp+=[zmass_sb]
         elif Zmass == 'in':  cuts_tmp+=[zmass_in]
-        else: raise RuntimeError, "[ERROR]! I do not understand the Zmass region you asked in alphaCuts(isll, Zmass) from SetCuts.py"
+        else: raise RuntimeError, "[ERROR]! I do not understand the Zmass region you asked for non-reso. bkg CR/SR! (from SetCuts.py)"
 
         cuts = '&&'.join(cuts_tmp)
         if not isll:
@@ -74,17 +83,19 @@ class SetCuts ():
         #print cuts
         return cuts
 
-    def GetAlphaCuts(self, zpt_cut='', met_cut=''):
+    def GetAlphaCuts(self, zpt_cut='', met_cut='', side='both'):
         """cuts[<reg>][<zmass>]  """
         cuts = {'ll' : { 'in': self.alphaCuts(isll=True, Zmass='in', zpt_cut=zpt_cut, met_cut=met_cut),
-                         'out': self.alphaCuts(isll=True, Zmass='out', zpt_cut=zpt_cut, met_cut=met_cut),
+                         'out': self.alphaCuts(isll=True, Zmass='out', zpt_cut=zpt_cut, met_cut=met_cut, side=side),
                          'inclusive': self.alphaCuts(isll=True, Zmass='inclusive', zpt_cut=zpt_cut, met_cut=met_cut)
                      },
                 'emu':{ 'in' : self.alphaCuts(isll=False, Zmass='in', zpt_cut=zpt_cut, met_cut=met_cut),
-                        'out': self.alphaCuts(isll=False, Zmass='out', zpt_cut=zpt_cut, met_cut=met_cut),
+                        'out': self.alphaCuts(isll=False, Zmass='out', zpt_cut=zpt_cut, met_cut=met_cut, side=side),
                         'inclusive': self.alphaCuts(isll=False, Zmass='inclusive', zpt_cut=zpt_cut, met_cut=met_cut)}
             }
         #print cuts
+        print "[info] Non-reso. bkg CR cuts: you are using "+side+" Side-band(s)."
+        
         return cuts
     
     def GetZjetsCuts(self, whichRegion="", zpt_cut='', met_cut='', extra_cut=''):
