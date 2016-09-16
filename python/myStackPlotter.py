@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import ROOT
 import math, os, copy
 from TreePlotter import TreePlotter
@@ -40,6 +42,45 @@ def convertToPoisson(h,blinding=False,blindingCut=100):
     graph.SetMarkerColor(ROOT.kBlack)
 
     return graph    
+
+def GetErrorBand(hstack):
+    """2016-Sep-16: draw an error band (drawOption: e2) for a stack plot 
+    NB: negative bin removed when summing up.
+    (TBD: to be extend to include sys.) """
+    herror=copy.deepcopy(hstack.GetHists().At(0))
+    herror.Clear()
+
+    for ibin in range(0, herror.GetNbinsX()+2):
+        """ deal with the under/overflow bins"""
+        igcont=0.0
+        igerr2=0.0
+        for ihist in hstack.GetHists():
+            if ibin==0: print "[debug] ihist=",ihist.GetName()
+            if ihist.GetBinContent(ibin)<0:
+                cont=0.0
+                err2=0.0
+            else:
+                cont=ihist.GetBinContent(ibin)
+                err2=ihist.GetBinError(ibin)*ihist.GetBinError(ibin)
+                
+            print "  ibin=",ibin,", content=", cont,", err=", ROOT.TMath.Sqrt(err2)
+            igcont+=cont
+            igerr2+=err2
+        herror.SetBinContent(ibin,igcont)
+        herror.SetBinError(ibin,ROOT.TMath.Sqrt(igerr2))
+    
+    # herror=copy.deepcopy(hstack.GetHists().At(0))
+    # herror.Clear()
+    # print "[debug]:"
+    # herror.Print("all")
+    # for ihist in hstack.GetHists():
+    #     print "[debug] ihist=",ihist.GetName()
+    #     herror.Add(ihist)
+    herror.SetFillColor(ROOT.kBlue)
+    herror.SetFillStyle(3345)
+    herror.SetMarkerSize(0)
+
+    return herror    
 
 def GetRatioHist(h1, hstack,blinding=False,blindingCut=100):
     hratio = h1.Clone("hRatio")
@@ -415,17 +456,18 @@ class StackPlotter(object):
             hratio.Draw('P,E1,SAME')
                 
         if doErrorBand: # draw error band for the stack
-            herror=copy.deepcopy(stack.GetHists().At(0))
-            herror.Clear()
+            herror=GetErrorBand(stack)
+            # herror=copy.deepcopy(stack.GetHists().At(0))
+            # herror.Clear()
+            # print "[debug]:"
+            # herror.Print("all")
+            # for ihist in stack.GetHists():
+            #     print "[debug] ihist=",ihist.GetName()
+            #     herror.Add(ihist)
+            # herror.SetFillColor(ROOT.kBlue)
+            # herror.SetFillStyle(3345)
+            # herror.SetMarkerSize(0)
             herror.SetName(output+'_'+'StackError')
-            print "[debug]:"
-            herror.Print("all")
-            for ihist in stack.GetHists():
-                print "[debug] ihist=",ihist.GetName()
-                herror.Add(ihist)
-            herror.SetFillColor(ROOT.kBlue)
-            herror.SetFillStyle(3345)
-            herror.SetMarkerSize(0)
             p1.cd()
             herror.Draw("e2,0,same")
             
