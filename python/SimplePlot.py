@@ -187,7 +187,7 @@ def GetLegend(h1,label1,opt1,h2,label2,opt2):
     legend.AddEntry(h2,label2,opt2);
     return legend
 
-def drawStack_simple(frame, hstack, hdata, hratio, legend,
+def drawStack_simple(frame, hstack, hdata, hratio, legend, hmask=[],
                      hstack_opt="nostack",
                      outDir="./", output="output", channel="",
                      xmin=50., xmax=500., xtitle="" ,units="",
@@ -244,6 +244,13 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
     hratio.Draw('AXIS')
     hline.Draw('HIST,SAME')
     hratio.Draw('P,E1,SAME')
+    if len(hmask):
+        if hmask[1]:
+            p1.cd()
+            hmask[1].Draw("HIST,SAME")
+        if len(hmask)>1 and hmask[2]:
+            p2.cd()
+            hmask[2].Draw("HIST,SAME")
     hratio.GetXaxis().SetRangeUser(xmin,xmax)
     hline.GetXaxis().SetRangeUser(xmin,xmax)
     

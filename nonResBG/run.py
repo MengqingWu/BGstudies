@@ -2,7 +2,7 @@
 from stack_nonResDD import *
 
 dotest=False
-met=100
+met=200
 var='mt'
 blind=False
 blindCut=0
@@ -35,8 +35,8 @@ else:
    for var in toplot:
       #t.compareDataDrivenMC(var[0], var[1], toplot[var][0], toplot[var][1], toplot[var][2], toplot[var][3], toplot[var][4],
       #                      xcutmin=toplot[var][5], xcutmax=toplot[var][6])
-      #t.drawMCStack(var[0], var[1], toplot[var][0], toplot[var][1], toplot[var][2], toplot[var][3], toplot[var][4],
-      #              xbins = toplot[var][7], blind=blind, blindCut=blindCut)  
+      t.drawMCStack(var[0], var[1], toplot[var][0], toplot[var][1], toplot[var][2], toplot[var][3], toplot[var][4],
+                    xbins = toplot[var][7], blind=blind, blindCut=blindCut)  
 
-      t.drawDataDrivenStack(var[0], var[1], toplot[var][0], toplot[var][1], toplot[var][2], toplot[var][3], toplot[var][4],
-                            xcutmin=toplot[var][5], xcutmax=toplot[var][6], xbins = mtxbins, blind=blind, blindCut=blindCut)
+      #t.drawDataDrivenStack(var[0], var[1], toplot[var][0], toplot[var][1], toplot[var][2], toplot[var][3], toplot[var][4],
+      #                      xcutmin=toplot[var][5], xcutmax=toplot[var][6], xbins = mtxbins, blind=blind, blindCut=blindCut)

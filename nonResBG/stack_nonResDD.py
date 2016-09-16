@@ -167,7 +167,8 @@ class StackDataDriven:
         if ROOT.TString(var_ll).Contains("mass"):
             if self.logy: hframe.SetMaximum(hframe.GetMaximum()*100)
             else: hframe.SetMaximum(hframe.GetMaximum()*1.2)
-        
+
+        hmask_data=fstack.Get(stackTag+'_hmask_data')
         hdata=fstack.Get(stackTag+'_data0')
         hdataG=fstack.Get(stackTag+'_dataG')
         legend=fstack.Get(stackTag+'_legend')
@@ -208,6 +209,7 @@ class StackDataDriven:
         legend.GetListOfPrimitives().AddBefore(beforeObject,myentry)
         
         drawStack_simple(hframe, hsnew, hdataG, hratio, legend,
+                         hmask=[hmask_data],
                          hstack_opt = "A, HIST",
                          outDir = self.outdir, output = stackTag+"_datadriven", channel = ROOT.TString(self.chan),
                          xmin = xcutmin, xmax = xcutmax, xtitle = titlex ,units = units,

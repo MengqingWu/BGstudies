@@ -255,6 +255,8 @@ class StackPlotter(object):
                   blinding=False, blindingCut=100.0, xbins=[],
                   doErrorBand=True):
 
+        ROOT.TH1.SetDefaultSumw2()
+
         fout = ROOT.TFile(outDir+'/'+output+'.root', 'recreate')
 
         c1 = ROOT.TCanvas(output+'_'+"c1", "c1", 600, 750); c1.Draw()
@@ -415,7 +417,11 @@ class StackPlotter(object):
         if doErrorBand: # draw error band for the stack
             herror=copy.deepcopy(stack.GetHists().At(0))
             herror.Clear()
+            herror.SetName(output+'_'+'StackError')
+            print "[debug]:"
+            herror.Print("all")
             for ihist in stack.GetHists():
+                print "[debug] ihist=",ihist.GetName()
                 herror.Add(ihist)
             herror.SetFillColor(ROOT.kBlue)
             herror.SetFillStyle(3345)
@@ -474,6 +480,11 @@ class StackPlotter(object):
         if dataH is not None:
             dataH.Write()
             dataG.Write()
+        if blinding:
+            hmask_data.Write()
+            hmask_ratio.Write()
+        if doErrorBand:
+            herror.Write()
         pt.Write()
         legend.Write()
         p1.Write()
