@@ -56,7 +56,7 @@ def GetStackMerge(hstack):
         igcont=0.0
         igerr2=0.0
         for ihist in hstack.GetHists():
-            if ibin==0: print "[debug] ihist=",ihist.GetName()
+            #if ibin==0: print "[debug] ihist=",ihist.GetName()
             if ihist.GetBinContent(ibin)<0:
                 cont=0.0
                 err2=0.0
@@ -64,7 +64,7 @@ def GetStackMerge(hstack):
                 cont=ihist.GetBinContent(ibin)
                 err2=ihist.GetBinError(ibin)*ihist.GetBinError(ibin)
                 
-            print "  ibin=",ibin,", content=", cont,", err=", ROOT.TMath.Sqrt(err2)
+            #print "  ibin=",ibin,", content=", cont,", err=", ROOT.TMath.Sqrt(err2)
             igcont+=cont
             igerr2+=err2
         hmerge.SetBinContent(ibin,igcont)

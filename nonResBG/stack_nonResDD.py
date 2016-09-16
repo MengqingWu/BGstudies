@@ -85,10 +85,14 @@ class StackDataDriven:
         compare data-driven estimate wrt MC expectation of var_ll for non-reso. bkg
         """
         ROOT.TH1.SetDefaultSumw2()
-        data_eu = self.plotter_eu.allBG if isTest else self.plotter_eu.Data
-        lumi_str = str(self.lumi*1000) if isTest else '1'
+        data_eu =  self.plotter_eu.Data
+        lumi_str = '1'
         compTagger = ['compare_dataDriven_MC',var_ll,self.doMzReweight]
-        if isTest: compTagger += ['closureTest']
+        if isTest:
+            data_eu = self.plotter_eu.allBG 
+            lumi_str = str(self.lumi*1000) 
+            compTagger += ['closureTest']
+            
         compTag = '_'.join(compTagger) 
         
         dobinned = True if len(xbins) else False
@@ -110,7 +114,7 @@ class StackDataDriven:
         print '[debug] llin, data-driven pred.: ', h_nonRes_dd.Integral()
         print '[debug] llin, MC exp.: ', h_nonRes_mc.Integral()
         
-        drawCompareSimple(h_nonRes_dd, h_nonRes_mc, "non-reson. data-driven", "non-reson. MC",
+        drawCompareSimple(h_nonRes_mc, h_nonRes_dd, "non-reson. MC", "non-reson. data-driven",
                           xmin=xcutmin, xmax=xcutmax, outdir=self.outdir, notes="",
                           tag = compTag, units='', lumi=self.lumi, ytitle='events', setmax=1)
         return
@@ -169,6 +173,7 @@ class StackDataDriven:
             else: hframe.SetMaximum(hframe.GetMaximum()*1.2)
 
         hmask_data=fstack.Get(stackTag+'_hmask_data')
+        hmask_ratio=fstack.Get(stackTag+'_hmask_ratio')
         hdata=fstack.Get(stackTag+'_data0')
         hdataG=fstack.Get(stackTag+'_dataG')
         legend=fstack.Get(stackTag+'_legend')
@@ -196,7 +201,7 @@ class StackDataDriven:
             print '[debug] ', ih.GetName()
         print hsnew
         
-        hratio=GetRatio_TH1(hdata,hsnew,True)
+        hratio=GetRatio_TH1(hdata,hsnew,True, blinding=blind, blindingCut=blindCut)
         
         myentry=ROOT.TLegendEntry(h_nonRes_dd,"non-reson. (data-driven)","f")
         
@@ -209,7 +214,7 @@ class StackDataDriven:
         legend.GetListOfPrimitives().AddBefore(beforeObject,myentry)
         
         drawStack_simple(hframe, hsnew, hdataG, hratio, legend,
-                         hmask=[hmask_data],
+                         hmask=[hmask_data, hmask_ratio],
                          hstack_opt = "A, HIST",
                          outDir = self.outdir, output = stackTag+"_datadriven", channel = ROOT.TString(self.chan),
                          xmin = xcutmin, xmax = xcutmax, xtitle = titlex ,units = units,
