@@ -43,14 +43,15 @@ def convertToPoisson(h,blinding=False,blindingCut=100):
 
     return graph    
 
-def GetErrorBand(hstack):
-    """2016-Sep-16: draw an error band (drawOption: e2) for a stack plot 
-    NB: negative bin removed when summing up.
-    (TBD: to be extend to include sys.) """
-    herror=copy.deepcopy(hstack.GetHists().At(0))
-    herror.Clear()
+def GetStackMerge(hstack):
+    """2016-Sep-16: 
+    1.) Get merged stack plot
+    2.) NB: negative bins of each histgram child are removed when merging."""
 
-    for ibin in range(0, herror.GetNbinsX()+2):
+    hmerge=hstack.GetHistogram()
+    hmerge.SetName('hstackerror')
+
+    for ibin in range(0, hmerge.GetNbinsX()+2):
         """ deal with the under/overflow bins"""
         igcont=0.0
         igerr2=0.0
@@ -66,29 +67,19 @@ def GetErrorBand(hstack):
             print "  ibin=",ibin,", content=", cont,", err=", ROOT.TMath.Sqrt(err2)
             igcont+=cont
             igerr2+=err2
-        herror.SetBinContent(ibin,igcont)
-        herror.SetBinError(ibin,ROOT.TMath.Sqrt(igerr2))
+        hmerge.SetBinContent(ibin,igcont)
+        hmerge.SetBinError(ibin,ROOT.TMath.Sqrt(igerr2))
     
-    # herror=copy.deepcopy(hstack.GetHists().At(0))
-    # herror.Clear()
-    # print "[debug]:"
-    # herror.Print("all")
-    # for ihist in hstack.GetHists():
-    #     print "[debug] ihist=",ihist.GetName()
-    #     herror.Add(ihist)
-    herror.SetFillColor(ROOT.kBlue)
-    herror.SetFillStyle(3345)
-    herror.SetMarkerSize(0)
-
-    return herror    
+    return hmerge   
 
 def GetRatioHist(h1, hstack,blinding=False,blindingCut=100):
     hratio = h1.Clone("hRatio")
-    h2 = hstack.GetHistogram()
-    h2.SetName('hstackmerge')
-    for hist in hstack.GetHists():
-        h2.Add(hist)
-
+    # h2 = hstack.GetHistogram()
+    # h2.SetName('hstackmerge')
+    # for hist in hstack.GetHists():
+    #     h2.Add(hist)
+    h2 = GetStackMerge(hstack)
+    
     for i in xrange(h1.GetXaxis().GetNbins()+1):
         N1 = h1.GetBinContent(i)
         N2 = h2.GetBinContent(i)
@@ -456,7 +447,7 @@ class StackPlotter(object):
             hratio.Draw('P,E1,SAME')
                 
         if doErrorBand: # draw error band for the stack
-            herror=GetErrorBand(stack)
+            herror=GetStackMerge(stack)
             # herror=copy.deepcopy(stack.GetHists().At(0))
             # herror.Clear()
             # print "[debug]:"
@@ -464,9 +455,9 @@ class StackPlotter(object):
             # for ihist in stack.GetHists():
             #     print "[debug] ihist=",ihist.GetName()
             #     herror.Add(ihist)
-            # herror.SetFillColor(ROOT.kBlue)
-            # herror.SetFillStyle(3345)
-            # herror.SetMarkerSize(0)
+            herror.SetFillColor(ROOT.kBlue)
+            herror.SetFillStyle(3345)
+            herror.SetMarkerSize(0)
             herror.SetName(output+'_'+'StackError')
             p1.cd()
             herror.Draw("e2,0,same")
