@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from ROOT import *
 import math, os, sys, copy
+import myStackPlotter as mystack
 
 def CheckDir(outdir):
     dirlist=outdir.split('/')
@@ -105,15 +106,16 @@ def GetCumulativeAndError(inputHist,forward=True, suffix=''):
     return hintegrated
     
 
-def GetRatio_TH1(h1, h2, h2_isStack=False):
+def GetRatio_TH1(h1, h2, h2_isStack=False, blinding=False, blindingCut=100):
     ''' h1/h2 '''
     hratio = h1.Clone("hRatio")
     h2.Draw()
     if h2_isStack:
-        h2_new = h2.GetHistogram()
-        h2_new.SetName('hstackmerge')
-        for hist in h2.GetHists():
-            h2_new.Add(hist)
+        # h2_new = h2.GetHistogram()
+        # h2_new.SetName('hstackmerge')
+        # for hist in h2.GetHists():
+        #     h2_new.Add(hist)
+        h2_new = mystack.GetStackMerge(h2)
     else:
         h2_new=h2.Clone("single h2 as denominator")
             
@@ -127,9 +129,9 @@ def GetRatio_TH1(h1, h2, h2_isStack=False):
 
         hratio.SetBinContent(i, RR)
         hratio.SetBinError(i, EE)
-        # if blinding and h1.GetBinCenter(i)>blindingCut: 
-        #     hratio.SetBinContent(i, 0)
-        #     hratio.SetBinError(i, 0)
+        if blinding and h1.GetBinCenter(i)>blindingCut: 
+            hratio.SetBinContent(i, 0)
+            hratio.SetBinError(i, 0)
 
     hratio.SetMarkerStyle(20)
     hratio.SetLineWidth(1)
@@ -176,6 +178,7 @@ def GetLegendv1(xmin, ymin, xmax,  ymax, hist, label, opt=[]):
     return legend
 
 def GetLegend(h1,label1,opt1,h2,label2,opt2):
+    """ a fixed legend box with 2 entries only """
     legend=TLegend(0.65,0.75,0.85,0.90,"","brNDC");
     legend.SetFillStyle(0); #set legend box transparent
     legend.SetBorderSize(0);
@@ -185,6 +188,7 @@ def GetLegend(h1,label1,opt1,h2,label2,opt2):
     legend.SetLineColor(0);
     legend.AddEntry(h1,label1,opt1);
     legend.AddEntry(h2,label2,opt2);
+
     return legend
 
 def drawStack_simple(frame, hstack, hdata, hratio, legend, hmask=[],
@@ -245,12 +249,12 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend, hmask=[],
     hline.Draw('HIST,SAME')
     hratio.Draw('P,E1,SAME')
     if len(hmask):
-        if hmask[1]:
+        if hmask[0]:
             p1.cd()
-            hmask[1].Draw("HIST,SAME")
-        if len(hmask)>1 and hmask[2]:
+            hmask[0].Draw("HIST,SAME")
+        if len(hmask)>1 and hmask[1]:
             p2.cd()
-            hmask[2].Draw("HIST,SAME")
+            hmask[1].Draw("HIST,SAME")
     hratio.GetXaxis().SetRangeUser(xmin,xmax)
     hline.GetXaxis().SetRangeUser(xmin,xmax)
     
