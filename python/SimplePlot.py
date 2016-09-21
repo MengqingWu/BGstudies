@@ -10,7 +10,33 @@ def CheckDir(outdir):
         if dirlist[idir]=='': continue
         dirTest+=dirlist[idir]+'/'
         if not os.path.exists(dirTest):os.system('mkdir '+dirTest)
-                
+
+def GetHistRelativeErr(hstat):
+    hrel=hstat.Clone(hstat.GetName()+'_relative')
+    hrel.Reset()
+    for ii in range(hstat.GetNbinsX()+1):
+        hrel.SetBinContent(ii, 1.0)
+        if hstat.GetBinContent(ii)>0:
+            irelerr=hstat.GetBinError(ii)
+            irelerr/=hstat.GetBinContent(ii)
+        else:
+            irelerr=0.0
+ 
+        hrel.SetBinError(ii, irelerr)
+
+    return hrel
+
+def GetHistAbsErr(h1, hrel):
+    """ hrel has bin content==1, with relative error drawn which corresponds to the h1 bin content. """
+    if h1.GetNbinsX()!=hrel.GetNbinsX():
+        print "[Error!] h1(%s) and hrel(%s) have different binning, CHECK!\n EXIT!" % (h1.GetName(), hrel.GetName())
+        exit(0)
+    for ii in range(h1.GetNbinsX()+1):
+        if h1.GetBinContent(ii)>0: 
+            h1.SetBinError(ii, hrel.GetBinError()*h1.GetBinContent())
+        else: continue
+    return
+    
 def GetCorrelationFactorError(corr, num):
     se=math.sqrt((1-corr**2)/(num-2))
     return se
@@ -192,7 +218,7 @@ def GetLegend(h1,label1,opt1,h2,label2,opt2):
     return legend
 
 def drawStack_simple(frame, hstack, hdata, hratio, legend,
-                     hserr=None, hmask=[], hstack_opt="nostack",
+                     hserr=[], hmask=[], hstack_opt="nostack",
                      outDir="./", output="output", channel="",
                      xmin=50., xmax=500., xtitle="" ,units="",
                      lumi=2.169, notes="", drawSig=False, hsig=[]):
@@ -220,11 +246,7 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
     p1.cd()
     frame.Draw()
     hstack.Draw(hstack_opt+", same")
-    hdata.Draw("P,E1,same")
-    if drawSig and len(hsig)!=0:
-        for ihsig in hsig: ihsig.Draw("HIST, same")
 
-    legend.Draw("same")
     hstack.SetMinimum(0.01)
     hstack.GetHistogram().GetXaxis().SetRangeUser(xmin,xmax)
 
@@ -238,16 +260,32 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
         hstack.GetHistogram().GetXaxis().SetTitle(xtitle)
         hstack.GetHistogram().GetYaxis().SetTitle("Events")
 
-    hratio.SetName(output+'_'+'hratio')
+    if len(hserr):
+        hserr[0].SetName(output+'_'+'ErrorCombo')
+        p1.cd()
+        hserr[0].Draw("nostack, same")
+
+    hdata.Draw("P,E1,same")
+    if drawSig and len(hsig)!=0:
+        for ihsig in hsig: ihsig.Draw("HIST, same")
+    legend.Draw("same")
+
+    ##--> lower pad:
+    hratio.SetName(output+'_'+'hratio')        
     hline = copy.deepcopy(hratio)
     for ii in range(hline.GetNbinsX()+1):
         hline.SetBinContent(ii,1.0)
         hline.SetBinError(ii,0.0)
     hline.SetLineColor(kRed)
     hline.SetFillStyle(0)
+    
     p2.cd()
     hratio.Draw('AXIS')
     hline.Draw('HIST,SAME')
+    if len(hserr)>1:
+        hserr[1].SetName(output+'_'+'RelErrorCombo')
+        hserr[1].Draw("nostack, same")
+        
     hratio.Draw('P,E1,SAME')
     if len(hmask):
         if hmask[0]:
@@ -259,14 +297,6 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
     hratio.GetXaxis().SetRangeUser(xmin,xmax)
     hline.GetXaxis().SetRangeUser(xmin,xmax)
 
-    if hserr:
-        hserr.SetFillColor(kBlue)
-        hserr.SetFillStyle(3345)
-        hserr.SetMarkerSize(0)
-        #hserr.SetName(output+'_'+'StackError')
-        p1.cd()
-        hserr.Draw("e2,0,same")
-            
     p1.Update()
     p2.Update()
     c1.Update()
@@ -297,6 +327,10 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
     c1.Write()
     hratio.Write()
     hstack.Write()
+    if len(hserr):
+        for ihserr in hserr:
+            ihserr.Write()
+    hdata.Write()
     fout.Close()
 
     c1.SaveAs(outDir+'/'+output+'_'+channel.Data()+'.eps')

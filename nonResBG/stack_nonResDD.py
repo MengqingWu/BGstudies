@@ -139,25 +139,38 @@ class StackDataDriven:
         return PredDivideExp
 
 
-    def CombineError(self, herr, igrerr2):
-        inclsys=herr.Clone("CombinedError") #Combine all sys. and stat. uncertainties for non-res bkg
-        inclsys.Reset()
-        for ii in range(herr.GetNbinsX()+1):
-            if herr.GetBinContent(ii)==0: continue
-            else:
-                ibias=herr.GetBinContent(ii)-1 
-                ierr2=ibias*ibias
-                ierr2+=igrerr2
-                print "[debug] @%.f, ibias = %.2f, igrerr2 = %.2f, res = %.2f" % (herr.GetBinCenter(ii), ibias, igrerr2, ROOT.TMath.Sqrt(ierr2))
-                inclsys.SetBinContent(ii, 1.0)
-                inclsys.SetBinError(ii, ROOT.TMath.Sqrt(ierr2))
+    def CombineError(self, h1, hsys, sysGlobal):
+        # h1 is the data-driven non-res histogram.
+        # hsys is the MC pred/exp difference as a estimate sys. err (each content need to minus 1 to get the relative sys. err)
+        # sysGlobal is the sum of all other global relative err^2 (such as the alpha stat. error)
+        # return hcombo: bincontent as h1, but with sqrt(sys**2+stat**2) error bar
 
+        hcombo=h1.Clone("h_allsys") 
+        hcombo.Reset()
+        for ii in range(h1.GetNbinsX()+1):
+            iMeanVal=h1.GetBinContent(ii)                
+            if iMeanVal>0:
+                ibias=hsys.GetBinContent(ii)-1
+                istat=h1.GetBinError(ii)
+                igrerr2=(ibias*iMeanVal)**2+(sysGlobal*iMeanVal)**2+istat**2
+                print "[debug] @%.f = %f, sys = %.2f, stat = %.2f, combo = %.2f"%(h1.GetBinCenter(ii), iMeanVal, (ibias*iMeanVal)**2+(sysGlobal*iMeanVal), istat, ROOT.TMath.Sqrt(igrerr2))
+
+                hcombo.SetBinContent(ii, iMeanVal)
+                hcombo.SetBinError(ii, ROOT.TMath.Sqrt(igrerr2))
+            else: continue # nothing to do with empty/negative bins
+                
         ctemp = ROOT.TCanvas(1)
-        inclsys.Draw()
-        ctemp.SaveAs("test.pdf")
-        return
+        hcombo.SetFillColor(ROOT.kBlue)
+        hcombo.SetFillStyle(3354)
+        hcombo.SetMarkerSize(0)
+        hcombo.SetLineColor(0)
+        hcombo.Draw("e2")
+        #hstat.SetFillColor(ROOT.kRed)
+        h1.Draw("e2, same")
+        ctemp.SaveAs("GetSysErrorTest.pdf")
+
+        return hcombo
     
-    def GetStatError():
         
     
     def drawDataDrivenStack(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin=0, xcutmax=0, xbins=[], blind=False, blindCut=100.0, doCombineErr=False):
@@ -186,13 +199,12 @@ class StackDataDriven:
         else:
             h_nonRes_dd = self.plotter_eu.Data.drawTH1(var_emu, var_emu, self.cuts['emu']['in'], '1',
                                                        nbinsx, xmin, xmax, titlex = titlex, units = units)
-
-        alpha, err_alpha = self.GetAlpha()
-                
+        h_nonRes_dd.SetFillColor(ROOT.kAzure-9)        
         h_nonRes_dd.Scale(alpha)
-        
-        h_nonRes_dd.SetFillColor(ROOT.kAzure-9)
-        
+        if doCombineErr and 'l1_mass' not in var_ll: # think about how to deal with mZ distribution [FIXME]
+            hbias=self.compareDataDrivenMC(var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax, xbins=xbins, isTest=True)
+            igrerr2=(err_alpha/alpha)**2
+            
         # Draw the m_ll in z window with data-driven non-res bkg
         ROOT.TH1.AddDirectory(ROOT.kFALSE)
         fstack=ROOT.TFile(self.outdir+'/'+stackTag+'.root')
@@ -206,17 +218,15 @@ class StackDataDriven:
 
         hmask_data=fstack.Get(stackTag+'_hmask_data')
         hmask_ratio=fstack.Get(stackTag+'_hmask_ratio')
-        hserr=fstack.Get(stackTag+'_StackError')
-        hserr.Add(h_nonRes_dd)
-        hserr.SetLineColor(0)
-        #hserr.SetFillColor(ROOT.kBlue)
-        #hserr.SetFillStyle(3345)
 
-        if doCombineErr and 'l1_mass' not in var_ll: # think about how to deal with mZ distribution [FIXME]
-            herr=self.compareDataDrivenMC(var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax, xbins=xbins, isTest=True)
-            igrerr2=(err_alpha/alpha)**2
-            self.CombineError(herr, igrerr2)
-            
+        hserr=fstack.Get(stackTag+'_StackError')
+        hserr.SetLineColor(0)
+        hcombo = hserr.Clone(hserr.GetName()+'_withsys')
+        hcombo.SetFillStyle(3354)
+        hserr.Add(h_nonRes_dd)
+        #hserr.SetFillColor(ROOT.kBlue)
+        hserr.SetFillStyle(3345)
+        
         hdata=fstack.Get(stackTag+'_data0')
         hdataG=fstack.Get(stackTag+'_dataG')
         legend=fstack.Get(stackTag+'_legend')
@@ -241,25 +251,42 @@ class StackDataDriven:
             if ihist.GetName() in nonresTag: print '[Removing...] I am a nonres bkg : ',ihist.GetName()
             else:  hsnew.Add(ihist)
         
-        for ih in hsnew.GetHists():
-            print '[debug] ', ih.GetName()
-        print hsnew
-        
+        #for ih in hsnew.GetHists():
+        #    print '[debug] ', ih.GetName()
+        #print hsnew
+     
         hratio=GetRatio_TH1(hdata,hsnew,True, blinding=blind, blindingCut=blindCut)
-        
-        datadrivenEntry=ROOT.TLegendEntry(h_nonRes_dd,"non-reson. (data-driven)","f")
-        stackErrorEntry=ROOT.TLegendEntry(hserr,"bkg stat. error","f")
-        # Let's remove the signal entries in the legend
+
+        # Let's find out the data entry in legend:
         for ileg in legend.GetListOfPrimitives():
             if ileg.GetLabel() in ['W+Jets', 'TT', 'WW, WZ non-reson.']:
                 legend.GetListOfPrimitives().Remove(ileg)
             if ileg.GetLabel()=='Data': beforeObject=ileg
-        
+            
+        datadrivenEntry=ROOT.TLegendEntry(h_nonRes_dd,"non-reson. (data-driven)","f")
+        statErrorEntry=ROOT.TLegendEntry(hserr,"stat-only error","f")
         legend.GetListOfPrimitives().AddBefore(beforeObject,datadrivenEntry)
-        legend.GetListOfPrimitives().AddAfter(beforeObject,stackErrorEntry)
+        legend.GetListOfPrimitives().AddAfter(beforeObject,statErrorEntry)
+
         
+        errstack=ROOT.THStack("hs_combine_sys_stat_error","sys and stat combined histograms")
+        errstack.Add(hserr, "e2, 0")
+        hserr_rel = GetHistRelativeErr(hserr)
+        errstack2 = ROOT.THStack("hratio_combine_sys_stat_error","relative sys and stat combined histograms")
+        errstack2.Add(hserr_rel, "e2,0")
+        
+        if doCombineErr and 'l1_mass' not in var_ll: # think about how to deal with mZ distribution [FIXME]
+            hcombo.Add(self.CombineError( h_nonRes_dd, hbias, igrerr2))
+            sysErrorEntry=ROOT.TLegendEntry(hcombo,"sys+stat error","f")
+            legend.GetListOfPrimitives().AddAfter(beforeObject,sysErrorEntry)
+
+            errstack.Add(hcombo, "e2, 0")
+            hcombo_rel = GetHistRelativeErr(hcombo)
+            errstack2.Add(hcombo_rel, "e2,0")
+            
+            
         drawStack_simple(hframe, hsnew, hdataG, hratio, legend,
-                         hserr=hserr, hmask=[hmask_data, hmask_ratio], hstack_opt = "A, HIST",
+                         hserr=[errstack, errstack2], hmask=[hmask_data, hmask_ratio], hstack_opt = "A, HIST",
                          outDir = self.outdir, output = stackTag+"_datadriven", channel = ROOT.TString(self.chan),
                          xmin = xcutmin, xmax = xcutmax, xtitle = titlex ,units = units,
                          lumi = self.lumi, notes = self.note,

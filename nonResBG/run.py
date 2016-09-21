@@ -5,7 +5,7 @@ import sys
 test=StackDataDriven(indir="./nonResSkim_Lite_20160915_met100", outdir="./closure_step2", scaleElMu=True, met=100, side="both")
 #test.GetAlpha(isTest=True)
 mtxbins = [150,200,250,325,425,850]
-test.drawDataDrivenStack('llnunu_mtc', 'elmununu_mtc', len(mtxbins), min(mtxbins), max(mtxbins), "M_{T}^{ZZ}", "GeV", 0, 0, mtxbins, doSysErr=True)
+test.drawDataDrivenStack('llnunu_mtc', 'elmununu_mtc', len(mtxbins), min(mtxbins), max(mtxbins), "M_{T}^{ZZ}", "GeV", 0, 0, mtxbins, doCombineErr=True)
 exit(0)
 
 print 'Number of arguments:', len(sys.argv), 'arguments.'
@@ -56,6 +56,7 @@ if dotest: # met cut at 100
                          xcutmin=toplot[var][5], xcutmax=toplot[var][6], xbins=toplot[var][7])
 
 else:
+   ##--> draw datadriven will now process the test step for the mZ reweight shape systematic uncertainty:
    
    if met==0: t=StackDataDriven(indir="./nonResSkim_Lite_20160915_met0", outdir="./out_step2", scaleElMu=True, side=sideband)
    elif met==100: t=StackDataDriven(indir="./nonResSkim_Lite_20160915_met100", outdir="./out_step2", scaleElMu=True, met=100, side=sideband)
