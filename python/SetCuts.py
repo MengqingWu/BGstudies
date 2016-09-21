@@ -94,7 +94,7 @@ class SetCuts ():
                         'inclusive': self.alphaCuts(isll=False, Zmass='inclusive', zpt_cut=zpt_cut, met_cut=met_cut)}
             }
         #print cuts
-        print "[info] Non-reso. bkg CR cuts: you are using "+side+" Side-band(s)."
+        print "[info] Non-reso. alpha CR cuts: you are using "+side+" Side-band(s)."
         
         return cuts
     

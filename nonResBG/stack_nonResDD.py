@@ -37,7 +37,8 @@ class StackDataDriven:
         self.logy=LogY
         self.outdir = outdir
         self.lumi = lumi
-        self.doMzReweight='MzWtOn' if scaleElMu else 'MzWtOff' # a tag for output file
+        self.MzWtTag='MzWtOn' if scaleElMu else 'MzWtOff' # a tag for output file
+        self.SideTag=side+'Side'
         
         # plotter_eu: the MuonEG data has the weight (scaleElMu) which reweights Meu as Mll distribution using MC
         self.plotter_eu=InitializePlotter(indir, addSig=False, addData=True, doRatio=doRatio, doElMu=True, scaleElMu=scaleElMu, LogY=LogY)
@@ -57,12 +58,16 @@ class StackDataDriven:
         else: self.note = "E_{T}^{miss}>" + self.met_cut + ", P_{T}^{Z}>" + self.zpt_cut
 
         self.chan = "inclusive"
+
+        ##-> tools
+        self.err_product=lambda A, B, a, b: sqrt((a*B)**2+(b*A)**2) # A*B
+        self.err_division=lambda A, B, a, b: sqrt((a/B)**2+(b*A/B**2)**2) # A/B
         
-    def GetAlpha(self, var_ll, var_emu, nbinsx, xmin, xmax, isTest=False):
+    def GetAlpha(self, var_ll="llnunu_l1_mass", var_emu="elmununu_l1_mass", nbinsx=40, xmin=0.0, xmax=200.0, isTest=False):
         ROOT.TH1.SetDefaultSumw2()
         data_ll = self.plotter_ll.allBG if isTest else self.plotter_ll.Data
         data_eu = self.plotter_eu.allBG if isTest else self.plotter_eu.Data
-        lumi_str = str(self.lumi*1000) if isTest else '1'
+        lumi_str = str(self.lumi*1000)  if isTest else '1'
         
         h_ll_out_dt = data_ll.drawTH1(var_ll+'_dt', var_ll, self.cuts['ll']['out'], lumi_str,
                                       nbinsx, xmin, xmax, titlex = var_ll)
@@ -72,13 +77,20 @@ class StackDataDriven:
         
         h_eu_out_dt = data_eu.drawTH1(var_emu+'_dt', var_emu, self.cuts['emu']['out'], lumi_str,
                                       nbinsx, xmin, xmax, titlex = var_emu)
-        
-        ig_ll_out_dt = h_ll_out_dt.Integral()
-        ig_eu_out_dt = h_eu_out_dt.Integral()
-        alpha = ig_ll_out_dt/ig_eu_out_dt
-        print "\n[info] alpha (N_llout/N_euout) = ", alpha
 
-        return alpha
+        err_llout, err_euout = ROOT.Double(0.0), ROOT.Double(0.0)
+        ig_ll_out_dt = h_ll_out_dt.IntegralAndError(1, h_ll_out_dt.GetNbinsX(), err_llout)
+        ig_eu_out_dt = h_eu_out_dt.IntegralAndError(1, h_eu_out_dt.GetNbinsX(), err_euout)
+        
+        alpha = ig_ll_out_dt/ig_eu_out_dt
+        err_alpha = self.err_division(ig_ll_out_dt, ig_eu_out_dt, err_llout, err_euout)
+
+        #print "\n[debug] cuts: ", self.cuts['emu']['out']
+        if isTest: print "\n[info]--> alpha computed for closure test:"
+        print "\n[info] N_llout_dt = %.2f,  N_euout_dt = %.2f" %(ig_ll_out_dt, ig_eu_out_dt)
+        print "[info] alpha (N_llout/N_euout) =  %.2f +- %.2f" %(alpha,err_alpha)
+
+        return alpha, err_alpha
 
     def compareDataDrivenMC(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax, xbins=[], isTest=False):
         """
@@ -87,7 +99,7 @@ class StackDataDriven:
         ROOT.TH1.SetDefaultSumw2()
         data_eu =  self.plotter_eu.Data
         lumi_str = '1'
-        compTagger = ['compare_dataDriven_MC',var_ll,self.doMzReweight]
+        compTagger = ['compare_dataDriven_MC', var_ll, self.MzWtTag, 'met'+self.met_cut, self.SideTag]
         if isTest:
             data_eu = self.plotter_eu.allBG 
             lumi_str = str(self.lumi*1000) 
@@ -107,48 +119,67 @@ class StackDataDriven:
                                           nbinsx, xmin, xmax, titlex = titlex, units = units)
             h_nonRes_mc = self.plotter_ll.NonResBG.drawTH1(var_ll+'nonres_mc_llin', var_ll, self.cuts['ll']['in'], str(self.lumi*1000),
                                                            nbinsx, xmin, xmax, titlex = titlex, units = units)
-        
-        alpha = self.GetAlpha(var_ll, var_emu, nbinsx, xmin, xmax, isTest=isTest)
+
+        alpha, err_apha = self.GetAlpha(isTest=isTest)
+            
         h_nonRes_dd.Scale(alpha)
 
-        print '[debug] llin, data-driven pred.: ', h_nonRes_dd.Integral()
-        print '[debug] llin, MC exp.: ', h_nonRes_mc.Integral()
-        
+        err1, err2=ROOT.Double(0.0), ROOT.Double(0.0)
+        igr1, igr2 = h_nonRes_dd.IntegralAndError(0, h_nonRes_dd.GetNbinsX()+1, err1), h_nonRes_mc.IntegralAndError(0, h_nonRes_mc.GetNbinsX()+1, err2)
+        print '[info] llin, data-driven pred.:  %.2f +- %.2f' %(igr1, err1)
+        print '[info] llin, MC exp.:  %.2f +- %.2f' %(igr2, err2)
+                
         drawCompareSimple(h_nonRes_mc, h_nonRes_dd, "non-reson. MC", "non-reson. data-driven",
                           xmin=xcutmin, xmax=xcutmax, outdir=self.outdir, notes="",
-                          tag = compTag, units='', lumi=self.lumi, ytitle='events', setmax=1)
-        return
+                          tag = compTag, units='', lumi=self.lumi, ytitle='events', setmax=10)
 
-    def drawMCStack(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xbins=[], blind=False, blindCut=100.0):
-        """
-        simply draw all background MC stacked compared with data, with signals on top of them.
-        """
-        tag = '_'.join(['stack_nonResDD','met'+self.met_cut,'MC'])
-        stackTag=tag+'_'+var_ll
-
-        allStack_ll = self.plotter_ll.GetStack() 
-
-        allStack_ll.drawStack(var_ll, self.cuts['ll']['in'], str(self.lumi*1000), nbinsx, xmin, xmax, titlex = titlex, units = units,
-                              output=stackTag, outDir=self.outdir, separateSignal=True, drawtex=self.note, channel=self.chan, xbins = xbins,
-                              blinding = blind, blindingCut = blindCut)
-
-        return
+        PredDivideExp=h_nonRes_dd.Clone("nonres. MC pred. divde MC exp.")
+        PredDivideExp.Divide(h_nonRes_mc)
         
-    def drawDataDrivenStack(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin=0, xcutmax=0, xbins=[], blind=False, blindCut=100.0):
-        tag = '_'.join(['stack_nonResDD','met'+self.met_cut,'test'])
+        return PredDivideExp
+
+
+    def CombineError(self, herr, igrerr2):
+        inclsys=herr.Clone("CombinedError") #Combine all sys. and stat. uncertainties for non-res bkg
+        inclsys.Reset()
+        for ii in range(herr.GetNbinsX()+1):
+            if herr.GetBinContent(ii)==0: continue
+            else:
+                ibias=herr.GetBinContent(ii)-1 
+                ierr2=ibias*ibias
+                ierr2+=igrerr2
+                print "[debug] @%.f, ibias = %.2f, igrerr2 = %.2f, res = %.2f" % (herr.GetBinCenter(ii), ibias, igrerr2, ROOT.TMath.Sqrt(ierr2))
+                inclsys.SetBinContent(ii, 1.0)
+                inclsys.SetBinError(ii, ROOT.TMath.Sqrt(ierr2))
+
+        ctemp = ROOT.TCanvas(1)
+        inclsys.Draw()
+        ctemp.SaveAs("test.pdf")
+        return
+    
+    def GetStatError():
+        
+    
+    def drawDataDrivenStack(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin=0, xcutmax=0, xbins=[], blind=False, blindCut=100.0, doCombineErr=False):
+        tag = '_'.join(['stack_nonResDD','met'+self.met_cut, self.SideTag])
         stackTag=tag+'_'+var_ll
         dobinned = True if len(xbins) else False
         if xcutmin==0: xcutmin = xmin
         if xcutmax==0: xcutmax = xmax
+
+        #--> to have all histogram with stat. err. computed correctly
         ROOT.TH1.SetDefaultSumw2()
+
+        alpha, err_alpha = self.GetAlpha()
+        
         h_res_llin_mc = self.plotter_ll.ResBG.drawTH1(var_ll, var_ll, self.cuts['ll']['in'], str(self.lumi*1000), nbinsx, xmin, xmax, titlex=titlex, units=units)
         ctemp = ROOT.TCanvas(1)
         h_res_llin_mc.Draw()
-        # ctemp.SaveAs("test.pdf")
-        
+        #ctemp.SaveAs("test.pdf")
+
         self.Stack_ll.drawStack(var_ll, self.cuts['ll']['in'], str(self.lumi*1000), nbinsx, xmin, xmax, titlex = titlex, units = units,
-                                        output=stackTag, outDir=self.outdir, separateSignal=True, drawtex="", channel=self.chan, xbins = xbins,
-                                        blinding = blind, blindingCut = blindCut)
+                                output=stackTag, outDir=self.outdir, separateSignal=True, drawtex="", channel=self.chan, xbins = xbins,
+                                blinding = blind, blindingCut = blindCut)
         if dobinned:
             h_nonRes_dd = self.plotter_eu.Data.drawTH1Binned(var_emu, var_emu, self.cuts['emu']['in'], '1',
                                                              xbins, titlex = titlex, unitsx = units)
@@ -156,7 +187,8 @@ class StackDataDriven:
             h_nonRes_dd = self.plotter_eu.Data.drawTH1(var_emu, var_emu, self.cuts['emu']['in'], '1',
                                                        nbinsx, xmin, xmax, titlex = titlex, units = units)
 
-        alpha = self.GetAlpha(var_ll, var_emu, nbinsx, xmin, xmax)
+        alpha, err_alpha = self.GetAlpha()
+                
         h_nonRes_dd.Scale(alpha)
         
         h_nonRes_dd.SetFillColor(ROOT.kAzure-9)
@@ -174,6 +206,17 @@ class StackDataDriven:
 
         hmask_data=fstack.Get(stackTag+'_hmask_data')
         hmask_ratio=fstack.Get(stackTag+'_hmask_ratio')
+        hserr=fstack.Get(stackTag+'_StackError')
+        hserr.Add(h_nonRes_dd)
+        hserr.SetLineColor(0)
+        #hserr.SetFillColor(ROOT.kBlue)
+        #hserr.SetFillStyle(3345)
+
+        if doCombineErr and 'l1_mass' not in var_ll: # think about how to deal with mZ distribution [FIXME]
+            herr=self.compareDataDrivenMC(var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax, xbins=xbins, isTest=True)
+            igrerr2=(err_alpha/alpha)**2
+            self.CombineError(herr, igrerr2)
+            
         hdata=fstack.Get(stackTag+'_data0')
         hdataG=fstack.Get(stackTag+'_dataG')
         legend=fstack.Get(stackTag+'_legend')
@@ -183,10 +226,11 @@ class StackDataDriven:
         hsig3=fstack.Get(stackTag+'_BulkGravToZZToZlepZinv_narrow_1200')
         fstack.Close()
 
-
-        print '[debug] llin, data-driven nonres: ', h_nonRes_dd.Integral()
-        print '[debug] llin, MC res. bkg: ', h_res_llin_mc.Integral()
-        print '[debug] llin, data obs.: ', hdata.Integral()
+        err1, err2, err3=ROOT.Double(0.0), ROOT.Double(0.0), ROOT.Double(0.0)
+        igr1, igr2, igr3=h_nonRes_dd.IntegralAndError(0, h_nonRes_dd.GetNbinsX()+1, err1), h_res_llin_mc.IntegralAndError(0, h_res_llin_mc.GetNbinsX()+1, err2),hdata.IntegralAndError(0, hdata.GetNbinsX()+1, err3)
+        print '[info] llin, data-driven nonres:  %.2f +- %.2f' %(igr1, err1)
+        print '[info] llin, MC res. bkg:  %.2f +- %.2f' %(igr2, err2)
+        print '[info] llin, data obs.: %.2f +- %.2f' %(igr3, err3)
 
         
         hsnew=ROOT.THStack(stackTag+"_stack_new","")
@@ -203,19 +247,19 @@ class StackDataDriven:
         
         hratio=GetRatio_TH1(hdata,hsnew,True, blinding=blind, blindingCut=blindCut)
         
-        myentry=ROOT.TLegendEntry(h_nonRes_dd,"non-reson. (data-driven)","f")
-        
+        datadrivenEntry=ROOT.TLegendEntry(h_nonRes_dd,"non-reson. (data-driven)","f")
+        stackErrorEntry=ROOT.TLegendEntry(hserr,"bkg stat. error","f")
         # Let's remove the signal entries in the legend
         for ileg in legend.GetListOfPrimitives():
             if ileg.GetLabel() in ['W+Jets', 'TT', 'WW, WZ non-reson.']:
                 legend.GetListOfPrimitives().Remove(ileg)
             if ileg.GetLabel()=='Data': beforeObject=ileg
         
-        legend.GetListOfPrimitives().AddBefore(beforeObject,myentry)
+        legend.GetListOfPrimitives().AddBefore(beforeObject,datadrivenEntry)
+        legend.GetListOfPrimitives().AddAfter(beforeObject,stackErrorEntry)
         
         drawStack_simple(hframe, hsnew, hdataG, hratio, legend,
-                         hmask=[hmask_data, hmask_ratio],
-                         hstack_opt = "A, HIST",
+                         hserr=hserr, hmask=[hmask_data, hmask_ratio], hstack_opt = "A, HIST",
                          outDir = self.outdir, output = stackTag+"_datadriven", channel = ROOT.TString(self.chan),
                          xmin = xcutmin, xmax = xcutmax, xtitle = titlex ,units = units,
                          lumi = self.lumi, notes = self.note,
@@ -231,4 +275,19 @@ class StackDataDriven:
         print "[Processing] I am comparing data-driven result w.r.t. MC expectation"
         self.compareDataDrivenMC(var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax, xbins=xbins, isTest=True)
         
+        return
+
+    def drawMCStack(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xbins=[], blind=False, blindCut=100.0):
+        """
+        simply draw all background MC stacked compared with data, with signals on top of them.
+        """
+        tag = '_'.join(['stack_nonResDD','met'+self.met_cut,'MC'])
+        stackTag=tag+'_'+var_ll
+
+        allStack_ll = self.plotter_ll.GetStack() 
+
+        allStack_ll.drawStack(var_ll, self.cuts['ll']['in'], str(self.lumi*1000), nbinsx, xmin, xmax, titlex = titlex, units = units,
+                              output=stackTag, outDir=self.outdir, separateSignal=True, drawtex=self.note, channel=self.chan, xbins = xbins,
+                              blinding = blind, blindingCut = blindCut)
+
         return

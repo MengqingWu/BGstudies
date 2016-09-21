@@ -40,8 +40,8 @@ class InitializePlotter:
             zjetsPlotters.append(TreePlotter(indir+'/'+sample+'.root','tree'))
             if not onlyStats:
                 zjetsPlotters[-1].addCorrectionFactor('1./SumWeights','tree')
-                zjetsPlotters[-1].addCorrectionFactor('xsec','tree')
-                #zjetsPlotters[-1].addCorrectionFactor('(1921.8*3)','xsec')
+                #zjetsPlotters[-1].addCorrectionFactor('xsec','tree')
+                zjetsPlotters[-1].addCorrectionFactor('(1921.8*3)','xsec')
                 zjetsPlotters[-1].addCorrectionFactor('genWeight','tree')
                 zjetsPlotters[-1].addCorrectionFactor('puWeight','tree')
                 zjetsPlotters[-1].addCorrectionFactor(triggersf,'tree')

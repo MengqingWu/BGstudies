@@ -14,7 +14,7 @@ def CheckDir(outdir):
 def GetCorrelationFactorError(corr, num):
     se=math.sqrt((1-corr**2)/(num-2))
     return se
-    
+
 def GetError(A, B, a=0., b=0.):
     # q=A/B, sigma(A)=a, sigma(B)=b, sigma(q)=error:
     if a*b==0:
@@ -191,8 +191,8 @@ def GetLegend(h1,label1,opt1,h2,label2,opt2):
 
     return legend
 
-def drawStack_simple(frame, hstack, hdata, hratio, legend, hmask=[],
-                     hstack_opt="nostack",
+def drawStack_simple(frame, hstack, hdata, hratio, legend,
+                     hserr=None, hmask=[], hstack_opt="nostack",
                      outDir="./", output="output", channel="",
                      xmin=50., xmax=500., xtitle="" ,units="",
                      lumi=2.169, notes="", drawSig=False, hsig=[]):
@@ -223,6 +223,7 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend, hmask=[],
     hdata.Draw("P,E1,same")
     if drawSig and len(hsig)!=0:
         for ihsig in hsig: ihsig.Draw("HIST, same")
+
     legend.Draw("same")
     hstack.SetMinimum(0.01)
     hstack.GetHistogram().GetXaxis().SetRangeUser(xmin,xmax)
@@ -257,7 +258,15 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend, hmask=[],
             hmask[1].Draw("HIST,SAME")
     hratio.GetXaxis().SetRangeUser(xmin,xmax)
     hline.GetXaxis().SetRangeUser(xmin,xmax)
-    
+
+    if hserr:
+        hserr.SetFillColor(kBlue)
+        hserr.SetFillStyle(3345)
+        hserr.SetMarkerSize(0)
+        #hserr.SetName(output+'_'+'StackError')
+        p1.cd()
+        hserr.Draw("e2,0,same")
+            
     p1.Update()
     p2.Update()
     c1.Update()
