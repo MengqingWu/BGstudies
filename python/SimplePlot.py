@@ -132,8 +132,9 @@ def GetCumulativeAndError(inputHist,forward=True, suffix=''):
     return hintegrated
     
 
-def GetRatio_TH1(h1, h2, h2_isStack=False, blinding=False, blindingCut=100):
+def GetRatio_TH1(h1, h2, h2_isStack=False, blinding=False, blindingCut=100, title=''):
     ''' h1/h2 '''
+    if title=='': title='Data/MC'
     hratio = h1.Clone("hRatio")
     h2.Draw()
     if h2_isStack:
@@ -164,7 +165,7 @@ def GetRatio_TH1(h1, h2, h2_isStack=False, blinding=False, blindingCut=100):
     hratio.SetMarkerSize(1.)
     hratio.SetMarkerColor(kBlack)
     hratio.GetXaxis().SetTitle('')
-    hratio.GetYaxis().SetTitle('Data/MC')
+    hratio.GetYaxis().SetTitle(title)
     hratio.GetYaxis().SetRangeUser(0.0,2.0)
     hratio.GetXaxis().SetLabelFont(42)
     hratio.GetXaxis().SetLabelOffset(0.007)
@@ -220,7 +221,7 @@ def GetLegend(h1,label1,opt1,h2,label2,opt2):
 def drawStack_simple(frame, hstack, hdata, hratio, legend,
                      hserr=[], hmask=[], hstack_opt="nostack",
                      outDir="./", output="output", channel="",
-                     xmin=50., xmax=500., xtitle="" ,units="",
+                     xmin=0., xmax=0., xtitle="" ,units="",
                      lumi=2.169, notes="", drawSig=False, hsig=[]):
     TH1.SetDefaultSumw2()
     gROOT.ProcessLine('.x ../src/tdrstyle.C')
@@ -248,17 +249,18 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
     hstack.Draw(hstack_opt+", same")
 
     hstack.SetMinimum(0.01)
-    hstack.GetHistogram().GetXaxis().SetRangeUser(xmin,xmax)
+    if xmin*xmax!=0: hstack.GetHistogram().GetXaxis().SetRangeUser(xmin,xmax)
 
     maxi=hstack.GetHistogram().GetXaxis().GetXmax()
     mini=hstack.GetHistogram().GetXaxis().GetXmin()
     bins=hstack.GetHistogram().GetNbinsX()
-    if len(units)>0:
-        hstack.GetHistogram().GetXaxis().SetTitle(xtitle + " (" +units+")")
-        hstack.GetHistogram().GetYaxis().SetTitle("Events / "+str((maxi-mini)/bins)+ " "+units)
-    else:
+    if xtitle:
+        titlex=xtitle + " (" +units+")" if units else xtitle
         hstack.GetHistogram().GetXaxis().SetTitle(xtitle)
-        hstack.GetHistogram().GetYaxis().SetTitle("Events")
+
+    titley="Events"+" / "+"{:.1f}".format((maxi-mini)/bins)+ " "+units if units else "Events"
+    #titley="Events / "+str((maxi-mini)/bins)+ " "+units  if units else "Events"
+    hstack.GetHistogram().GetYaxis().SetTitle(titley)
 
     if len(hserr):
         hserr[0].SetName(output+'_'+'ErrorCombo')
@@ -338,8 +340,9 @@ def drawStack_simple(frame, hstack, hdata, hratio, legend,
 
 def drawCompare(hstack, hratio, legend,
                 hstack_opt="nostack",outdir="./",tag="test",
-                xmin=50., xmax=500., xtitle="" , ytitle="Events", units="",
+                xmin=0., xmax=0., xtitle="" , ytitle="Events", units="",
                 lumi=2.169, logy=True, notes="", setmax=0):
+    
     TH1.SetDefaultSumw2()
     fout = TFile(outdir+'/'+tag+'.root', 'recreate')
     
@@ -367,18 +370,18 @@ def drawCompare(hstack, hratio, legend,
     legend.Draw("same")
         
     hstack.SetMinimum(0.01)
-    hstack.GetHistogram().GetXaxis().SetRangeUser(xmin,xmax)
+    if xmin*xmax!=0: hstack.GetHistogram().GetXaxis().SetRangeUser(xmin,xmax)
     
     maxi=hstack.GetHistogram().GetXaxis().GetXmax()
     mini=hstack.GetHistogram().GetXaxis().GetXmin()
     bins=hstack.GetHistogram().GetNbinsX()
-    
-    if len(units)>0:
-        hstack.GetHistogram().GetXaxis().SetTitle(xtitle + " (" +units+")")
-        hstack.GetHistogram().GetYaxis().SetTitle(ytitle +" / "+"{:.1f}".format((maxi-mini)/bins)+ " "+units)
-    else:
+
+    if xtitle:
+        titlex=xtitle + " (" +units+")" if units else xtitle
         hstack.GetHistogram().GetXaxis().SetTitle(xtitle)
-        hstack.GetHistogram().GetYaxis().SetTitle(ytitle)
+    if ytitle:
+        titley=ytitle +" / "+"{:.1f}".format((maxi-mini)/bins)+ " "+units if units else ytitle
+        hstack.GetHistogram().GetYaxis().SetTitle(titley)
 
     hratio.SetName(tag+'_'+'hratio')
     hline = copy.deepcopy(hratio)
@@ -424,7 +427,7 @@ def drawCompare(hstack, hratio, legend,
     return
 
 def drawCompareSimple(h1, h2, leg1, leg2,
-                      xmin=50., xmax=500., xtitle="" , ytitle="", units="",
+                      xmin=0., xmax=0., xtitle="" , ytitle="", units="", ratiotitle="",
                       lumi=2.169, notes="",
                       outdir="./", tag="test", setmax=0, logy=True):
 
@@ -440,13 +443,13 @@ def drawCompareSimple(h1, h2, leg1, leg2,
     hstack=THStack("h_stack","stack histograms")
     hstack.Add(h1,"hist,0")
     hstack.Add(herror,"e2,0")
-    hstack.Add(h2,"p,0")
+    hstack.Add(h2,"p,e1,0")
 
     if xtitle=="": xtitle=h1.GetXaxis().GetTitle()
     if ytitle=="": ytitle=h1.GetYaxis().GetTitle()
     
     drawCompare( hstack=hstack,
-                 hratio=GetRatio_TH1(h2,h1),
+                 hratio=GetRatio_TH1(h2,h1,title=ratiotitle),
                  legend=GetLegend(h1,leg1, "f", h2, leg2, 'lpe'),
                  outdir=outdir, tag=tag,
                  xmin=xmin, xmax=xmax,

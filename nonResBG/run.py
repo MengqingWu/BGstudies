@@ -2,10 +2,11 @@
 from stack_nonResDD import *
 import sys
 
-test=StackDataDriven(indir="./nonResSkim_Lite_20160915_met100", outdir="./closure_step2", scaleElMu=True, met=100, side="both")
+test=StackDataDriven(indir="./nonResSkim_Lite_20160915_met100", outdir="./out_step2", scaleElMu=True, met=100, side="both")
 #test.GetAlpha(isTest=True)
-mtxbins = [150,200,250,325,425,850]
-test.drawDataDrivenStack('llnunu_mtc', 'elmununu_mtc', len(mtxbins), min(mtxbins), max(mtxbins), "M_{T}^{ZZ}", "GeV", 0, 0, mtxbins, doCombineErr=True)
+mtxbins = [150,200,250,300,350,400,450,550,850]
+#mtxbins = [150,200,250,325,425,850]
+test.drawDataDriven('llnunu_mtc', 'elmununu_mtc', len(mtxbins), min(mtxbins), max(mtxbins), "M_{T}^{ZZ}", "GeV", mtxbins, doClosure=True, doStack=True, doCompare=True)
 exit(0)
 
 print 'Number of arguments:', len(sys.argv), 'arguments.'

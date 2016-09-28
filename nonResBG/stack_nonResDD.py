@@ -92,6 +92,7 @@ class StackDataDriven:
 
         return alpha, err_alpha
 
+    
     def compareDataDrivenMC(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax, xbins=[], isTest=False):
         """
         compare data-driven estimate wrt MC expectation of var_ll for non-reso. bkg
@@ -120,7 +121,7 @@ class StackDataDriven:
             h_nonRes_mc = self.plotter_ll.NonResBG.drawTH1(var_ll+'nonres_mc_llin', var_ll, self.cuts['ll']['in'], str(self.lumi*1000),
                                                            nbinsx, xmin, xmax, titlex = titlex, units = units)
 
-        alpha, err_apha = self.GetAlpha(isTest=isTest)
+        alpha, err_alpha = self.GetAlpha(isTest=isTest)
             
         h_nonRes_dd.Scale(alpha)
 
@@ -153,79 +154,82 @@ class StackDataDriven:
                 ibias=hsys.GetBinContent(ii)-1
                 istat=h1.GetBinError(ii)
                 igrerr2=(ibias*iMeanVal)**2+(sysGlobal*iMeanVal)**2+istat**2
-                print "[debug] @%.f = %f, sys = %.2f, stat = %.2f, combo = %.2f"%(h1.GetBinCenter(ii), iMeanVal, (ibias*iMeanVal)**2+(sysGlobal*iMeanVal), istat, ROOT.TMath.Sqrt(igrerr2))
+                print "[debug] @%.f = %f, sys = %.2f, stat = %.2f, combo = %.2f"%(h1.GetBinCenter(ii), iMeanVal, ROOT.TMath.Sqrt((ibias*iMeanVal)**2+(sysGlobal*iMeanVal)**2), istat, ROOT.TMath.Sqrt(igrerr2))
 
                 hcombo.SetBinContent(ii, iMeanVal)
                 hcombo.SetBinError(ii, ROOT.TMath.Sqrt(igrerr2))
             else: continue # nothing to do with empty/negative bins
                 
-        ctemp = ROOT.TCanvas(1)
-        hcombo.SetFillColor(ROOT.kBlue)
-        hcombo.SetFillStyle(3354)
-        hcombo.SetMarkerSize(0)
-        hcombo.SetLineColor(0)
-        hcombo.Draw("e2")
-        #hstat.SetFillColor(ROOT.kRed)
-        h1.Draw("e2, same")
-        ctemp.SaveAs("GetSysErrorTest.pdf")
+        # ctemp = ROOT.TCanvas(1)
+        # hcombo.SetFillColor(ROOT.kBlue)
+        # hcombo.SetFillStyle(3354)
+        # hcombo.SetMarkerSize(0)
+        # hcombo.SetLineColor(0)
+        # hcombo.Draw("e2")
+        # #hstat.SetFillColor(ROOT.kRed)
+        # h1.Draw("e2, same")
+        # ctemp.SaveAs("GetSysErrorTest.pdf")
 
         return hcombo
     
-        
-    
-    def drawDataDrivenStack(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin=0, xcutmax=0, xbins=[], blind=False, blindCut=100.0, doCombineErr=False):
-        tag = '_'.join(['stack_nonResDD','met'+self.met_cut, self.SideTag])
-        stackTag=tag+'_'+var_ll
-        dobinned = True if len(xbins) else False
-        if xcutmin==0: xcutmin = xmin
-        if xcutmax==0: xcutmax = xmax
 
+    #def drawDataDrivenStack(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin=0, xcutmax=0, xbins=[], blind=False, blindCut=100.0, doCombineErr=False):
+    def drawDataDrivenStack(self, stackFileName, hres_stat, hres_stat_sys=None, blind=False, blindCut=100.0):
+        #tag = '_'.join(['stack_nonResDD','met'+self.met_cut, self.SideTag])
+        #stackTag=tag+'_'+var_ll
+        #dobinned = True if len(xbins) else False
+        #if xcutmin==0: xcutmin = xmin
+        #if xcutmax==0: xcutmax = xmax
+        
         #--> to have all histogram with stat. err. computed correctly
         ROOT.TH1.SetDefaultSumw2()
 
-        alpha, err_alpha = self.GetAlpha()
+        #alpha, err_alpha = self.GetAlpha()
         
-        h_res_llin_mc = self.plotter_ll.ResBG.drawTH1(var_ll, var_ll, self.cuts['ll']['in'], str(self.lumi*1000), nbinsx, xmin, xmax, titlex=titlex, units=units)
-        ctemp = ROOT.TCanvas(1)
-        h_res_llin_mc.Draw()
+        #h_res_llin_mc = self.plotter_ll.ResBG.drawTH1(var_ll, var_ll, self.cuts['ll']['in'], str(self.lumi*1000), nbinsx, xmin, xmax, titlex=titlex, units=units)
+        #ctemp = ROOT.TCanvas(1)
+        #h_res_llin_mc.Draw()
         #ctemp.SaveAs("test.pdf")
 
-        self.Stack_ll.drawStack(var_ll, self.cuts['ll']['in'], str(self.lumi*1000), nbinsx, xmin, xmax, titlex = titlex, units = units,
-                                output=stackTag, outDir=self.outdir, separateSignal=True, drawtex="", channel=self.chan, xbins = xbins,
-                                blinding = blind, blindingCut = blindCut)
-        if dobinned:
-            h_nonRes_dd = self.plotter_eu.Data.drawTH1Binned(var_emu, var_emu, self.cuts['emu']['in'], '1',
-                                                             xbins, titlex = titlex, unitsx = units)
-        else:
-            h_nonRes_dd = self.plotter_eu.Data.drawTH1(var_emu, var_emu, self.cuts['emu']['in'], '1',
-                                                       nbinsx, xmin, xmax, titlex = titlex, units = units)
-        h_nonRes_dd.SetFillColor(ROOT.kAzure-9)        
-        h_nonRes_dd.Scale(alpha)
-        if doCombineErr and 'l1_mass' not in var_ll: # think about how to deal with mZ distribution [FIXME]
-            hbias=self.compareDataDrivenMC(var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax, xbins=xbins, isTest=True)
-            igrerr2=(err_alpha/alpha)**2
+        #self.Stack_ll.drawStack(var_ll, self.cuts['ll']['in'], str(self.lumi*1000), nbinsx, xmin, xmax, titlex = titlex, units = units,
+        #                        output=stackTag, outDir=self.outdir, separateSignal=True, drawtex="", channel=self.chan, xbins = xbins,
+        #                        blinding = blind, blindingCut = blindCut)
+        # if dobinned:
+        #     h_nonRes_dd = self.plotter_eu.Data.drawTH1Binned(var_emu, var_emu, self.cuts['emu']['in'], '1', xbins, titlex = titlex, unitsx = units)
+        # else:
+        #     h_nonRes_dd = self.plotter_eu.Data.drawTH1(var_emu, var_emu, self.cuts['emu']['in'], '1', nbinsx, xmin, xmax, titlex = titlex, units = units)
+        hres_stat.SetFillColor(ROOT.kAzure-9)        
+        #h_nonRes_dd.Scale(alpha)
+        #if doCombineErr and 'l1_mass' not in var_ll: # think about how to deal with mZ distribution [FIXME]
+        #    hbias=self.compareDataDrivenMC(var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xcutmin, xcutmax, xbins=xbins, isTest=True)
+        #    igrerr2=(err_alpha/alpha)**2
             
         # Draw the m_ll in z window with data-driven non-res bkg
         ROOT.TH1.AddDirectory(ROOT.kFALSE)
-        fstack=ROOT.TFile(self.outdir+'/'+stackTag+'.root')
+        fstack=ROOT.TFile(stackFileName)
+        stackTag=stackFileName.split('/')[-1].replace(".root","")
+        outdir='/'.join(stackFileName.split('/')[:-1])
+        #if '.root' not in stackTag: print "[Error!] Check the stackTag: %s, it is not a root file!"%(stackTag); exit(0);
+        if not os.path.isdir(outdir):  print "[Error!] Directory: %s, does NOT exit!! "%(outdir); exit(0);
+        
         hs=fstack.Get(stackTag+"_stack")
 
         hframe=fstack.Get(stackTag+'_frame')
-        hframe.GetXaxis().SetRangeUser(xcutmin, xcutmax)
-        if ROOT.TString(var_ll).Contains("mass"):
-            if self.logy: hframe.SetMaximum(hframe.GetMaximum()*100)
-            else: hframe.SetMaximum(hframe.GetMaximum()*1.2)
+        #hframe.GetXaxis().SetRangeUser(xcutmin, xcutmax)
+        #if ROOT.TString(var_ll).Contains("mass"):
+        #    if self.logy: hframe.SetMaximum(hframe.GetMaximum()*100)
+        #    else: hframe.SetMaximum(hframe.GetMaximum()*1.2)
 
         hmask_data=fstack.Get(stackTag+'_hmask_data')
         hmask_ratio=fstack.Get(stackTag+'_hmask_ratio')
 
         hserr=fstack.Get(stackTag+'_StackError')
         hserr.SetLineColor(0)
-        hcombo = hserr.Clone(hserr.GetName()+'_withsys')
-        hcombo.SetFillStyle(3354)
-        hserr.Add(h_nonRes_dd)
+        hserr_sys = hserr.Clone(hserr.GetName()+'_withsys')
+        hserr_sys.SetFillStyle(3354)
+        hserr.Add(hres_stat)
         #hserr.SetFillColor(ROOT.kBlue)
-        hserr.SetFillStyle(3345)
+        #hserr.SetFillStyle(3345)
         
         hdata=fstack.Get(stackTag+'_data0')
         hdataG=fstack.Get(stackTag+'_dataG')
@@ -236,15 +240,15 @@ class StackDataDriven:
         hsig3=fstack.Get(stackTag+'_BulkGravToZZToZlepZinv_narrow_1200')
         fstack.Close()
 
-        err1, err2, err3=ROOT.Double(0.0), ROOT.Double(0.0), ROOT.Double(0.0)
-        igr1, igr2, igr3=h_nonRes_dd.IntegralAndError(0, h_nonRes_dd.GetNbinsX()+1, err1), h_res_llin_mc.IntegralAndError(0, h_res_llin_mc.GetNbinsX()+1, err2),hdata.IntegralAndError(0, hdata.GetNbinsX()+1, err3)
-        print '[info] llin, data-driven nonres:  %.2f +- %.2f' %(igr1, err1)
-        print '[info] llin, MC res. bkg:  %.2f +- %.2f' %(igr2, err2)
-        print '[info] llin, data obs.: %.2f +- %.2f' %(igr3, err3)
+        #err1, err2, err3=ROOT.Double(0.0), ROOT.Double(0.0), ROOT.Double(0.0)
+        #igr1, igr2, igr3=hres_stat.IntegralAndError(0, hres_stat.GetNbinsX()+1, err1), h_res_llin_mc.IntegralAndError(0, h_res_llin_mc.GetNbinsX()+1, err2),hdata.IntegralAndError(0, hdata.GetNbinsX()+1, err3)
+        #print '[info] llin, data-driven nonres:  %.2f +- %.2f' %(igr1, err1)
+        #print '[info] llin, MC res. bkg:  %.2f +- %.2f' %(igr2, err2)
+        #print '[info] llin, data obs.: %.2f +- %.2f' %(igr3, err3)
 
         
         hsnew=ROOT.THStack(stackTag+"_stack_new","")
-        hsnew.Add(h_nonRes_dd)
+        hsnew.Add(hres_stat)
         
         nonresTag=[stackTag+'_'+sample for sample in ['WJets0','TT0','WW0'] ]
         for ihist in hs.GetHists():
@@ -263,7 +267,7 @@ class StackDataDriven:
                 legend.GetListOfPrimitives().Remove(ileg)
             if ileg.GetLabel()=='Data': beforeObject=ileg
             
-        datadrivenEntry=ROOT.TLegendEntry(h_nonRes_dd,"non-reson. (data-driven)","f")
+        datadrivenEntry=ROOT.TLegendEntry(hres_stat,"non-reson. (data-driven)","f")
         statErrorEntry=ROOT.TLegendEntry(hserr,"stat-only error","f")
         legend.GetListOfPrimitives().AddBefore(beforeObject,datadrivenEntry)
         legend.GetListOfPrimitives().AddAfter(beforeObject,statErrorEntry)
@@ -275,20 +279,22 @@ class StackDataDriven:
         errstack2 = ROOT.THStack("hratio_combine_sys_stat_error","relative sys and stat combined histograms")
         errstack2.Add(hserr_rel, "e2,0")
         
-        if doCombineErr and 'l1_mass' not in var_ll: # think about how to deal with mZ distribution [FIXME]
-            hcombo.Add(self.CombineError( h_nonRes_dd, hbias, igrerr2))
-            sysErrorEntry=ROOT.TLegendEntry(hcombo,"sys+stat error","f")
+        #if hres_stat_sys and 'l1_mass' not in var_ll: # think about how to deal with mZ distribution [FIXME]
+        if hres_stat_sys:
+            hserr_sys.Add(hres_stat_sys)
+            sysErrorEntry=ROOT.TLegendEntry(hserr_sys,"sys+stat error","f")
             legend.GetListOfPrimitives().AddAfter(beforeObject,sysErrorEntry)
+            
+            errstack.Add(hserr_sys, "e2, 0")
 
-            errstack.Add(hcombo, "e2, 0")
-            hcombo_rel = GetHistRelativeErr(hcombo)
-            errstack2.Add(hcombo_rel, "e2,0")
+            hserr_sys_rel = GetHistRelativeErr(hserr_sys)
+            errstack2.Add(hserr_sys_rel, "e2,0")
             
-            
+        
         drawStack_simple(hframe, hsnew, hdataG, hratio, legend,
                          hserr=[errstack, errstack2], hmask=[hmask_data, hmask_ratio], hstack_opt = "A, HIST",
-                         outDir = self.outdir, output = stackTag+"_datadriven", channel = ROOT.TString(self.chan),
-                         xmin = xcutmin, xmax = xcutmax, xtitle = titlex ,units = units,
+                         outDir = outdir, output = stackTag+"_datadriven", channel = ROOT.TString(self.chan),
+                         #xmin = xcutmin, xmax = xcutmax, xtitle = titlex ,units = units,
                          lumi = self.lumi, notes = self.note,
                          drawSig=True, hsig=[hsig1, hsig2, hsig3])
         return
@@ -318,3 +324,78 @@ class StackDataDriven:
                               blinding = blind, blindingCut = blindCut)
 
         return
+
+    
+    def drawDataDriven(self, var_ll, var_emu, nbinsx, xmin, xmax, titlex, units, xbins=[], blind=False, blindCut=100.0,
+                       addSys=True, doStack=False, doClosure=False, doCompare=False ):
+        """ Draw a data driven non-res distribution, 
+        -> sys+stat uncertainty can be switched off by addSys=False 
+        -> stack with other bkg can be switched on by doStack=True
+        -> closure Test can be switched on by doClosure=True
+        -> data-driven vs MC can be plotted by doCompare=True
+        """
+        ROOT.TH1.SetDefaultSumw2()
+        tagger = ['nonResDD', var_ll, self.MzWtTag, 'met'+self.met_cut, self.SideTag]
+        #tag = '_'.join(tagger)
+        dobinned = True if len(xbins) else False
+        
+        alpha, err_alpha = self.GetAlpha()
+        if addSys: alpha_mc, err_alpha_mc = self.GetAlpha(isTest=True)
+        igrerr2=(err_alpha/alpha)**2
+        
+        if dobinned:
+            hres_stat = self.plotter_eu.Data.drawTH1Binned(var_emu,var_emu, self.cuts['emu']['in'],'1',xbins, titlex = titlex, unitsx = units)
+            if addSys:
+                h_eu_fakedt = self.plotter_eu.allBG.drawTH1Binned(var_emu+'_in_fakedt',var_emu, self.cuts['emu']['in'],str(self.lumi*1000),xbins,titlex = titlex,unitsx = units)
+                h_ll_mc = self.plotter_ll.NonResBG.drawTH1Binned(var_ll+'_in_mc',var_ll, self.cuts['ll']['in'], str(self.lumi*1000),xbins,titlex = titlex,unitsx = units)  
+        else:
+            hres_stat = self.plotter_eu.Data.drawTH1(var_emu, var_emu, self.cuts['emu']['in'], '1', nbinsx, xmin, xmax, titlex = titlex, units = units)
+            if addSys:
+                h_eu_fakedt = self.plotter_eu.allBG.drawTH1(var_emu+'_in_fakedt',var_emu,self.cuts['emu']['in'],str(self.lumi*1000),nbinsx,xmin,xmax,titlex = titlex,units = units)
+                h_ll_mc = self.plotter_ll.NonResBG.drawTH1(var_ll+'_in_mc',var_ll,self.cuts['ll']['in'],str(self.lumi*1000),nbinsx,xmin,xmax,titlex = titlex,units = units)
+            
+        hres_stat.Scale(alpha)
+        hres_stat.SetMarkerSize(0)
+
+        
+        if doClosure:
+            closureTag = '_'.join(['compare_DatadrivenMC']+tagger+['closureTest']) 
+            drawCompareSimple(h_ll_mc, h_eu_fakedt, "non-reson. MC", "non-reson. data-driven",
+                              xmin=xmin, xmax=xmax, outdir=self.outdir, notes="",
+                              tag = closureTag, units=units, lumi=self.lumi, ytitle='Events', setmax=10)
+        if addSys:
+            h_eu_fakedt.Scale(alpha_mc)
+            h_eu_fakedt.Divide(h_ll_mc)
+            hres_stat_sys=self.CombineError( hres_stat, h_eu_fakedt, igrerr2)
+            hres_stat_sys.SetFillStyle(3354)
+
+        if doCompare:
+            print "[debug] line color: ", h_ll_mc.GetLineColor()
+            h_ll_mc.SetLineColor(ROOT.kBlack)
+            compTag = '_'.join(['compare_DatadrivenMC']+tagger) 
+            drawCompareSimple(hres_stat, h_ll_mc, "data-driven pred.", "MC exp.",
+                              xmin=xmin, xmax=xmax, outdir=self.outdir, notes="", ratiotitle="Exp/Pred",
+                              tag = compTag, units=units, lumi=self.lumi, ytitle='Events', setmax=10)
+
+        if doStack:
+            stackTag='_'.join(['stack']+tagger+['_sys']) if addSys else '_'.join(['stack']+tagger)
+            
+            self.Stack_ll.drawStack(var_ll, self.cuts['ll']['in'], str(self.lumi*1000), nbinsx, xmin, xmax, titlex = titlex, units = units,
+                                    output=stackTag, outDir=self.outdir, separateSignal=True, drawtex="", channel=self.chan, xbins = xbins,
+                                    blinding = blind, blindingCut = blindCut)
+            
+            self.drawDataDrivenStack(self.outdir+'/'+stackTag+'.root', hres_stat, hres_stat_sys, blind=blind, blindCut=blindCut)
+
+ 
+            
+        ##--> testing <--##
+        ctemp = ROOT.TCanvas(1)
+        hres_stat.SetFillStyle(3345)
+        hres_stat.SetFillColor(ROOT.kRed)
+        hres_stat.Draw("e2")
+        if addSys:   hres_stat_sys.Draw("e2, same")
+        ctemp.SaveAs("test.pdf")
+        ###----------------------###
+        
+        return #hres_stat, hres_stat_sys
+    
