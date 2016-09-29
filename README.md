@@ -22,21 +22,21 @@
 2. non-Resolution background:
     codes under 'bkgStudies/nonResBG'
     
-    a. methodology: using emu control samples
+    - methodology: using emu control samples
     
-    b. an inclusive alpha computed from SB regions of ll/emu samples to account for the differences in branching ratios, acceptance and efficiency: 
+    - an inclusive alpha computed from SB regions of ll/emu samples to account for the differences in branching ratios, acceptance and efficiency: 
     	alpha = N_emu(SB)/N_ll(SB)
 	
-    (c) since the electron and muon offline cuts are so different, leading to large selection efficiency differed from ll to emu pairs;
+    - since the electron and muon offline cuts are so different, leading to large selection efficiency differed from ll to emu pairs;
     	an event-by-event shape reweight based on Mz is applied to emu samples before the alpha is computed:
 	
     	f(non_res, data_ll) =  f(res+non_res, data_eu) * f(non_res, mc_ll)/f(res+non_res, mc_eu)
         
-    (d) code documentations:
+    - code documentations:
     
     	simply use ./run.sh to configure:
 	
-	(i) doStep1=true:
+	- doStep1=true:
 	
 	make the step1_plotter.py run to have the table of yields printed in './out_step1/num_out.txt'
 	(even the final yield estimate will be given with shape reweight applied).
@@ -44,11 +44,11 @@
 	'./out_step1/shape_correction_metx.root', where x=0,100,200 is the met cut applied,
 	are produced to apply the Mz-reweight weights to data and MC samples.
 	
-	(ii) doTest=true:
+	- doTest=true:
 	
 	you can do a MC closure test (NOTE: MC samples needs Mz-reweight), with output in './closure_step2'
 	
-	(iii) doTest=false:
+	- doTest=false:
 	
 	data-driven plots with other background from MC stacked to compare with data (Note: Mt(ZZ) blinded w/ MET>200), will be produced in './out_step2'.
 
