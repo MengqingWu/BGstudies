@@ -4,13 +4,12 @@
 
 1. Zjets background: (so many different versions to do)
 
-   - current methodology
+   - current methodology:
     
-    	since the dphi(Z, met) is now better modulated to have a good data/MC agreement, so we can do the methodology below. <br/> Simply revert the cut of dphi(Z, met)>3PI/4 to define a CR, compute a scale factor between CR and Target Region (TR, which is SR) using MC,
-	apply this scale factor to the non-resonant bkg subtracted (use MC) CR data:
-
+    	Since the dphi(Z, met) is now better modulated to have a good data/MC agreement, so we can do the methodology below. <br/>
+	Simply revert the cut of dphi(Z, met)>3PI/4 to define a CR, compute a scale factor between CR and Target Region (TR, which is SR) using MC,
+	apply this scale factor to the non-resonant bkg subtracted (use MC) CR data: <br/>
 	N_TR^dt = N_CR^{dt,sub} * (N_TR^mc / N_TR^mc).
-
 
    - validation:
      
@@ -18,14 +17,14 @@
 
 	The code for zjets is out of data, but updated in the 80x branch.
 
-   FIXME: Many previous estimation method to be documented. (2016 Sep 29)
+   **FIXME**: Many previous estimation method to be documented. (2016 Sep 29)
     
 2. non-Resolution background:
     codes under 'bkgStudies/nonResBG'
     
-    (a) methodology: using emu control samples
+    a. methodology: using emu control samples
     
-    (b) an inclusive alpha computed from SB regions of ll/emu samples to account for the differences in branching ratios, acceptance and efficiency: 
+    b. an inclusive alpha computed from SB regions of ll/emu samples to account for the differences in branching ratios, acceptance and efficiency: 
     	alpha = N_emu(SB)/N_ll(SB)
 	
     (c) since the electron and muon offline cuts are so different, leading to large selection efficiency differed from ll to emu pairs;
