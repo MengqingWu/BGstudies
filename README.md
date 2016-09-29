@@ -14,8 +14,9 @@
    - validation:
      
      	a validation region constructed in a lower MET region (from 50 up to SR met cut), repeat the above methodology and open the TR data to validate the technique.
+	
+   - The code for zjets is out of data, but updated in the 80x branch.
 
-	The code for zjets is out of data, but updated in the 80x branch.
 
    **FIXME**: Many previous estimation method to be documented. (2016 Sep 29)
     
@@ -51,4 +52,4 @@
 	
 		  data-driven plots with other background from MC stacked to compare with data (Note: Mt(ZZ) blinded w/ MET>200), will be produced in './out_step2'.
 
-    FIXME: some code updates to be perfected. (2016 Sep 29)
+    **FIXME*8: some code updates to be perfected. (2016 Sep 29)
