@@ -2,8 +2,8 @@
 
 private package to do background estimation in xzz2l2v analysis:
 
-(1) Zjets background: (so many different versions to do)
-    (a) current methodology:
+1. Zjets background: (so many different versions to do)
+   * current methodology:
     
     	since the dphi(Z, met) is now better modulated to have a good data/MC agreement, so we can do the methodology below.
 	
@@ -12,7 +12,7 @@ private package to do background estimation in xzz2l2v analysis:
 
 	N_TR^dt = N_CR^{dt,sub} * (N_TR^mc / N_TR^mc).
 
-     (b) validation:
+   * validation:
      
      	a validation region constructed in a lower MET region (from 50 up to SR met cut), repeat the above methodology and open the TR data to validate the technique.
 
@@ -20,8 +20,9 @@ private package to do background estimation in xzz2l2v analysis:
 
     FIXME: Many previous estimation method to be documented. (2016 Sep 29)
     
-(2) non-Resolution background:
+2. non-Resolution background:
     codes under 'bkgStudies/nonResBG'
+    
     (a) methodology: using emu control samples
     
     (b) an inclusive alpha computed from SB regions of ll/emu samples to account for the differences in branching ratios, acceptance and efficiency: 
