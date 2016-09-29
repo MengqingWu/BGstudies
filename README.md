@@ -4,17 +4,15 @@
 
 1. Zjets background: (so many different versions to do)
 
-   (a) current methodology
+   - current methodology
     
-    	since the dphi(Z, met) is now better modulated to have a good data/MC agreement, so we can do the methodology below.
-
-	Simply revert the cut of dphi(Z, met)>3PI/4 to define a CR, compute a scale factor between CR and Target Region (TR, which is SR) using MC,
+    	since the dphi(Z, met) is now better modulated to have a good data/MC agreement, so we can do the methodology below. <br/> Simply revert the cut of dphi(Z, met)>3PI/4 to define a CR, compute a scale factor between CR and Target Region (TR, which is SR) using MC,
 	apply this scale factor to the non-resonant bkg subtracted (use MC) CR data:
 
 	N_TR^dt = N_CR^{dt,sub} * (N_TR^mc / N_TR^mc).
 
 
-   (b) validation:
+   - validation:
      
      	a validation region constructed in a lower MET region (from 50 up to SR met cut), repeat the above methodology and open the TR data to validate the technique.
 
