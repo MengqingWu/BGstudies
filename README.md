@@ -1,16 +1,17 @@
 # xzz2l2v BG studies based on 76X samples:
 
-private package to do background estimation in xzz2l2v analysis:
+**Private package to do background estimation in xzz2l2v analysis**
 
 1. Zjets background: (so many different versions to do)
    * current methodology:
     
     	since the dphi(Z, met) is now better modulated to have a good data/MC agreement, so we can do the methodology below.
-	
+
 	Simply revert the cut of dphi(Z, met)>3PI/4 to define a CR, compute a scale factor between CR and Target Region (TR, which is SR) using MC,
 	apply this scale factor to the non-resonant bkg subtracted (use MC) CR data:
 
 	N_TR^dt = N_CR^{dt,sub} * (N_TR^mc / N_TR^mc).
+
 
    * validation:
      
@@ -41,6 +42,7 @@ private package to do background estimation in xzz2l2v analysis:
 	
 	make the step1_plotter.py run to have the table of yields printed in './out_step1/num_out.txt'
 	(even the final yield estimate will be given with shape reweight applied).
+	
 	'./out_step1/shape_correction_metx.root', where x=0,100,200 is the met cut applied,
 	are produced to apply the Mz-reweight weights to data and MC samples.
 	
