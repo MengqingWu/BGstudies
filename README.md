@@ -3,7 +3,7 @@
 **Private package to do background estimation in xzz2l2v analysis**
 
 1. Zjets background: (so many different versions to do)
-   * current methodology:
+   (a) current methodology:
     
     	since the dphi(Z, met) is now better modulated to have a good data/MC agreement, so we can do the methodology below.
 
@@ -13,13 +13,13 @@
 	N_TR^dt = N_CR^{dt,sub} * (N_TR^mc / N_TR^mc).
 
 
-   * validation:
+   (b) validation:
      
      	a validation region constructed in a lower MET region (from 50 up to SR met cut), repeat the above methodology and open the TR data to validate the technique.
 
-    The code for zjets is out of data, but updated in the 80x branch.
+	The code for zjets is out of data, but updated in the 80x branch.
 
-    FIXME: Many previous estimation method to be documented. (2016 Sep 29)
+   FIXME: Many previous estimation method to be documented. (2016 Sep 29)
     
 2. non-Resolution background:
     codes under 'bkgStudies/nonResBG'
