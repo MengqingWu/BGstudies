@@ -39,8 +39,7 @@
 	- doStep1=true:
 	
 	make the step1_plotter.py run to have the table of yields printed in './out_step1/num_out.txt'
-	(even the final yield estimate will be given with shape reweight applied).
-	
+	(even the final yield estimate will be given with shape reweight applied). <br/>
 	'./out_step1/shape_correction_metx.root', where x=0,100,200 is the met cut applied,
 	are produced to apply the Mz-reweight weights to data and MC samples.
 	
