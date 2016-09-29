@@ -52,4 +52,4 @@
 	
 		  data-driven plots with other background from MC stacked to compare with data (Note: Mt(ZZ) blinded w/ MET>200), will be produced in './out_step2'.
 
-    **FIXME*8: some code updates to be perfected. (2016 Sep 29)
+    **FIXME**: some code updates to be perfected. (2016 Sep 29)
